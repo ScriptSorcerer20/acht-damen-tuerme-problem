@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Solver App{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="container">
+            <h1 class="logo">SolverApp</h1>
+
+            <nav>
+                <a href="/">Home</a>
+                <a href="/solver">Solver</a>
+
+                {% if session.get('user_id') %}
+                <a href="/dashboard">Dashboard</a>
+                <a href="/logout">Logout</a>
+                {% else %}
+                <a href="/login">Login</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Flash messages -->
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© {{ 2026 }} SolverApp</p>
+        </div>
+    </footer>
+
+    <!-- JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
