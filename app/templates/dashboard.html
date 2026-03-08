@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+
+<body>
+
+    <nav>
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('login.logout') }}">Logout</a>
+    </nav>
+
+    <div class="container">
+
+        ```
+        <h1>Dashboard</h1>
+
+        <p>Welcome back <strong>{{ current_user.username }}</strong> 👋</p>
+
+        <div class="user-info">
+            <h3>Your Account</h3>
+
+            <p><strong>User ID:</strong> {{ current_user.id }}</p>
+            <p><strong>Username:</strong> {{ current_user.username }}</p>
+
+            {% if current_user.email %}
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            {% else %}
+            <p><strong>Email:</strong> Not set</p>
+            {% endif %}
+
+            <p><strong>Account created:</strong> {{ current_user.created_at }}</p>
+        </div>
+
+        <div class="logout">
+            <form action="{{ url_for('login.logout') }}" method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+        ```
+
+    </div>
+
+</body>
+
+</html>

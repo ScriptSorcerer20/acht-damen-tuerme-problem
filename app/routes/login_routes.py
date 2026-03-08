@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, url_for, redirect
+from flask import Blueprint, render_template, request, url_for, redirect, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user
+from flask_login import login_user, login_required, logout_user
 from ..models.user import User
 from .. import db
 
@@ -11,7 +11,6 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        email = request.form.get("email")
 
         if User.query.filter_by(username=username).first():
             return render_template("sign_up.html", error="Username already taken!")
@@ -20,8 +19,7 @@ def register():
 
         new_user = User(
             username=username,
-            password=hashed_password,
-            email=email
+            password=hashed_password
         )
 
         db.session.add(new_user)
@@ -47,3 +45,10 @@ def login():
         return render_template("login.html", error="Invalid username or password")
 
     return render_template("login.html")
+
+@login_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('login.login'))

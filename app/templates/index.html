@@ -27,7 +27,7 @@
                 <a href="/dashboard">Dashboard</a>
                 <a href="/logout">Logout</a>
                 {% else %}
-                <a href="/login">Login</a>
+                <a href="{{ url_for('login.login') }}">Login</a>
                 {% endif %}
             </nav>
         </div>
