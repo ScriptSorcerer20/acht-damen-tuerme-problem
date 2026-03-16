@@ -1,0 +1,141 @@
+:root {
+    --primary-bg-color: #f4f6f8;
+    --secondary-bg-color: white;
+    --nav-bg-color: #333;
+}
+
+@font-face {
+    font-family: "Geist Sans";
+    src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    font-family: "Geist Sans", system-ui, sans-serif;
+}
+
+/* MAGNET EFFECT */
+.magnetic {
+    padding: 10px 20px;
+    border: none;
+    background: #4facfe;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+
+    transition: transform 0.2s ease;
+}
+
+.magnetic:hover {
+    background: #2d8cf0;
+}
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Page setup */
+body {
+    min-height: 100vh;
+    background: var(--primary-bg-color);
+}
+
+/* Navbar */
+nav {
+    width: 100%;
+    background: var(--nav-bg-color);
+    padding: 15px 30px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+nav a:hover {
+    color: #4facfe;
+}
+
+/* Center login section */
+main {
+    min-height: calc(100vh - 60px);
+    /* full screen minus navbar */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Title */
+main h1 {
+    margin-bottom: 20px;
+}
+
+/* Form box */
+form {
+    background: var(--secondary-bg-color);
+    padding: 30px;
+    border-radius: 8px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Labels */
+label {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+/* Inputs */
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+/* Button */
+.button {
+    margin-top: 20px;
+    padding: 10px;
+    border: none;
+    background: #4facfe;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #2d8cf0;
+}
+
+/* Error message */
+.error {
+    color: red;
+    margin-bottom: 15px;
+}
