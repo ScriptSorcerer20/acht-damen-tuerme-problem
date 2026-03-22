@@ -1,0 +1,125 @@
+:root {
+    --bg-color: #f4f6f8;
+    --text-color: #333;
+    --board-border: #2c3e50;
+    --square-light: #ecf0f1;
+    --square-dark: #95a5a6;
+    --accent-color: #3498db;
+    --btn-hover: #2980b9;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+h1 {
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    margin-bottom: 2rem;
+    color: var(--board-border);
+}
+
+.container {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 50px);
+    grid-template-rows: repeat(8, 50px);
+    border: 5px solid var(--board-border);
+    user-select: none;
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.square.light {
+    background-color: var(--square-light);
+}
+
+.square.dark {
+    background-color: var(--square-dark);
+}
+
+.queen {
+    color: var(--board-border);
+    text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.queen:hover {
+    transform: scale(1.1);
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: var(--btn-hover);
+}
+
+button.secondary {
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+button.secondary:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+@media (max-width: 600px) {
+    .chessboard {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        aspect-ratio: 1/1;
+    }
+
+    .square {
+        width: 100%;
+        height: 100%;
+        font-size: 1.5rem;
+    }
+}
+

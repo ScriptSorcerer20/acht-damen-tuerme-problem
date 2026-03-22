@@ -11,3 +11,7 @@ def home():
 @login_required
 def dashboard():
     return render_template('dashboard.html', user=current_user)
+
+@main_bp.route('/solver')
+def solver():
+    return render_template('solver.html')

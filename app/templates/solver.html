@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Damen-Problem</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/solver.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>8-Damen-Problem Test</h1>
+        <div class="chessboard">
+            {% for row in range(8) %}
+                {% for col in range(8) %}
+                    <div class="square {{ 'light' if (row + col) % 2 == 0 else 'dark' }}" data-row="{{ row }}" data-col="{{ col }}">
+                        <!-- Queens will be placed here -->
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="controls">
+            <button id="solveBtn">Solve</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+    </div>
+</body>
+</html>
