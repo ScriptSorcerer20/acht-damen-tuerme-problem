@@ -5,15 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <style>
-        h1 {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
+    <link rel="stylesheet" href="../static/css/login.css">
 </head>
 
 <body>
@@ -23,19 +15,21 @@
             <li><a href="{{ url_for('login.register') }}">Create account</a></li>
         </ul>
     </nav>
-    <h1>Create an account</h1>
+    <main>
+        <h1>Create an account</h1>
 
-    {% if error %}
-    <p class="error">{{ error }}</p>
-    {% endif %}
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
 
-    <form action="{{ url_for('login.register') }}" method="post">
-        <label for="username">Username:</label>
-        <input type="text" name="username" required />
-        <label for="password">Password:</label>
-        <input type="password" name="password" required />
-        <button type="submit">Sign Up</button>
-    </form>
+        <form action="{{ url_for('login.register') }}" method="post">
+            <label for="username">Username:</label>
+            <input type="text" name="username" required />
+            <label for="password">Password:</label>
+            <input type="password" name="password" required />
+            <button type="submit">Sign Up</button>
+        </form>
+    </main>
 </body>
 
 </html>

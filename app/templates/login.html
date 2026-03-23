@@ -5,37 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <style>
-        h1 {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-    </style>
+    <link rel="stylesheet" href="../static/css/login.css">
+    <link rel="stylesheet" href="../static/css/login.css">
+    </link>
 </head>
 
 <body>
     <nav>
         <ul>
-            <li><a href="{{ url_for('login.login') }}">Login</a></li>
-            <li><a href="{{ url_for('login.register') }}">Create account</a></li>
+            <li><a href="{{ url_for('login.login') }}"><span>Login</span></a></li>
+            <li><a href="{{ url_for('login.register') }}"><span>Create account</span></a></li>
         </ul>
     </nav>
-    <h1>Login to your account</h1>
 
-    {% if error %}
-    <p class="error">{{ error }}</p>
-    {% endif %}
+    <main>
+        <h1>Login to your account</h1>
 
-    <form action="{{ url_for('login.login') }}" method="post">
-        <label for="username">Username:</label>
-        <input type="text" name="username" required />
-        <label for="password">Password:</label>
-        <input type="password" name="password" required />
-        <button type="submit">Login</button>
-    </form>
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form action="{{ url_for('login.login') }}" method="post">
+            <label for="username">Username:</label>
+            <input type="text" name="username" required />
+            <label for="password">Password:</label>
+            <input type="password" name="password" required />
+            <button class="magnetic" type="submit">Login</button>
+        </form>
+    </main>
+    <script src="../static/js/login.js" defer></script>
 </body>
 
 </html>
