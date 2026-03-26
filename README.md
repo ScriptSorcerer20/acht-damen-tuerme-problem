@@ -22,11 +22,6 @@ project-root/
 │   │   ├── solver_routes.py
 │   │   └── job_routes.py
 │   │
-│   ├── services/            # Businesslogik (Solver etc.)
-│   │   ├── __init__.py
-│   │   ├── solver_service.py
-│   │   └── auth_service.py
-│   │
 │   ├── templates/           # HTML (Jinja Templates)
 │   │   ├── base.html
 │   │   ├── login.html
