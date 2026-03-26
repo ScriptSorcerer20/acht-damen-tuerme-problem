@@ -45,12 +45,27 @@ body {
 }
 
 /* ♟️ Board */
-.board {
+.board-grid {
     display: grid;
-    grid-template-columns: repeat(8, 60px);
+    grid-template-columns: 30px repeat(8, 60px);
+    grid-template-rows: 30px repeat(8, 60px);
     margin: 20px auto;
-    width: 480px;
+    width: max-content;
+    border: 6px solid #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
 }
+
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background: #aec8eb;
+    color: #1e293b;
+}
+
+
 
 .cell {
     width: 60px;
@@ -113,4 +128,16 @@ body {
 
 .btn.danger:hover {
     background: #dc2626;
+}
+
+#queenList {
+    list-style: none;
+    padding: 0;
+}
+
+#queenList li {
+    padding: 5px;
+    background: #f1f5f9;
+    margin: 4px 0;
+    border-radius: 6px;
 }

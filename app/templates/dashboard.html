@@ -90,32 +90,59 @@
 
         function drawBoard() {
             boardDiv.innerHTML = "";
-            const conflicts = getConflicts();
+            boardDiv.className = "board-grid";
 
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
+            const conflicts = getConflicts();
+            const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+            for (let row = -1; row < 8; row++) {
+                for (let col = -1; col < 8; col++) {
 
                     const cell = document.createElement("div");
-                    cell.classList.add("cell");
 
-                    if ((row + col) % 2 === 0) {
-                        cell.classList.add("white");
-                    } else {
-                        cell.classList.add("black");
+                    // 🔹 Ecke oben links
+                    if (row === -1 && col === -1) {
+                        cell.classList.add("label");
                     }
 
-                    if (board[row] === col) {
-                        cell.textContent = "♛";
+                    // 🔹 Buchstaben (oben)
+                    else if (row === -1) {
+                        cell.textContent = letters[col];
+                        cell.classList.add("label");
+                    }
 
-                        if (conflicts.some(([r, c]) => r === row && c === col)) {
-                            cell.classList.add("invalid");
+                    // 🔹 Zahlen (links)
+                    else if (col === -1) {
+                        cell.textContent = 8 - row;
+                        cell.classList.add("label");
+                    }
+
+                    // 🔹 echtes Spielfeld
+                    else {
+                        cell.classList.add("cell");
+
+                        if ((row + col) % 2 === 0) {
+                            cell.classList.add("white");
+                        } else {
+                            cell.classList.add("black");
                         }
+
+                        if (board[row] === col) {
+                            cell.textContent = "♛";
+
+                            if (conflicts.some(([r, c]) => r === row && c === col)) {
+                                cell.classList.add("invalid");
+                            }
+                        }
+
+                        cell.onclick = () => placeQueen(row, col);
                     }
 
-                    cell.onclick = () => placeQueen(row, col);
                     boardDiv.appendChild(cell);
                 }
             }
+
+            updateQueenList();
         }
 
         function placeQueen(row, col) {
@@ -125,6 +152,7 @@
                 board[row] = col;
             }
             drawBoard();
+            updateQueenList();
         }
 
         async function solve() {
@@ -138,9 +166,41 @@
         function resetBoard() {
             board = Array(8).fill(-1);
             drawBoard();
+            updateQueenList();
         }
 
         drawBoard();
+    </script>
+
+    <div class="card">
+        <h3>📋 Damen Positionen</h3>
+        <ul id="queenList"></ul>
+    </div>
+
+    <script>
+        function updateQueenList() {
+            const list = document.getElementById("queenList");
+            list.innerHTML = "";
+
+            const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+            let count = 1;
+
+            for (let row = 0; row < 8; row++) {
+                if (board[row] !== -1) {
+                    let col = board[row];
+
+                    let pos = letters[col] + (8 - row);
+
+                    const li = document.createElement("li");
+                    li.textContent = `Dame ${count}: ${pos}`;
+
+                    list.appendChild(li);
+                    count++;
+                }
+            }
+        }
+
     </script>
 
 </body>
