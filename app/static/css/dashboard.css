@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+}
+
+/* 🔝 Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    color: white;
+    padding: 15px 30px;
+}
+
+.navbar a {
+    color: white;
+    margin-left: 15px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+/* 📦 Layout */
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 10px;
+}
+
+/* 📇 Cards */
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.game-card {
+    text-align: center;
+}
+
+/* ♟️ Board */
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    margin: 20px auto;
+    width: 480px;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.cell:hover {
+    transform: scale(1.05);
+}
+
+.white {
+    background: #e2e8f0;
+}
+
+.black {
+    background: #475569;
+    color: white;
+}
+
+.invalid {
+    background: #ef4444 !important;
+}
+
+/* 🎛️ Buttons */
+.controls {
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 8px;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #2563eb;
+}
+
+.btn.secondary {
+    background: #64748b;
+}
+
+.btn.secondary:hover {
+    background: #475569;
+}
+
+.btn.danger {
+    background: #ef4444;
+}
+
+.btn.danger:hover {
+    background: #dc2626;
+}
