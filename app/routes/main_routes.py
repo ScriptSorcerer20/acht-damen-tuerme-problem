@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 from flask_login  import login_required, current_user
+import random
 
 main_bp = Blueprint("main", __name__)
 
@@ -62,3 +63,13 @@ def solve():
 
     backtrack(0)
     return jsonify(solutions)
+
+@main_bp.route("/solve_rooks")
+def solve_rooks_route():
+    return jsonify(solve_rooks(8))
+
+def solve_rooks(n=8):
+    solution = list(range(n))
+    random.shuffle(solution)
+    return solution
+

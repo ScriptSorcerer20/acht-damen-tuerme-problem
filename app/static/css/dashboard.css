@@ -141,3 +141,15 @@ body {
     margin: 4px 0;
     border-radius: 6px;
 }
+
+.mode-switch {
+    margin-bottom: 15px;
+}
+
+.mode-switch .btn {
+    margin: 5px;
+}
+
+.btn.active {
+    background: #22c55e;
+}
