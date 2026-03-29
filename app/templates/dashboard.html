@@ -1,50 +1,207 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+
+    <link rel="stylesheet" href="../static/css/dashboard.css">
 </head>
 
 <body>
 
-    <nav>
-        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('login.logout') }}">Logout</a>
+    <!-- 🔝 Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">♛ 8-Queens App</div>
+        <div class="nav-right">
+            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('login.logout') }}">Logout</a>
+        </div>
     </nav>
 
+    <!-- 📦 Container -->
     <div class="container">
 
-        ```
-        <h1>Dashboard</h1>
+        <!-- 👤 User Card -->
+        <div class="card">
+            <h2>👋 Willkommen, {{ current_user.username }}</h2>
 
-        <p>Welcome back <strong>{{ current_user.username }}</strong> 👋</p>
+            <div class="user-info">
+                <p><strong>ID:</strong> {{ current_user.id }}</p>
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
 
-        <div class="user-info">
-            <h3>Your Account</h3>
+                {% if current_user.email %}
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                {% else %}
+                <p><strong>Email:</strong> Not set</p>
+                {% endif %}
 
-            <p><strong>User ID:</strong> {{ current_user.id }}</p>
-            <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Erstellt:</strong> {{ current_user.created_at }}</p>
+            </div>
 
-            {% if current_user.email %}
-            <p><strong>Email:</strong> {{ current_user.email }}</p>
-            {% else %}
-            <p><strong>Email:</strong> Not set</p>
-            {% endif %}
-
-            <p><strong>Account created:</strong> {{ current_user.created_at }}</p>
-        </div>
-
-        <div class="logout">
             <form action="{{ url_for('login.logout') }}" method="post">
-                <button type="submit">Logout</button>
+                <button class="btn danger" type="submit">Logout</button>
             </form>
         </div>
-        ```
+
+        <!-- ♟️ Game Card -->
+        <div class="card game-card">
+            <h2>♟️ 8-Damen Spiel</h2>
+
+            <div class="board" id="board"></div>
+
+            <div class="controls">
+                <button class="btn" onclick="solve()">Solve</button>
+                <button class="btn secondary" onclick="resetBoard()">Reset</button>
+            </div>
+        </div>
 
     </div>
+
+    <script>
+        let board = Array(8).fill(-1);
+        const boardDiv = document.getElementById("board");
+
+        function getConflicts() {
+            let conflicts = [];
+
+            for (let r1 = 0; r1 < 8; r1++) {
+                if (board[r1] === -1) continue;
+
+                for (let r2 = r1 + 1; r2 < 8; r2++) {
+                    if (board[r2] === -1) continue;
+
+                    let c1 = board[r1];
+                    let c2 = board[r2];
+
+                    if (
+                        c1 === c2 ||
+                        Math.abs(c1 - c2) === Math.abs(r1 - r2)
+                    ) {
+                        conflicts.push([r1, c1]);
+                        conflicts.push([r2, c2]);
+                    }
+                }
+            }
+
+            return conflicts;
+        }
+
+        function drawBoard() {
+            boardDiv.innerHTML = "";
+            boardDiv.className = "board-grid";
+
+            const conflicts = getConflicts();
+            const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+            for (let row = -1; row < 8; row++) {
+                for (let col = -1; col < 8; col++) {
+
+                    const cell = document.createElement("div");
+
+                    // 🔹 Ecke oben links
+                    if (row === -1 && col === -1) {
+                        cell.classList.add("label");
+                    }
+
+                    // 🔹 Buchstaben (oben)
+                    else if (row === -1) {
+                        cell.textContent = letters[col];
+                        cell.classList.add("label");
+                    }
+
+                    // 🔹 Zahlen (links)
+                    else if (col === -1) {
+                        cell.textContent = 8 - row;
+                        cell.classList.add("label");
+                    }
+
+                    // 🔹 echtes Spielfeld
+                    else {
+                        cell.classList.add("cell");
+
+                        if ((row + col) % 2 === 0) {
+                            cell.classList.add("white");
+                        } else {
+                            cell.classList.add("black");
+                        }
+
+                        if (board[row] === col) {
+                            cell.textContent = "♛";
+
+                            if (conflicts.some(([r, c]) => r === row && c === col)) {
+                                cell.classList.add("invalid");
+                            }
+                        }
+
+                        cell.onclick = () => placeQueen(row, col);
+                    }
+
+                    boardDiv.appendChild(cell);
+                }
+            }
+
+            updateQueenList();
+        }
+
+        function placeQueen(row, col) {
+            if (board[row] === col) {
+                board[row] = -1;
+            } else {
+                board[row] = col;
+            }
+            drawBoard();
+            updateQueenList();
+        }
+
+        async function solve() {
+            const res = await fetch("/solve");
+            const solutions = await res.json();
+
+            board = solutions[0];
+            drawBoard();
+        }
+
+        function resetBoard() {
+            board = Array(8).fill(-1);
+            drawBoard();
+            updateQueenList();
+        }
+
+        drawBoard();
+    </script>
+
+    <div class="card">
+        <h3>📋 Damen Positionen</h3>
+        <ul id="queenList"></ul>
+    </div>
+
+    <script>
+        function updateQueenList() {
+            const list = document.getElementById("queenList");
+            list.innerHTML = "";
+
+            const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+
+            let count = 1;
+
+            for (let row = 0; row < 8; row++) {
+                if (board[row] !== -1) {
+                    let col = board[row];
+
+                    let pos = letters[col] + (8 - row);
+
+                    const li = document.createElement("li");
+                    li.textContent = `Dame ${count}: ${pos}`;
+
+                    list.appendChild(li);
+                    count++;
+                }
+            }
+        }
+
+    </script>
 
 </body>
 
