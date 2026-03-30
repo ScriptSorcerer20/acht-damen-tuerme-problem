@@ -48,12 +48,15 @@
         <div class="mode-switch">
             <button class="btn active" onclick="setMode('queens')" id="btnQueens">♛ Damen</button>
             <button class="btn secondary" onclick="setMode('rooks')" id="btnRooks">♜ Türme</button>
+            <button class="btn secondary" onclick="toggleSidebar()" id="btnSidebar">Board Settings</button>
         </div>
 
 
         <!-- ♟️ Game Card -->
         <div class="card game-card">
-            <h2>♟️ 8-Damen Spiel</h2>
+            <h2>♟️ Damen- und Tuerme-Spiel</h2>
+            <p class="board-size-info">Aktuelle Brettgroesse: <span id="boardSizeValue">8</span> x <span
+                    id="boardSizeValueMirror">8</span></p>
 
             <p id="statusMessage"></p>
             <div class="board" id="board"></div>
@@ -64,15 +67,48 @@
                 <button class="btn secondary" onclick="resetBoard()">Reset</button>
 
                 <button class="btn" onclick="saveGame()">💾 Save</button>
-                <button class="btn" onclick="loadGame()">📂 Load</button>
+                <button class="btn" onclick="openSavePointsPanel()">📂 Load</button>
             </div>
         </div>
 
         <div class="card">
-            <h3>📋 Damen Positionen</h3>
+            <h3>📋 Figuren Positionen</h3>
             <ul id="queenList"></ul>
         </div>
     </div>
+
+    <aside class="sidebar" id="settingsSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3>Brettgroesse</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSidebar(false)" type="button">Schliessen</button>
+        </div>
+
+        <p>Wähle eine Grösse zwischen 4 und 13.</p>
+
+        <label class="sidebar-label" for="boardSizeInput">Groesse</label>
+        <input id="boardSizeInput" type="range" min="4" max="13" value="8" oninput="previewBoardSize(this.value)">
+        <div class="sidebar-size-row">
+            <strong><span id="sidebarBoardSizeValue">8</span> x <span id="sidebarBoardSizeValueMirror">8</span></strong>
+        </div>
+
+        <button class="btn" onclick="applyBoardSize()" type="button">Apply Size</button>
+        <p class="sidebar-hint">Das Brett wird beim Ändern zur Sicherheit zurückgesetzt.</p>
+    </aside>
+
+    <aside class="sidebar save-points-sidebar" id="savePointsSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3>Save Points</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSavePointsPanel(false)" type="button">Schliessen</button>
+        </div>
+
+        <p>Waehle einen Speicherstand aus der Liste.</p>
+        <div class="save-points-list" id="savePointsList">
+            <p class="sidebar-hint">Noch keine Speicherstaende gefunden.</p>
+        </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+    <div class="sidebar-backdrop" id="savePointsBackdrop" onclick="toggleSavePointsPanel(false)"></div>
 
     <script src="../static/js/dashboard.js"></script>
 

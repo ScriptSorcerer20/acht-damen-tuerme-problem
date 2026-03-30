@@ -1,20 +1,88 @@
+import json
+import random
+
 from flask import Blueprint, jsonify, render_template, request
-from flask_login  import login_required, current_user
-import random, json
-from ..models.gamestate import GameState
-from ..models.user import User
+from flask_login import current_user, login_required
+
 from .. import db
+from ..models.gamestate import GameState
+
+DEFAULT_BOARD_SIZE = 8
+MIN_BOARD_SIZE = 4
+MAX_BOARD_SIZE = 13
 
 main_bp = Blueprint("main", __name__)
+
+
+def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
+    try:
+        board_size = int(raw_size)
+    except (TypeError, ValueError):
+        board_size = default
+
+    return max(MIN_BOARD_SIZE, min(MAX_BOARD_SIZE, board_size))
+
+
+def solve_queens(board_size):
+    queen_positions = [-1] * board_size
+    queen_solutions = []
+
+    def is_queen_position_safe(row, col):
+        for previous_row in range(row):
+            previous_col = queen_positions[previous_row]
+
+            if previous_col == col:
+                return False
+
+            if abs(previous_col - col) == abs(previous_row - row):
+                return False
+
+        return True
+
+    def place_queen(row):
+        if row == board_size:
+            queen_solutions.append(queen_positions[:])
+            return
+
+        for col in range(board_size):
+            if is_queen_position_safe(row, col):
+                queen_positions[row] = col
+                place_queen(row + 1)
+                queen_positions[row] = -1
+
+    place_queen(0)
+    return queen_solutions
+
+
+def solve_rooks(board_size):
+    rook_positions = list(range(board_size))
+    random.shuffle(rook_positions)
+    return rook_positions
+
+
+def serialize_game_state(game_state):
+    board = json.loads(game_state.board)
+
+    return {
+        "id": game_state.id,
+        "board": board,
+        "mode": game_state.mode,
+        "board_size": len(board),
+        "pieces_placed": sum(1 for column in board if column != -1),
+        "created_at": game_state.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    }
+
 
 @main_bp.route("/")
 def home():
     return render_template("index.html")
 
-@main_bp.route('/dashboard')
+
+@main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user)
+    return render_template("dashboard.html", user=current_user)
+
 
 @main_bp.route("/check", methods=["POST"])
 def check():
@@ -22,71 +90,48 @@ def check():
     board = data["board"]
     row = data["row"]
     col = data["col"]
+    piece_mode = data.get("mode", "queens")
 
-    for r in range(len(board)):
-        c = board[r]
-
-        if c == -1 or r == row:
+    for current_row, current_col in enumerate(board):
+        if current_col == -1 or current_row == row:
             continue
 
-        # gleiche Spalte
-        if c == col:
+        same_column = current_col == col
+        same_diagonal = abs(current_col - col) == abs(current_row - row)
+
+        if same_column:
             return jsonify({"valid": False})
 
-        # gleiche Diagonale
-        if abs(c - col) == abs(r - row):
+        if piece_mode == "queens" and same_diagonal:
             return jsonify({"valid": False})
 
     return jsonify({"valid": True})
 
 
 @main_bp.route("/solve")
-def solve():
-    n = 8
-    solutions = []
-    board = [-1] * n
+def solve_queens_route():
+    board_size = parse_board_size(request.args.get("size"))
+    return jsonify(solve_queens(board_size))
 
-    def is_safe(row, col):
-        for r in range(row):
-            c = board[r]
-            if c == col or abs(c - col) == abs(r - row):
-                return False
-        return True
-
-    def backtrack(row):
-        if row == n:
-            solutions.append(board[:])
-            return
-
-        for col in range(n):
-            if is_safe(row, col):
-                board[row] = col
-                backtrack(row + 1)
-                board[row] = -1
-
-    backtrack(0)
-    return jsonify(solutions)
 
 @main_bp.route("/solve_rooks")
 def solve_rooks_route():
-    return jsonify(solve_rooks(8))
+    board_size = parse_board_size(request.args.get("size"))
+    return jsonify(solve_rooks(board_size))
 
-def solve_rooks(n=8):
-    solution = list(range(n))
-    random.shuffle(solution)
-    return solution
 
 @main_bp.route("/save", methods=["POST"])
+@login_required
 def save_game():
     data = request.json
 
     board = data["board"]
-    mode = data["mode"]
+    piece_mode = data["mode"]
 
     game = GameState(
         user_id=current_user.id,
         board=json.dumps(board),
-        mode=mode
+        mode=piece_mode
     )
 
     db.session.add(game)
@@ -94,15 +139,43 @@ def save_game():
 
     return jsonify({"status": "saved"})
 
-@main_bp.route("/load")
-def load_game():
-    game = GameState.query.filter_by(user_id=current_user.id)\
-        .order_by(GameState.id.desc()).first()
 
-    if not game:
-        return jsonify({"board": [-1]*8, "mode": "queens"})
+@main_bp.route("/save_points")
+@login_required
+def list_save_points():
+    saved_games = (
+        GameState.query.filter_by(user_id=current_user.id)
+        .order_by(GameState.id.desc())
+        .all()
+    )
+
+    return jsonify([serialize_game_state(game_state) for game_state in saved_games])
+
+
+@main_bp.route("/load")
+@login_required
+def load_game():
+    latest_game = (
+        GameState.query.filter_by(user_id=current_user.id)
+        .order_by(GameState.id.desc())
+        .first()
+    )
+
+    if not latest_game:
+        return jsonify({"board": [-1] * DEFAULT_BOARD_SIZE, "mode": "queens"})
 
     return jsonify({
-        "board": json.loads(game.board),
-        "mode": game.mode
+        "board": json.loads(latest_game.board),
+        "mode": latest_game.mode
     })
+
+
+@main_bp.route("/load/<int:game_id>")
+@login_required
+def load_specific_game(game_id):
+    selected_game = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
+
+    if not selected_game:
+        return jsonify({"error": "Save point not found"}), 404
+
+    return jsonify(serialize_game_state(selected_game))
