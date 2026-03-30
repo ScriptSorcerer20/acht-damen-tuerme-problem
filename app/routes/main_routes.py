@@ -1,6 +1,9 @@
 from flask import Blueprint, jsonify, render_template, request
 from flask_login  import login_required, current_user
-import random
+import random, json
+from ..models.gamestate import GameState
+from ..models.user import User
+from .. import db
 
 main_bp = Blueprint("main", __name__)
 
@@ -73,3 +76,33 @@ def solve_rooks(n=8):
     random.shuffle(solution)
     return solution
 
+@main_bp.route("/save", methods=["POST"])
+def save_game():
+    data = request.json
+
+    board = data["board"]
+    mode = data["mode"]
+
+    game = GameState(
+        user_id=current_user.id,
+        board=json.dumps(board),
+        mode=mode
+    )
+
+    db.session.add(game)
+    db.session.commit()
+
+    return jsonify({"status": "saved"})
+
+@main_bp.route("/load")
+def load_game():
+    game = GameState.query.filter_by(user_id=current_user.id)\
+        .order_by(GameState.id.desc()).first()
+
+    if not game:
+        return jsonify({"board": [-1]*8, "mode": "queens"})
+
+    return jsonify({
+        "board": json.loads(game.board),
+        "mode": game.mode
+    })

@@ -197,3 +197,38 @@ function updateQueenList() {
         }
     }
 }
+
+async function saveGame() {
+    await fetch("/save", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            board: board,
+            mode: mode
+        })
+    });
+
+    alert("💾 Spiel gespeichert!");
+}
+
+async function loadGame() {
+    const res = await fetch("/load");
+    const data = await res.json();
+
+    board = data.board;
+    mode = data.mode;
+
+    // Buttons richtig setzen
+    document.getElementById("btnQueens").classList.remove("active");
+    document.getElementById("btnRooks").classList.remove("active");
+
+    if (mode === "queens") {
+        document.getElementById("btnQueens").classList.add("active");
+    } else {
+        document.getElementById("btnRooks").classList.add("active");
+    }
+
+    drawBoard();
+}
