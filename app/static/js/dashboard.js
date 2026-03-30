@@ -15,6 +15,8 @@ const btnQueens = document.getElementById("btnQueens");
 const btnRooks = document.getElementById("btnRooks");
 const settingsSidebar = document.getElementById("settingsSidebar");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+const saveSidebar = document.getElementById("saveSidebar");
+const saveBackdrop = document.getElementById("saveBackdrop");
 const savePointsSidebar = document.getElementById("savePointsSidebar");
 const savePointsBackdrop = document.getElementById("savePointsBackdrop");
 const boardSizeInput = document.getElementById("boardSizeInput");
@@ -23,6 +25,13 @@ const boardSizeValueMirror = document.getElementById("boardSizeValueMirror");
 const sidebarBoardSizeValue = document.getElementById("sidebarBoardSizeValue");
 const sidebarBoardSizeValueMirror = document.getElementById("sidebarBoardSizeValueMirror");
 const savePointsList = document.getElementById("savePointsList");
+const saveNameInput = document.getElementById("saveNameInput");
+const saveNoteInput = document.getElementById("saveNoteInput");
+const saveFavoriteInput = document.getElementById("saveFavoriteInput");
+const savePointModeFilter = document.getElementById("savePointModeFilter");
+const savePointSizeFilter = document.getElementById("savePointSizeFilter");
+const savePointSortFilter = document.getElementById("savePointSortFilter");
+const savePointFavoritesOnly = document.getElementById("savePointFavoritesOnly");
 
 function createEmptyBoard(size) {
     return Array(size).fill(EMPTY_CELL);
@@ -65,6 +74,12 @@ function setMode(newMode) {
     mode = newMode;
     resetBoard();
     updateModeButtons();
+}
+
+function closeAllPanels() {
+    toggleSidebar(false);
+    toggleSavePanel(false);
+    toggleSavePointsPanel(false);
 }
 
 function getConflicts() {
@@ -178,6 +193,7 @@ function toggleSidebar(forceOpen) {
     const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : !settingsSidebar.classList.contains("open");
 
     if (shouldOpen) {
+        toggleSavePanel(false);
         toggleSavePointsPanel(false);
     }
 
@@ -186,8 +202,26 @@ function toggleSidebar(forceOpen) {
     settingsSidebar.setAttribute("aria-hidden", String(!shouldOpen));
 }
 
+function toggleSavePanel(forceOpen) {
+    const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : !saveSidebar.classList.contains("open");
+
+    if (shouldOpen) {
+        toggleSidebar(false);
+        toggleSavePointsPanel(false);
+    }
+
+    saveSidebar.classList.toggle("open", shouldOpen);
+    saveBackdrop.classList.toggle("visible", shouldOpen);
+    saveSidebar.setAttribute("aria-hidden", String(!shouldOpen));
+}
+
 function toggleSavePointsPanel(forceOpen) {
     const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : !savePointsSidebar.classList.contains("open");
+
+    if (shouldOpen) {
+        toggleSidebar(false);
+        toggleSavePanel(false);
+    }
 
     savePointsSidebar.classList.toggle("open", shouldOpen);
     savePointsBackdrop.classList.toggle("visible", shouldOpen);
@@ -196,6 +230,21 @@ function toggleSavePointsPanel(forceOpen) {
 
 function getPieceLabel(selectedMode) {
     return selectedMode === "queens" ? "Dame" : "Turm";
+}
+
+function getPlacedPieceCount() {
+    return board.filter((col) => col !== EMPTY_CELL).length;
+}
+
+function resetSaveForm() {
+    saveNameInput.value = `${getPieceLabel(mode)} ${boardSize}x${boardSize} - ${getPlacedPieceCount()} gesetzt`;
+    saveNoteInput.value = "";
+    saveFavoriteInput.checked = false;
+}
+
+function openSavePanel() {
+    resetSaveForm();
+    toggleSavePanel(true);
 }
 
 function getBoardPreview(savedBoard, limit = 4) {
@@ -216,11 +265,40 @@ function getBoardPreview(savedBoard, limit = 4) {
     return preview.length > 0 ? preview.join(", ") : "Noch keine Figuren gesetzt";
 }
 
+function getSavePointFilters() {
+    const params = new URLSearchParams();
+
+    if (savePointModeFilter.value !== "all") {
+        params.set("mode", savePointModeFilter.value);
+    }
+
+    if (savePointSizeFilter.value !== "all") {
+        params.set("board_size", savePointSizeFilter.value);
+    }
+
+    params.set("sort", savePointSortFilter.value);
+
+    if (savePointFavoritesOnly.checked) {
+        params.set("favorites_only", "true");
+    }
+
+    return params.toString();
+}
+
+function createSavePointActionButton(label, className, onClick) {
+    const button = document.createElement("button");
+    button.className = className;
+    button.type = "button";
+    button.textContent = label;
+    button.onclick = onClick;
+    return button;
+}
+
 function renderSavePoints(savePoints) {
     savePointsList.innerHTML = "";
 
     if (savePoints.length === 0) {
-        savePointsList.innerHTML = '<p class="sidebar-hint">Noch keine Speicherstaende gefunden.</p>';
+        savePointsList.innerHTML = '<p class="sidebar-hint">Keine Speicherstaende fuer diese Filter gefunden.</p>';
         return;
     }
 
@@ -228,42 +306,54 @@ function renderSavePoints(savePoints) {
         const item = document.createElement("article");
         const title = document.createElement("h4");
         const createdAt = document.createElement("p");
+        const updatedAt = document.createElement("p");
         const boardMeta = document.createElement("p");
         const preview = document.createElement("p");
-        const loadButton = document.createElement("button");
+        const note = document.createElement("p");
+        const actions = document.createElement("div");
 
         item.className = "save-point-card";
-        title.textContent = `Save Point #${savePoint.id}`;
+        title.textContent = `${savePoint.is_favorite ? "★ " : ""}${savePoint.save_name}`;
         createdAt.className = "save-point-meta";
-        createdAt.textContent = `Gespeichert: ${savePoint.created_at}`;
+        createdAt.textContent = `Erstellt: ${savePoint.created_at}`;
+        updatedAt.className = "save-point-meta";
+        updatedAt.textContent = `Aktualisiert: ${savePoint.updated_at}`;
         boardMeta.className = "save-point-meta";
         boardMeta.textContent = `${getPieceLabel(savePoint.mode)} | ${savePoint.board_size} x ${savePoint.board_size} | ${savePoint.pieces_placed}/${savePoint.board_size} gesetzt`;
         preview.className = "save-point-preview";
         preview.textContent = `Vorschau: ${getBoardPreview(savePoint.board)}`;
+        note.className = "save-point-note";
+        note.textContent = savePoint.save_note ? `Notiz: ${savePoint.save_note}` : "Notiz: Keine Notiz";
+        actions.className = "save-point-actions";
 
-        loadButton.className = "btn";
-        loadButton.type = "button";
-        loadButton.textContent = "Diesen laden";
-        loadButton.onclick = () => loadSavePoint(savePoint.id);
+        actions.appendChild(createSavePointActionButton("Laden", "btn", () => loadSavePoint(savePoint.id)));
+        actions.appendChild(createSavePointActionButton(
+            savePoint.is_favorite ? "Favorit entfernen" : "Als Favorit",
+            "btn secondary",
+            () => toggleSavePointFavorite(savePoint.id)
+        ));
+        actions.appendChild(createSavePointActionButton("Loeschen", "btn ghost", () => deleteSavePoint(savePoint.id)));
 
         item.appendChild(title);
         item.appendChild(createdAt);
+        item.appendChild(updatedAt);
         item.appendChild(boardMeta);
         item.appendChild(preview);
-        item.appendChild(loadButton);
+        item.appendChild(note);
+        item.appendChild(actions);
         savePointsList.appendChild(item);
     }
 }
 
 async function refreshSavePoints() {
-    const response = await fetch("/save_points");
+    const queryString = getSavePointFilters();
+    const response = await fetch(`/save_points${queryString ? `?${queryString}` : ""}`);
     const savePoints = await response.json();
     renderSavePoints(savePoints);
 }
 
 async function openSavePointsPanel() {
     await refreshSavePoints();
-    toggleSidebar(false);
     toggleSavePointsPanel(true);
 }
 
@@ -316,7 +406,7 @@ function updateQueenList() {
 }
 
 async function saveGame() {
-    await fetch("/save", {
+    const response = await fetch("/save", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -324,12 +414,23 @@ async function saveGame() {
         body: JSON.stringify({
             board,
             mode,
-            boardSize
+            boardSize,
+            saveName: saveNameInput.value,
+            saveNote: saveNoteInput.value,
+            isFavorite: saveFavoriteInput.checked
         })
     });
 
+    if (!response.ok) {
+        setStatus("❌ Der Speicherstand konnte nicht gespeichert werden.", "red");
+        return;
+    }
+
+    const data = await response.json();
+
+    toggleSavePanel(false);
     await refreshSavePoints();
-    alert("💾 Spiel gespeichert!");
+    setStatus(`Speicherpunkt "${data.save_point.save_name}" gespeichert.`, "green");
 }
 
 async function loadGame() {
@@ -349,8 +450,42 @@ async function loadSavePoint(savePointId) {
     const data = await response.json();
 
     applyLoadedGame(data);
-    setStatus(`Speicherstand #${savePointId} geladen.`, "green");
+    setStatus(`Speicherpunkt "${data.save_name}" geladen.`, "green");
     toggleSavePointsPanel(false);
+}
+
+async function toggleSavePointFavorite(savePointId) {
+    const response = await fetch(`/save_points/${savePointId}/favorite`, {
+        method: "POST"
+    });
+
+    if (!response.ok) {
+        setStatus("❌ Favorit konnte nicht aktualisiert werden.", "red");
+        return;
+    }
+
+    await refreshSavePoints();
+    setStatus("Favoritenstatus aktualisiert.", "#2563eb");
+}
+
+async function deleteSavePoint(savePointId) {
+    const confirmed = window.confirm("Diesen Speicherpunkt wirklich loeschen?");
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/save_points/${savePointId}`, {
+        method: "DELETE"
+    });
+
+    if (!response.ok) {
+        setStatus("❌ Speicherpunkt konnte nicht geloescht werden.", "red");
+        return;
+    }
+
+    await refreshSavePoints();
+    setStatus("Speicherpunkt geloescht.", "#2563eb");
 }
 
 pendingBoardSize = boardSize;

@@ -66,7 +66,7 @@
                 <button class="btn" onclick="checkSolution()">Check</button>
                 <button class="btn secondary" onclick="resetBoard()">Reset</button>
 
-                <button class="btn" onclick="saveGame()">💾 Save</button>
+                <button class="btn" onclick="openSavePanel()">💾 Save</button>
                 <button class="btn" onclick="openSavePointsPanel()">📂 Load</button>
             </div>
         </div>
@@ -95,6 +95,29 @@
         <p class="sidebar-hint">Das Brett wird beim Ändern zur Sicherheit zurückgesetzt.</p>
     </aside>
 
+    <aside class="sidebar save-sidebar" id="saveSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3>Speicherpunkt</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSavePanel(false)" type="button">Schliessen</button>
+        </div>
+
+        <p>Gib dem Spielstand einen klaren Namen und optional eine kurze Notiz.</p>
+
+        <label class="sidebar-label" for="saveNameInput">Name</label>
+        <input class="sidebar-input" id="saveNameInput" type="text" maxlength="80" placeholder="z. B. Fast geloeste Dame 8x8">
+
+        <label class="sidebar-label" for="saveNoteInput">Notiz</label>
+        <textarea class="sidebar-input sidebar-textarea" id="saveNoteInput" rows="4" maxlength="240"
+            placeholder="z. B. Gute Startposition fuer Tuermetest"></textarea>
+
+        <label class="sidebar-checkbox">
+            <input id="saveFavoriteInput" type="checkbox">
+            Als Favorit markieren
+        </label>
+
+        <button class="btn" onclick="saveGame()" type="button">Jetzt speichern</button>
+    </aside>
+
     <aside class="sidebar save-points-sidebar" id="savePointsSidebar" aria-hidden="true">
         <div class="sidebar-header">
             <h3>Save Points</h3>
@@ -102,12 +125,44 @@
         </div>
 
         <p>Waehle einen Speicherstand aus der Liste.</p>
+
+        <div class="save-point-filters">
+            <label class="sidebar-label" for="savePointModeFilter">Modus</label>
+            <select class="sidebar-input" id="savePointModeFilter" onchange="refreshSavePoints()">
+                <option value="all">Alle</option>
+                <option value="queens">Damen</option>
+                <option value="rooks">Tuerme</option>
+            </select>
+
+            <label class="sidebar-label" for="savePointSizeFilter">Brettgroesse</label>
+            <select class="sidebar-input" id="savePointSizeFilter" onchange="refreshSavePoints()">
+                <option value="all">Alle</option>
+                {% for board_size in range(4, 14) %}
+                <option value="{{ board_size }}">{{ board_size }} x {{ board_size }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="sidebar-label" for="savePointSortFilter">Sortierung</label>
+            <select class="sidebar-input" id="savePointSortFilter" onchange="refreshSavePoints()">
+                <option value="newest">Neueste zuerst</option>
+                <option value="oldest">Aelteste zuerst</option>
+                <option value="updated">Zuletzt bearbeitet</option>
+                <option value="favorites">Favoriten zuerst</option>
+            </select>
+
+            <label class="sidebar-checkbox">
+                <input id="savePointFavoritesOnly" type="checkbox" onchange="refreshSavePoints()">
+                Nur Favoriten anzeigen
+            </label>
+        </div>
+
         <div class="save-points-list" id="savePointsList">
             <p class="sidebar-hint">Noch keine Speicherstaende gefunden.</p>
         </div>
     </aside>
 
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+    <div class="sidebar-backdrop" id="saveBackdrop" onclick="toggleSavePanel(false)"></div>
     <div class="sidebar-backdrop" id="savePointsBackdrop" onclick="toggleSavePointsPanel(false)"></div>
 
     <script src="../static/js/dashboard.js"></script>

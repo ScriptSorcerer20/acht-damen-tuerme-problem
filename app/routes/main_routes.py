@@ -23,6 +23,10 @@ def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
     return max(MIN_BOARD_SIZE, min(MAX_BOARD_SIZE, board_size))
 
 
+def parse_favorite_flag(raw_value):
+    return str(raw_value).lower() in {"1", "true", "yes", "on"}
+
+
 def solve_queens(board_size):
     queen_positions = [-1] * board_size
     queen_solutions = []
@@ -67,10 +71,41 @@ def serialize_game_state(game_state):
         "id": game_state.id,
         "board": board,
         "mode": game_state.mode,
-        "board_size": len(board),
+        "board_size": game_state.board_size,
+        "save_name": game_state.save_name,
+        "save_note": game_state.save_note,
+        "is_favorite": game_state.is_favorite,
         "pieces_placed": sum(1 for column in board if column != -1),
-        "created_at": game_state.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "created_at": game_state.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "updated_at": game_state.updated_at.strftime("%Y-%m-%d %H:%M:%S")
     }
+
+
+def build_save_point_query():
+    query = GameState.query.filter_by(user_id=current_user.id)
+
+    selected_mode = request.args.get("mode")
+    board_size = request.args.get("board_size")
+    favorites_only = request.args.get("favorites_only")
+    sort_by = request.args.get("sort", "newest")
+
+    if selected_mode in {"queens", "rooks"}:
+        query = query.filter_by(mode=selected_mode)
+
+    if board_size not in {None, "", "all"}:
+        query = query.filter_by(board_size=parse_board_size(board_size))
+
+    if parse_favorite_flag(favorites_only):
+        query = query.filter_by(is_favorite=True)
+
+    sort_options = {
+        "newest": GameState.created_at.desc(),
+        "oldest": GameState.created_at.asc(),
+        "updated": GameState.updated_at.desc(),
+        "favorites": GameState.is_favorite.desc()
+    }
+
+    return query.order_by(sort_options.get(sort_by, GameState.created_at.desc()), GameState.id.desc())
 
 
 @main_bp.route("/")
@@ -127,29 +162,63 @@ def save_game():
 
     board = data["board"]
     piece_mode = data["mode"]
+    board_size = parse_board_size(data.get("boardSize"), default=len(board))
+    save_name = (data.get("saveName") or "").strip() or f"{piece_mode.title()} Save"
+    save_note = (data.get("saveNote") or "").strip()
+    is_favorite = bool(data.get("isFavorite"))
 
-    game = GameState(
+    game_state = GameState(
         user_id=current_user.id,
         board=json.dumps(board),
-        mode=piece_mode
+        mode=piece_mode,
+        board_size=board_size,
+        save_name=save_name,
+        save_note=save_note,
+        is_favorite=is_favorite
     )
 
-    db.session.add(game)
+    db.session.add(game_state)
     db.session.commit()
 
-    return jsonify({"status": "saved"})
+    return jsonify({
+        "status": "saved",
+        "save_point": serialize_game_state(game_state)
+    })
 
 
 @main_bp.route("/save_points")
 @login_required
 def list_save_points():
-    saved_games = (
-        GameState.query.filter_by(user_id=current_user.id)
-        .order_by(GameState.id.desc())
-        .all()
-    )
+    save_points = build_save_point_query().all()
+    return jsonify([serialize_game_state(game_state) for game_state in save_points])
 
-    return jsonify([serialize_game_state(game_state) for game_state in saved_games])
+
+@main_bp.route("/save_points/<int:game_id>/favorite", methods=["POST"])
+@login_required
+def toggle_save_point_favorite(game_id):
+    game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
+
+    if not game_state:
+        return jsonify({"error": "Save point not found"}), 404
+
+    game_state.is_favorite = not game_state.is_favorite
+    db.session.commit()
+
+    return jsonify(serialize_game_state(game_state))
+
+
+@main_bp.route("/save_points/<int:game_id>", methods=["DELETE"])
+@login_required
+def delete_save_point(game_id):
+    game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
+
+    if not game_state:
+        return jsonify({"error": "Save point not found"}), 404
+
+    db.session.delete(game_state)
+    db.session.commit()
+
+    return jsonify({"status": "deleted"})
 
 
 @main_bp.route("/load")
@@ -157,25 +226,22 @@ def list_save_points():
 def load_game():
     latest_game = (
         GameState.query.filter_by(user_id=current_user.id)
-        .order_by(GameState.id.desc())
+        .order_by(GameState.created_at.desc(), GameState.id.desc())
         .first()
     )
 
     if not latest_game:
         return jsonify({"board": [-1] * DEFAULT_BOARD_SIZE, "mode": "queens"})
 
-    return jsonify({
-        "board": json.loads(latest_game.board),
-        "mode": latest_game.mode
-    })
+    return jsonify(serialize_game_state(latest_game))
 
 
 @main_bp.route("/load/<int:game_id>")
 @login_required
 def load_specific_game(game_id):
-    selected_game = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
+    game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
 
-    if not selected_game:
+    if not game_state:
         return jsonify({"error": "Save point not found"}), 404
 
-    return jsonify(serialize_game_state(selected_game))
+    return jsonify(serialize_game_state(game_state))
