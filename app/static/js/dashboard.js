@@ -2,17 +2,34 @@ const DEFAULT_BOARD_SIZE = 8;
 const MIN_BOARD_SIZE = 4;
 const MAX_BOARD_SIZE = 13;
 const EMPTY_CELL = -1;
+const DEFAULT_SOLVER_MESSAGE = "Bereite einen Ablauf vor und spiele ihn Schritt fuer Schritt ab.";
 
 let mode = "queens";
 let boardSize = DEFAULT_BOARD_SIZE;
 let pendingBoardSize = DEFAULT_BOARD_SIZE;
 let board = createEmptyBoard(boardSize);
 
+let solverSteps = [];
+let solverStepIndex = -1;
+let solverTimerId = null;
+let solverSpeedMs = 320;
+let solverLoading = false;
+let solverRequestId = 0;
+let currentSolverHighlight = null;
+
 const boardDiv = document.getElementById("board");
 const statusMessage = document.getElementById("statusMessage");
 const queenList = document.getElementById("queenList");
 const btnQueens = document.getElementById("btnQueens");
 const btnRooks = document.getElementById("btnRooks");
+const btnPrepareSolve = document.getElementById("btnPrepareSolve");
+const btnInstantSolve = document.getElementById("btnInstantSolve");
+const btnNextStep = document.getElementById("btnNextStep");
+const btnPlayPause = document.getElementById("btnPlayPause");
+const solverMessage = document.getElementById("solverMessage");
+const solverStepInfo = document.getElementById("solverStepInfo");
+const solverSpeedInput = document.getElementById("solverSpeedInput");
+const solverSpeedValue = document.getElementById("solverSpeedValue");
 const settingsSidebar = document.getElementById("settingsSidebar");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 const saveSidebar = document.getElementById("saveSidebar");
@@ -63,6 +80,21 @@ function setStatus(message = "", color = "") {
     statusMessage.style.color = color;
 }
 
+function setSolverMessage(message = DEFAULT_SOLVER_MESSAGE) {
+    solverMessage.textContent = message;
+}
+
+function updateSolverSpeed(rawValue) {
+    solverSpeedMs = Number(rawValue);
+    solverSpeedInput.value = String(solverSpeedMs);
+    solverSpeedValue.textContent = `${solverSpeedMs} ms`;
+
+    if (isSolverPlaying()) {
+        stopSolverPlayback(false);
+        scheduleNextSolverPlaybackStep();
+    }
+}
+
 function updateBoardLayout() {
     const cellSize = Math.max(32, Math.min(60, Math.floor(480 / boardSize)));
 
@@ -70,10 +102,85 @@ function updateBoardLayout() {
     boardDiv.style.setProperty("--cell-size", `${cellSize}px`);
 }
 
+function isSolverPlaying() {
+    return solverTimerId !== null;
+}
+
+function hasPreparedSolverTrace() {
+    return solverSteps.length > 0;
+}
+
+function hasCompletedSolverTrace() {
+    return hasPreparedSolverTrace() && solverStepIndex >= solverSteps.length - 1;
+}
+
+function stopSolverPlayback(refreshControls = true) {
+    if (solverTimerId !== null) {
+        window.clearTimeout(solverTimerId);
+        solverTimerId = null;
+    }
+
+    if (refreshControls) {
+        updateSolverControls();
+    }
+}
+
+function updateSolverControls() {
+    const currentStep = Math.max(0, solverStepIndex + 1);
+
+    btnPrepareSolve.disabled = solverLoading;
+    btnInstantSolve.disabled = solverLoading;
+    btnNextStep.disabled = solverLoading || hasCompletedSolverTrace();
+    btnPlayPause.disabled = solverLoading;
+
+    btnPrepareSolve.textContent = solverLoading ? "Preparing..." : "Solve Step-by-Step";
+
+    if (isSolverPlaying()) {
+        btnPlayPause.textContent = "Pause";
+    } else if (hasCompletedSolverTrace()) {
+        btnPlayPause.textContent = "Replay Animation";
+    } else {
+        btnPlayPause.textContent = "Play Animation";
+    }
+
+    solverStepInfo.textContent = `Schritt ${currentStep} / ${solverSteps.length}`;
+}
+
+function discardSolverTrace(message = DEFAULT_SOLVER_MESSAGE) {
+    solverRequestId += 1;
+    solverLoading = false;
+    stopSolverPlayback(false);
+
+    solverSteps = [];
+    solverStepIndex = -1;
+    currentSolverHighlight = null;
+
+    setSolverMessage(message);
+    updateSolverControls();
+}
+
+function rewindSolverTrace() {
+    stopSolverPlayback(false);
+    solverStepIndex = -1;
+    currentSolverHighlight = null;
+    board = createEmptyBoard(boardSize);
+    setSolverMessage("Ablauf zurueckgesetzt. Starte die Animation erneut oder gehe weiter mit Next Step.");
+    drawBoard();
+    updateSolverControls();
+}
+
 function setMode(newMode) {
+    if (mode === newMode) {
+        return;
+    }
+
     mode = newMode;
-    resetBoard();
     updateModeButtons();
+    resetBoard({
+        statusMessageText: `${getPieceLabel(mode)}-Modus aktiviert.`,
+        statusColor: "#2563eb",
+        solverMessageText: `${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`
+    });
 }
 
 function closeAllPanels() {
@@ -99,8 +206,6 @@ function getConflicts() {
             const colB = board[rowB];
             const sameColumn = colA === colB;
             const sameDiagonal = Math.abs(colA - colB) === Math.abs(rowA - rowB);
-
-            // Rooks only attack vertically, queens also attack diagonally.
             const hasConflict = mode === "rooks" ? sameColumn : sameColumn || sameDiagonal;
 
             if (hasConflict) {
@@ -116,16 +221,16 @@ function checkSolution() {
     const allPlaced = board.every((col) => col !== EMPTY_CELL);
 
     if (!allPlaced) {
-        setStatus("❗ Noch nicht alle Figuren platziert.", "orange");
+        setStatus("Noch nicht alle Figuren platziert.", "#d97706");
         return;
     }
 
     if (getConflicts().length > 0) {
-        setStatus("❌ Es gibt Konflikte!", "red");
+        setStatus("Es gibt Konflikte auf dem Brett.", "red");
         return;
     }
 
-    setStatus("🎉 Perfekt geloest!", "green");
+    setStatus("Perfekt geloest.", "green");
 }
 
 function drawBoard() {
@@ -134,6 +239,7 @@ function drawBoard() {
     updateBoardLayout();
 
     const conflicts = getConflicts();
+    const highlight = currentSolverHighlight;
 
     for (let row = -1; row < boardSize; row++) {
         for (let col = -1; col < boardSize; col++) {
@@ -150,10 +256,19 @@ function drawBoard() {
             } else {
                 cell.classList.add("cell", (row + col) % 2 === 0 ? "white" : "black");
 
+                if (highlight && highlight.row === row && highlight.col === col) {
+                    cell.classList.add(
+                        highlight.type === "remove"
+                            ? "solver-remove"
+                            : highlight.type === "solution"
+                                ? "solver-solution"
+                                : "solver-place"
+                    );
+                }
+
                 if (board[row] === col) {
                     cell.textContent = mode === "queens" ? "♛" : "♜";
 
-                    // Highlight pieces that are part of at least one conflict pair.
                     if (conflicts.some(([conflictRow, conflictCol]) => conflictRow === row && conflictCol === col)) {
                         cell.classList.add("invalid");
                     }
@@ -170,6 +285,18 @@ function drawBoard() {
 }
 
 function placeQueen(row, col) {
+    if (solverLoading) {
+        return;
+    }
+
+    if (hasPreparedSolverTrace() || isSolverPlaying()) {
+        discardSolverTrace("Solver-Ablauf verworfen, weil das Brett manuell geaendert wurde.");
+        setStatus("Solver-Ablauf verworfen. Bereite ihn bei Bedarf neu vor.", "#d97706");
+    } else {
+        setStatus();
+    }
+
+    currentSolverHighlight = null;
     board[row] = board[row] === col ? EMPTY_CELL : col;
     drawBoard();
 }
@@ -182,7 +309,9 @@ function previewBoardSize(size) {
 
 function applyBoardSize() {
     boardSize = pendingBoardSize;
+    discardSolverTrace(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
     board = createEmptyBoard(boardSize);
+    currentSolverHighlight = null;
     updateBoardSizeDisplays(boardSize);
     setStatus(`Brettgroesse auf ${boardSize} x ${boardSize} gesetzt.`, "#2563eb");
     drawBoard();
@@ -358,30 +487,284 @@ async function openSavePointsPanel() {
 }
 
 function applyLoadedGame(data) {
-    board = data.board;
+    discardSolverTrace(`${getPieceLabel(data.mode || "queens")}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
+
+    board = Array.isArray(data.board) ? data.board.slice() : createEmptyBoard(DEFAULT_BOARD_SIZE);
     boardSize = Array.isArray(data.board) ? clampBoardSize(data.board.length) : DEFAULT_BOARD_SIZE;
     pendingBoardSize = boardSize;
-    mode = data.mode;
+    mode = data.mode === "rooks" ? "rooks" : "queens";
+    currentSolverHighlight = null;
 
     updateModeButtons();
     updateBoardSizeDisplays(boardSize);
     drawBoard();
 }
 
-async function solve() {
-    const endpoint = mode === "rooks" ? "/solve_rooks" : "/solve";
-    const response = await fetch(`${endpoint}?size=${boardSize}`);
-    const solution = await response.json();
+function applySolverStep(step) {
+    board = Array.isArray(step.board) ? step.board.slice() : createEmptyBoard(boardSize);
 
-    // The queens endpoint may return multiple solutions; we display the first one.
-    board = mode === "queens" && Array.isArray(solution[0]) ? solution[0] : solution;
-    setStatus(`Loesung fuer ${boardSize} x ${boardSize} geladen.`, "green");
+    if (Number.isInteger(step.row) && Number.isInteger(step.col)) {
+        currentSolverHighlight = {
+            row: step.row,
+            col: step.col,
+            type: step.type
+        };
+    } else if (step.type === "solution" && solverStepIndex > 0) {
+        const previousStep = solverSteps[solverStepIndex - 1];
+        currentSolverHighlight = Number.isInteger(previousStep.row) && Number.isInteger(previousStep.col)
+            ? {
+                row: previousStep.row,
+                col: previousStep.col,
+                type: "solution"
+            }
+            : null;
+    } else {
+        currentSolverHighlight = null;
+    }
+
+    setSolverMessage(step.message || DEFAULT_SOLVER_MESSAGE);
     drawBoard();
+    updateSolverControls();
 }
 
-function resetBoard() {
+function advanceSolverStep() {
+    if (!hasPreparedSolverTrace() || hasCompletedSolverTrace()) {
+        stopSolverPlayback(false);
+        updateSolverControls();
+        return false;
+    }
+
+    solverStepIndex += 1;
+    applySolverStep(solverSteps[solverStepIndex]);
+
+    if (hasCompletedSolverTrace()) {
+        stopSolverPlayback(false);
+        setStatus(`Loesung fuer ${boardSize} x ${boardSize} Schritt fuer Schritt aufgebaut.`, "green");
+        updateSolverControls();
+    }
+
+    return true;
+}
+
+function scheduleNextSolverPlaybackStep() {
+    stopSolverPlayback(false);
+
+    solverTimerId = window.setTimeout(() => {
+        solverTimerId = null;
+
+        const advanced = advanceSolverStep();
+
+        if (advanced && !hasCompletedSolverTrace()) {
+            scheduleNextSolverPlaybackStep();
+            return;
+        }
+
+        updateSolverControls();
+    }, solverSpeedMs);
+
+    updateSolverControls();
+}
+
+function startSolverPlayback(stepImmediately = true) {
+    if (!hasPreparedSolverTrace() || hasCompletedSolverTrace()) {
+        updateSolverControls();
+        return;
+    }
+
+    if (stepImmediately) {
+        const advanced = advanceSolverStep();
+
+        if (!advanced || hasCompletedSolverTrace()) {
+            updateSolverControls();
+            return;
+        }
+    }
+
+    scheduleNextSolverPlaybackStep();
+}
+
+async function prepareSolutionTrace() {
+    const endpoint = mode === "rooks" ? "/solve_rooks_trace" : "/solve_trace";
+    const requestId = ++solverRequestId;
+
+    solverLoading = true;
+    stopSolverPlayback(false);
+    solverSteps = [];
+    solverStepIndex = -1;
+    currentSolverHighlight = null;
+    setSolverMessage(`Berechne ${getPieceLabel(mode)}-Ablauf fuer ${boardSize} x ${boardSize}...`);
+    setStatus(`Solver berechnet die Schritte fuer ${boardSize} x ${boardSize}.`, "#2563eb");
+    updateSolverControls();
+
+    try {
+        const response = await fetch(`${endpoint}?size=${boardSize}`);
+
+        if (!response.ok) {
+            throw new Error("trace request failed");
+        }
+
+        const trace = await response.json();
+
+        if (requestId !== solverRequestId) {
+            return false;
+        }
+
+        solverSteps = Array.isArray(trace.steps) ? trace.steps : [];
+        solverStepIndex = -1;
+        board = Array.isArray(trace.initial_board) ? trace.initial_board.slice() : createEmptyBoard(boardSize);
+        currentSolverHighlight = null;
+
+        if (!trace.solved || solverSteps.length === 0) {
+            setSolverMessage("Keine Loesung gefunden.");
+            setStatus("Keine Loesung fuer dieses Brett gefunden.", "red");
+            drawBoard();
+            return false;
+        }
+
+        setSolverMessage(
+            mode === "queens"
+                ? `Ablauf bereit mit ${solverSteps.length} Schritten. Nutze Next Step oder Play Animation, um das Backtracking zu verfolgen.`
+                : `Ablauf bereit mit ${solverSteps.length} Schritten. Nutze Next Step oder starte die Animation.`
+        );
+        setStatus("Solver-Ablauf bereit. Nutze Next Step oder Play Animation.", "#2563eb");
+        drawBoard();
+        return true;
+    } catch (error) {
+        if (requestId !== solverRequestId) {
+            return false;
+        }
+
+        setSolverMessage("Der Solver-Ablauf konnte nicht geladen werden.");
+        setStatus("Der Solver-Ablauf konnte nicht geladen werden.", "red");
+        return false;
+    } finally {
+        if (requestId === solverRequestId) {
+            solverLoading = false;
+            updateSolverControls();
+        }
+    }
+}
+
+async function nextSolverStep() {
+    if (solverLoading) {
+        return;
+    }
+
+    if (!hasPreparedSolverTrace()) {
+        const prepared = await prepareSolutionTrace();
+
+        if (!prepared) {
+            return;
+        }
+    }
+
+    if (isSolverPlaying()) {
+        stopSolverPlayback(false);
+    }
+
+    if (!advanceSolverStep()) {
+        setStatus("Der Solver-Ablauf ist bereits abgeschlossen.", "#2563eb");
+    }
+}
+
+async function toggleSolverPlayback() {
+    if (solverLoading) {
+        return;
+    }
+
+    if (isSolverPlaying()) {
+        stopSolverPlayback();
+        setStatus("Solver-Animation pausiert.", "#2563eb");
+        return;
+    }
+
+    if (!hasPreparedSolverTrace()) {
+        const prepared = await prepareSolutionTrace();
+
+        if (!prepared) {
+            return;
+        }
+    }
+
+    if (hasCompletedSolverTrace()) {
+        rewindSolverTrace();
+    }
+
+    setStatus("Solver-Animation laeuft.", "#2563eb");
+    startSolverPlayback(true);
+}
+
+async function solve() {
+    await prepareSolutionTrace();
+}
+
+async function instantSolve() {
+    if (solverLoading) {
+        return;
+    }
+
+    const endpoint = mode === "rooks" ? "/solve_rooks" : "/solve";
+    const requestId = ++solverRequestId;
+
+    solverLoading = true;
+    stopSolverPlayback(false);
+    solverSteps = [];
+    solverStepIndex = -1;
+    currentSolverHighlight = null;
+    setSolverMessage(`Lade sofortige ${getPieceLabel(mode)}-Loesung fuer ${boardSize} x ${boardSize}...`);
+    setStatus(`Sofortige Loesung wird geladen.`, "#2563eb");
+    updateSolverControls();
+
+    try {
+        const response = await fetch(`${endpoint}?size=${boardSize}`);
+
+        if (!response.ok) {
+            throw new Error("instant solve request failed");
+        }
+
+        const solution = await response.json();
+
+        if (requestId !== solverRequestId) {
+            return;
+        }
+
+        board = mode === "queens" && Array.isArray(solution[0]) ? solution[0].slice() : solution.slice();
+        currentSolverHighlight = null;
+        setSolverMessage("Sofortige Loesung geladen. Starte Solve Step-by-Step, wenn du den Ablauf sehen moechtest.");
+        setStatus(`Loesung fuer ${boardSize} x ${boardSize} sofort geladen.`, "green");
+        drawBoard();
+    } catch (error) {
+        if (requestId !== solverRequestId) {
+            return;
+        }
+
+        setSolverMessage("Die sofortige Loesung konnte nicht geladen werden.");
+        setStatus("Die sofortige Loesung konnte nicht geladen werden.", "red");
+    } finally {
+        if (requestId === solverRequestId) {
+            solverLoading = false;
+            updateSolverControls();
+        }
+    }
+}
+
+function resetBoard(options = {}) {
+    const {
+        statusMessageText = "",
+        statusColor = "",
+        solverMessageText = `${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`
+    } = options;
+
+    discardSolverTrace(solverMessageText);
     board = createEmptyBoard(boardSize);
-    setStatus();
+    currentSolverHighlight = null;
+
+    if (statusMessageText) {
+        setStatus(statusMessageText, statusColor);
+    } else {
+        setStatus();
+    }
+
     drawBoard();
 }
 
@@ -401,7 +784,7 @@ function updateQueenList() {
 
         li.textContent = `${mode === "queens" ? "Dame" : "Turm"} ${count}: ${position}`;
         queenList.appendChild(li);
-        count++;
+        count += 1;
     }
 }
 
@@ -422,7 +805,7 @@ async function saveGame() {
     });
 
     if (!response.ok) {
-        setStatus("❌ Der Speicherstand konnte nicht gespeichert werden.", "red");
+        setStatus("Der Speicherstand konnte nicht gespeichert werden.", "red");
         return;
     }
 
@@ -443,7 +826,7 @@ async function loadSavePoint(savePointId) {
     const response = await fetch(`/load/${savePointId}`);
 
     if (!response.ok) {
-        setStatus("❌ Dieser Speicherstand konnte nicht geladen werden.", "red");
+        setStatus("Dieser Speicherstand konnte nicht geladen werden.", "red");
         return;
     }
 
@@ -460,7 +843,7 @@ async function toggleSavePointFavorite(savePointId) {
     });
 
     if (!response.ok) {
-        setStatus("❌ Favorit konnte nicht aktualisiert werden.", "red");
+        setStatus("Favorit konnte nicht aktualisiert werden.", "red");
         return;
     }
 
@@ -480,7 +863,7 @@ async function deleteSavePoint(savePointId) {
     });
 
     if (!response.ok) {
-        setStatus("❌ Speicherpunkt konnte nicht geloescht werden.", "red");
+        setStatus("Speicherpunkt konnte nicht geloescht werden.", "red");
         return;
     }
 
@@ -491,4 +874,7 @@ async function deleteSavePoint(savePointId) {
 pendingBoardSize = boardSize;
 updateModeButtons();
 updateBoardSizeDisplays(boardSize);
+updateSolverSpeed(solverSpeedMs);
+setSolverMessage(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
+updateSolverControls();
 drawBoard();
