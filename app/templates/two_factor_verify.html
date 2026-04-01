@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Verify Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 
@@ -18,8 +18,8 @@
 
     <main class="auth-shell">
         <section class="auth-panel">
-            <h1>Login to your account</h1>
-            <p class="muted">If two-factor authentication is enabled, enter the current 6-digit code from your authenticator app after the password check.</p>
+            <h1>Verify your login</h1>
+            <p class="muted">Open your authenticator app and enter the current 6-digit code.</p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -33,14 +33,12 @@
             <p class="message error">{{ error }}</p>
             {% endif %}
 
-            <form action="{{ url_for('login.login') }}" method="post">
-                <label for="username">Username</label>
-                <input id="username" type="text" name="username" maxlength="20" required value="{{ username or '' }}">
+            <form action="{{ url_for('login.verify_two_factor') }}" method="post">
+                <label for="code">Verification code</label>
+                <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+                <p class="field-hint">Codes refresh automatically every 30 seconds in your authenticator app.</p>
 
-                <label for="password">Password</label>
-                <input id="password" type="password" name="password" minlength="8" maxlength="128" required>
-
-                <button class="magnetic" type="submit" data-loading-label="Checking login...">Login</button>
+                <button class="magnetic" type="submit" data-loading-label="Verifying...">Verify</button>
             </form>
         </section>
     </main>

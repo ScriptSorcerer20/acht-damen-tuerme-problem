@@ -24,6 +24,29 @@ body {
     text-decoration: underline;
 }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.nav-logout-form {
+    margin: 0 0 0 15px;
+}
+
+.nav-link-button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+.nav-link-button:hover {
+    text-decoration: underline;
+}
+
 /* 📦 Layout */
 .container {
     max-width: 900px;
@@ -38,6 +61,33 @@ body {
     margin-bottom: 25px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.flash-stack {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.flash-message {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+}
+
+.flash-message.success {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.flash-message.info {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.flash-message.error {
+    color: #b91c1c;
+    background: #fee2e2;
 }
 
 .game-card {
@@ -305,6 +355,21 @@ body {
     margin: 0;
 }
 
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.inline-actions form {
+    margin: 0;
+}
+
+.inline-actions .btn {
+    margin: 0;
+}
+
 .btn.ghost {
     background: #e2e8f0;
     color: #1e293b;
@@ -336,5 +401,9 @@ body {
 
     .navbar {
         padding: 15px 18px;
+    }
+
+    .nav-logout-form {
+        margin-left: 0;
     }
 }

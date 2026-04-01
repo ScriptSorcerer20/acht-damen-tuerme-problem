@@ -6,24 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 
 <body>
 
-    <!-- 🔝 Navbar -->
     <nav class="navbar">
         <div class="nav-left">♛ 8-Queens App</div>
         <div class="nav-right">
             <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('login.logout') }}">Logout</a>
+            <a href="{{ url_for('login.login_settings') }}">Login settings</a>
+            <form action="{{ url_for('login.logout') }}" method="post" class="nav-logout-form">
+                <button class="nav-link-button" type="submit">Logout</button>
+            </form>
         </div>
     </nav>
 
-    <!-- 📦 Container -->
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+            {% for category, message in messages %}
+            <p class="flash-message {{ category }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
 
-        <!-- 👤 User Card -->
         <div class="card">
             <h2>👋 Willkommen, {{ current_user.username }}</h2>
 
@@ -31,18 +40,16 @@
                 <p><strong>ID:</strong> {{ current_user.id }}</p>
                 <p><strong>Username:</strong> {{ current_user.username }}</p>
 
-                {% if current_user.email %}
-                <p><strong>Email:</strong> {{ current_user.email }}</p>
-                {% else %}
-                <p><strong>Email:</strong> Not set</p>
-                {% endif %}
-
+                <p><strong>2FA:</strong> {% if current_user.two_factor_enabled %}Authenticator app enabled{% else %}Disabled{% endif %}</p>
                 <p><strong>Erstellt:</strong> {{ current_user.created_at }}</p>
             </div>
 
-            <form action="{{ url_for('login.logout') }}" method="post">
-                <button class="btn danger" type="submit">Logout</button>
-            </form>
+            <div class="inline-actions">
+                <a class="btn secondary" href="{{ url_for('login.login_settings') }}">Open login settings</a>
+                <form action="{{ url_for('login.logout') }}" method="post">
+                    <button class="btn danger" type="submit">Logout</button>
+                </form>
+            </div>
         </div>
 
         <div class="mode-switch">
@@ -51,8 +58,6 @@
             <button class="btn secondary" onclick="toggleSidebar()" id="btnSidebar">Board Settings</button>
         </div>
 
-
-        <!-- ♟️ Game Card -->
         <div class="card game-card">
             <h2>♟️ Damen- und Tuerme-Spiel</h2>
             <p class="board-size-info">Aktuelle Brettgroesse: <span id="boardSizeValue">8</span> x <span
@@ -165,7 +170,7 @@
     <div class="sidebar-backdrop" id="saveBackdrop" onclick="toggleSavePanel(false)"></div>
     <div class="sidebar-backdrop" id="savePointsBackdrop" onclick="toggleSavePointsPanel(false)"></div>
 
-    <script src="../static/js/dashboard.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 </body>
 
