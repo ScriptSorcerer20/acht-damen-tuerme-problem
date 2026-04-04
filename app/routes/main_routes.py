@@ -28,6 +28,15 @@ def parse_favorite_flag(raw_value):
     return str(raw_value).lower() in {"1", "true", "yes", "on"}
 
 
+def parse_non_negative_int(raw_value, default=0):
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return default
+
+    return max(0, value)
+
+
 def get_position_label(row, col, board_size):
     return f"{chr(65 + col)}{board_size - row}"
 
@@ -180,6 +189,9 @@ def serialize_game_state(game_state):
         "save_note": game_state.save_note,
         "is_favorite": game_state.is_favorite,
         "pieces_placed": sum(1 for column in board if column != -1),
+        "step_count": game_state.step_count,
+        "elapsed_seconds": game_state.elapsed_seconds,
+        "is_solved": game_state.is_solved,
         "created_at": game_state.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         "updated_at": game_state.updated_at.strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -282,6 +294,9 @@ def save_game():
     save_name = (data.get("saveName") or "").strip() or f"{piece_mode.title()} Save"
     save_note = (data.get("saveNote") or "").strip()
     is_favorite = bool(data.get("isFavorite"))
+    step_count = parse_non_negative_int(data.get("stepCount"))
+    elapsed_seconds = parse_non_negative_int(data.get("elapsedSeconds"))
+    is_solved = bool(data.get("isSolved"))
     timestamp = datetime.utcnow()
 
     game_state = GameState(
@@ -292,6 +307,9 @@ def save_game():
         save_name=save_name,
         save_note=save_note,
         is_favorite=is_favorite,
+        step_count=step_count,
+        elapsed_seconds=elapsed_seconds,
+        is_solved=is_solved,
         created_at=timestamp,
         updated_at=timestamp
     )

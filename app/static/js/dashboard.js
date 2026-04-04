@@ -3,11 +3,17 @@ const MIN_BOARD_SIZE = 4;
 const MAX_BOARD_SIZE = 13;
 const EMPTY_CELL = -1;
 const DEFAULT_SOLVER_MESSAGE = "Bereite einen Ablauf vor und spiele ihn Schritt fuer Schritt ab.";
+const GAME_STORAGE_KEY = "eight-queens-dashboard-session-v1";
 
 let mode = "queens";
 let boardSize = DEFAULT_BOARD_SIZE;
 let pendingBoardSize = DEFAULT_BOARD_SIZE;
 let board = createEmptyBoard(boardSize);
+let stepCount = 0;
+let elapsedBeforeTimerStartMs = 0;
+let timerStartedAtMs = Date.now();
+let gameTimerId = null;
+let isSolved = false;
 
 let solverSteps = [];
 let solverStepIndex = -1;
@@ -20,6 +26,9 @@ let currentSolverHighlight = null;
 const boardDiv = document.getElementById("board");
 const statusMessage = document.getElementById("statusMessage");
 const queenList = document.getElementById("queenList");
+const stepCounterValue = document.getElementById("stepCounterValue");
+const timerValue = document.getElementById("timerValue");
+const gameProgressState = document.getElementById("gameProgressState");
 const btnQueens = document.getElementById("btnQueens");
 const btnRooks = document.getElementById("btnRooks");
 const btnPrepareSolve = document.getElementById("btnPrepareSolve");
@@ -49,6 +58,9 @@ const savePointModeFilter = document.getElementById("savePointModeFilter");
 const savePointSizeFilter = document.getElementById("savePointSizeFilter");
 const savePointSortFilter = document.getElementById("savePointSortFilter");
 const savePointFavoritesOnly = document.getElementById("savePointFavoritesOnly");
+const timeHistoryTableBody = document.getElementById("timeHistoryTableBody");
+const infoModal = document.getElementById("infoModal");
+const infoModalBackdrop = document.getElementById("infoModalBackdrop");
 
 function createEmptyBoard(size) {
     return Array(size).fill(EMPTY_CELL);
@@ -60,6 +72,116 @@ function clampBoardSize(size) {
 
 function getColumnLabel(index) {
     return String.fromCharCode(65 + index);
+}
+
+function sanitizeBoard(candidateBoard, size) {
+    if (!Array.isArray(candidateBoard) || candidateBoard.length !== size) {
+        return createEmptyBoard(size);
+    }
+
+    return candidateBoard.map((value) => {
+        const numericValue = Number(value);
+
+        if (!Number.isInteger(numericValue)) {
+            return EMPTY_CELL;
+        }
+
+        return numericValue >= 0 && numericValue < size ? numericValue : EMPTY_CELL;
+    });
+}
+
+function formatDuration(totalSeconds) {
+    const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const seconds = safeSeconds % 60;
+
+    return [hours, minutes, seconds]
+        .map((value) => String(value).padStart(2, "0"))
+        .join(":");
+}
+
+function getElapsedMilliseconds() {
+    if (isSolved) {
+        return elapsedBeforeTimerStartMs;
+    }
+
+    return elapsedBeforeTimerStartMs + Math.max(0, Date.now() - timerStartedAtMs);
+}
+
+function persistCurrentSession() {
+    try {
+        window.localStorage.setItem(
+            GAME_STORAGE_KEY,
+            JSON.stringify({
+                mode,
+                boardSize,
+                board,
+                stepCount,
+                elapsedMs: getElapsedMilliseconds(),
+                isSolved
+            })
+        );
+    } catch (error) {
+        // Ignore unavailable storage so the game keeps working normally.
+    }
+}
+
+function updateProgressDisplay() {
+    stepCounterValue.textContent = String(stepCount);
+    timerValue.textContent = formatDuration(Math.floor(getElapsedMilliseconds() / 1000));
+    gameProgressState.textContent = isSolved ? "Geloest" : "Laeuft";
+    gameProgressState.style.color = isSolved ? "#15803d" : "#1d4ed8";
+}
+
+function stopGameTimer() {
+    if (gameTimerId !== null) {
+        window.clearInterval(gameTimerId);
+        gameTimerId = null;
+    }
+}
+
+function startGameTimer() {
+    stopGameTimer();
+
+    if (isSolved) {
+        updateProgressDisplay();
+        persistCurrentSession();
+        return;
+    }
+
+    timerStartedAtMs = Date.now();
+    gameTimerId = window.setInterval(() => {
+        updateProgressDisplay();
+        persistCurrentSession();
+    }, 1000);
+
+    updateProgressDisplay();
+    persistCurrentSession();
+}
+
+function resetProgress({ stepCountValue = 0, elapsedMs = 0, solved = false } = {}) {
+    stepCount = Math.max(0, Number(stepCountValue) || 0);
+    elapsedBeforeTimerStartMs = Math.max(0, Number(elapsedMs) || 0);
+    isSolved = Boolean(solved);
+    timerStartedAtMs = Date.now();
+
+    if (isSolved) {
+        stopGameTimer();
+        updateProgressDisplay();
+        persistCurrentSession();
+        return;
+    }
+
+    startGameTimer();
+}
+
+function ensureFreshRunAfterSolvedBoard() {
+    if (!isSolved) {
+        return;
+    }
+
+    resetProgress();
 }
 
 function updateModeButtons() {
@@ -187,26 +309,27 @@ function closeAllPanels() {
     toggleSidebar(false);
     toggleSavePanel(false);
     toggleSavePointsPanel(false);
+    toggleInfoModal(false);
 }
 
-function getConflicts() {
+function getConflicts(selectedBoard = board, selectedMode = mode) {
     const conflicts = [];
 
     for (let rowA = 0; rowA < boardSize; rowA++) {
-        if (board[rowA] === EMPTY_CELL) {
+        if (selectedBoard[rowA] === EMPTY_CELL) {
             continue;
         }
 
         for (let rowB = rowA + 1; rowB < boardSize; rowB++) {
-            if (board[rowB] === EMPTY_CELL) {
+            if (selectedBoard[rowB] === EMPTY_CELL) {
                 continue;
             }
 
-            const colA = board[rowA];
-            const colB = board[rowB];
+            const colA = selectedBoard[rowA];
+            const colB = selectedBoard[rowB];
             const sameColumn = colA === colB;
             const sameDiagonal = Math.abs(colA - colB) === Math.abs(rowA - rowB);
-            const hasConflict = mode === "rooks" ? sameColumn : sameColumn || sameDiagonal;
+            const hasConflict = selectedMode === "rooks" ? sameColumn : sameColumn || sameDiagonal;
 
             if (hasConflict) {
                 conflicts.push([rowA, colA], [rowB, colB]);
@@ -215,6 +338,23 @@ function getConflicts() {
     }
 
     return conflicts;
+}
+
+function isBoardSolved(selectedBoard = board, selectedMode = mode) {
+    const allPlaced = selectedBoard.every((col) => col !== EMPTY_CELL);
+    return allPlaced && getConflicts(selectedBoard, selectedMode).length === 0;
+}
+
+function finishSolvedRun() {
+    if (isSolved) {
+        return;
+    }
+
+    elapsedBeforeTimerStartMs = getElapsedMilliseconds();
+    isSolved = true;
+    stopGameTimer();
+    updateProgressDisplay();
+    persistCurrentSession();
 }
 
 function checkSolution() {
@@ -230,7 +370,8 @@ function checkSolution() {
         return;
     }
 
-    setStatus("Perfekt geloest.", "green");
+    finishSolvedRun();
+    setStatus(`Perfekt geloest in ${formatDuration(Math.floor(getElapsedMilliseconds() / 1000))}.`, "green");
 }
 
 function drawBoard() {
@@ -289,6 +430,8 @@ function placeQueen(row, col) {
         return;
     }
 
+    ensureFreshRunAfterSolvedBoard();
+
     if (hasPreparedSolverTrace() || isSolverPlaying()) {
         discardSolverTrace("Solver-Ablauf verworfen, weil das Brett manuell geaendert wurde.");
         setStatus("Solver-Ablauf verworfen. Bereite ihn bei Bedarf neu vor.", "#d97706");
@@ -298,7 +441,16 @@ function placeQueen(row, col) {
 
     currentSolverHighlight = null;
     board[row] = board[row] === col ? EMPTY_CELL : col;
+    stepCount += 1;
     drawBoard();
+    updateProgressDisplay();
+
+    if (isBoardSolved()) {
+        finishSolvedRun();
+        setStatus(`Perfekt geloest in ${formatDuration(Math.floor(getElapsedMilliseconds() / 1000))}.`, "green");
+    } else {
+        persistCurrentSession();
+    }
 }
 
 function previewBoardSize(size) {
@@ -312,6 +464,7 @@ function applyBoardSize() {
     discardSolverTrace(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
     board = createEmptyBoard(boardSize);
     currentSolverHighlight = null;
+    resetProgress();
     updateBoardSizeDisplays(boardSize);
     setStatus(`Brettgroesse auf ${boardSize} x ${boardSize} gesetzt.`, "#2563eb");
     drawBoard();
@@ -355,6 +508,14 @@ function toggleSavePointsPanel(forceOpen) {
     savePointsSidebar.classList.toggle("open", shouldOpen);
     savePointsBackdrop.classList.toggle("visible", shouldOpen);
     savePointsSidebar.setAttribute("aria-hidden", String(!shouldOpen));
+}
+
+function toggleInfoModal(forceOpen) {
+    const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : !infoModal.classList.contains("open");
+
+    infoModal.classList.toggle("open", shouldOpen);
+    infoModalBackdrop.classList.toggle("visible", shouldOpen);
+    infoModal.setAttribute("aria-hidden", String(!shouldOpen));
 }
 
 function getPieceLabel(selectedMode) {
@@ -423,6 +584,10 @@ function createSavePointActionButton(label, className, onClick) {
     return button;
 }
 
+function getModeLabel(selectedMode) {
+    return selectedMode === "rooks" ? "Tuerme" : "Damen";
+}
+
 function renderSavePoints(savePoints) {
     savePointsList.innerHTML = "";
 
@@ -455,6 +620,10 @@ function renderSavePoints(savePoints) {
         note.textContent = savePoint.save_note ? `Notiz: ${savePoint.save_note}` : "Notiz: Keine Notiz";
         actions.className = "save-point-actions";
 
+        const progressMeta = document.createElement("p");
+        progressMeta.className = "save-point-meta";
+        progressMeta.textContent = `Schritte: ${savePoint.step_count || 0} | Zeit: ${formatDuration(savePoint.elapsed_seconds)} | Status: ${savePoint.is_solved ? "Geloest" : "Offen"}`;
+
         actions.appendChild(createSavePointActionButton("Laden", "btn", () => loadSavePoint(savePoint.id)));
         actions.appendChild(createSavePointActionButton(
             savePoint.is_favorite ? "Favorit entfernen" : "Als Favorit",
@@ -467,10 +636,41 @@ function renderSavePoints(savePoints) {
         item.appendChild(createdAt);
         item.appendChild(updatedAt);
         item.appendChild(boardMeta);
+        item.appendChild(progressMeta);
         item.appendChild(preview);
         item.appendChild(note);
         item.appendChild(actions);
         savePointsList.appendChild(item);
+    }
+}
+
+function renderTimeHistory(savePoints) {
+    timeHistoryTableBody.innerHTML = "";
+
+    if (savePoints.length === 0) {
+        timeHistoryTableBody.innerHTML = '<tr><td colspan="7" class="history-empty">Noch keine gespeicherten Zeiten vorhanden.</td></tr>';
+        return;
+    }
+
+    for (const savePoint of savePoints) {
+        const row = document.createElement("tr");
+        const values = [
+            `${savePoint.is_favorite ? "★ " : ""}${savePoint.save_name}`,
+            getModeLabel(savePoint.mode),
+            `${savePoint.board_size} x ${savePoint.board_size}`,
+            String(savePoint.step_count || 0),
+            formatDuration(savePoint.elapsed_seconds),
+            savePoint.is_solved ? "Geloest" : "Offen",
+            savePoint.updated_at
+        ];
+
+        for (const value of values) {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        }
+
+        timeHistoryTableBody.appendChild(row);
     }
 }
 
@@ -481,6 +681,17 @@ async function refreshSavePoints() {
     renderSavePoints(savePoints);
 }
 
+async function refreshTimeHistory() {
+    const response = await fetch("/save_points?sort=updated");
+
+    if (!response.ok) {
+        return;
+    }
+
+    const savePoints = await response.json();
+    renderTimeHistory(savePoints);
+}
+
 async function openSavePointsPanel() {
     await refreshSavePoints();
     toggleSavePointsPanel(true);
@@ -489,19 +700,28 @@ async function openSavePointsPanel() {
 function applyLoadedGame(data) {
     discardSolverTrace(`${getPieceLabel(data.mode || "queens")}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
 
-    board = Array.isArray(data.board) ? data.board.slice() : createEmptyBoard(DEFAULT_BOARD_SIZE);
-    boardSize = Array.isArray(data.board) ? clampBoardSize(data.board.length) : DEFAULT_BOARD_SIZE;
+    const restoredBoardSize = Array.isArray(data.board) ? clampBoardSize(data.board.length) : DEFAULT_BOARD_SIZE;
+
+    boardSize = restoredBoardSize;
     pendingBoardSize = boardSize;
     mode = data.mode === "rooks" ? "rooks" : "queens";
+    board = sanitizeBoard(data.board, boardSize);
     currentSolverHighlight = null;
+    resetProgress({
+        stepCountValue: data.step_count,
+        elapsedMs: Number(data.elapsed_seconds || 0) * 1000,
+        solved: data.is_solved || isBoardSolved(board, mode)
+    });
 
     updateModeButtons();
     updateBoardSizeDisplays(boardSize);
     drawBoard();
+    updateProgressDisplay();
+    persistCurrentSession();
 }
 
 function applySolverStep(step) {
-    board = Array.isArray(step.board) ? step.board.slice() : createEmptyBoard(boardSize);
+    board = sanitizeBoard(step.board, boardSize);
 
     if (Number.isInteger(step.row) && Number.isInteger(step.col)) {
         currentSolverHighlight = {
@@ -524,6 +744,7 @@ function applySolverStep(step) {
 
     setSolverMessage(step.message || DEFAULT_SOLVER_MESSAGE);
     drawBoard();
+    persistCurrentSession();
     updateSolverControls();
 }
 
@@ -538,6 +759,7 @@ function advanceSolverStep() {
     applySolverStep(solverSteps[solverStepIndex]);
 
     if (hasCompletedSolverTrace()) {
+        finishSolvedRun();
         stopSolverPlayback(false);
         setStatus(`Loesung fuer ${boardSize} x ${boardSize} Schritt fuer Schritt aufgebaut.`, "green");
         updateSolverControls();
@@ -618,6 +840,7 @@ async function prepareSolutionTrace() {
             setSolverMessage("Keine Loesung gefunden.");
             setStatus("Keine Loesung fuer dieses Brett gefunden.", "red");
             drawBoard();
+            persistCurrentSession();
             return false;
         }
 
@@ -730,9 +953,11 @@ async function instantSolve() {
 
         board = mode === "queens" && Array.isArray(solution[0]) ? solution[0].slice() : solution.slice();
         currentSolverHighlight = null;
+        finishSolvedRun();
         setSolverMessage("Sofortige Loesung geladen. Starte Solve Step-by-Step, wenn du den Ablauf sehen moechtest.");
         setStatus(`Loesung fuer ${boardSize} x ${boardSize} sofort geladen.`, "green");
         drawBoard();
+        persistCurrentSession();
     } catch (error) {
         if (requestId !== solverRequestId) {
             return;
@@ -758,6 +983,7 @@ function resetBoard(options = {}) {
     discardSolverTrace(solverMessageText);
     board = createEmptyBoard(boardSize);
     currentSolverHighlight = null;
+    resetProgress();
 
     if (statusMessageText) {
         setStatus(statusMessageText, statusColor);
@@ -800,7 +1026,10 @@ async function saveGame() {
             boardSize,
             saveName: saveNameInput.value,
             saveNote: saveNoteInput.value,
-            isFavorite: saveFavoriteInput.checked
+            isFavorite: saveFavoriteInput.checked,
+            stepCount,
+            elapsedSeconds: Math.floor(getElapsedMilliseconds() / 1000),
+            isSolved
         })
     });
 
@@ -813,6 +1042,7 @@ async function saveGame() {
 
     toggleSavePanel(false);
     await refreshSavePoints();
+    await refreshTimeHistory();
     setStatus(`Speicherpunkt "${data.save_point.save_name}" gespeichert.`, "green");
 }
 
@@ -848,6 +1078,7 @@ async function toggleSavePointFavorite(savePointId) {
     }
 
     await refreshSavePoints();
+    await refreshTimeHistory();
     setStatus("Favoritenstatus aktualisiert.", "#2563eb");
 }
 
@@ -868,13 +1099,64 @@ async function deleteSavePoint(savePointId) {
     }
 
     await refreshSavePoints();
+    await refreshTimeHistory();
     setStatus("Speicherpunkt geloescht.", "#2563eb");
 }
 
-pendingBoardSize = boardSize;
-updateModeButtons();
-updateBoardSizeDisplays(boardSize);
-updateSolverSpeed(solverSpeedMs);
-setSolverMessage(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
-updateSolverControls();
-drawBoard();
+function restoreSessionFromStorage() {
+    try {
+        const rawSession = window.localStorage.getItem(GAME_STORAGE_KEY);
+
+        if (!rawSession) {
+            return false;
+        }
+
+        const savedSession = JSON.parse(rawSession);
+        const restoredBoardSize = clampBoardSize(savedSession.boardSize || DEFAULT_BOARD_SIZE);
+        const restoredMode = savedSession.mode === "rooks" ? "rooks" : "queens";
+
+        boardSize = restoredBoardSize;
+        pendingBoardSize = restoredBoardSize;
+        mode = restoredMode;
+        board = sanitizeBoard(savedSession.board, restoredBoardSize);
+        currentSolverHighlight = null;
+
+        updateModeButtons();
+        updateBoardSizeDisplays(boardSize);
+        drawBoard();
+        resetProgress({
+            stepCountValue: savedSession.stepCount,
+            elapsedMs: savedSession.elapsedMs,
+            solved: savedSession.isSolved || isBoardSolved(board, mode)
+        });
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function initializeDashboard() {
+    pendingBoardSize = boardSize;
+    updateModeButtons();
+    updateBoardSizeDisplays(boardSize);
+    updateSolverSpeed(solverSpeedMs);
+    setSolverMessage(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
+    updateSolverControls();
+
+    if (!restoreSessionFromStorage()) {
+        resetProgress();
+        drawBoard();
+    }
+
+    updateProgressDisplay();
+    await refreshTimeHistory();
+}
+
+window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        closeAllPanels();
+    }
+});
+
+initializeDashboard();

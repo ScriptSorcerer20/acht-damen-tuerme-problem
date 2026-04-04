@@ -1,5 +1,6 @@
 from .. import db
 
+
 class GameState(db.Model):
     __tablename__ = "game_state"
 
@@ -12,6 +13,9 @@ class GameState(db.Model):
     save_name = db.Column(db.String(80), nullable=False, default="Unnamed Save")
     save_note = db.Column(db.Text, nullable=False, default="")
     is_favorite = db.Column(db.Boolean, nullable=False, default=False)
+    step_count = db.Column(db.Integer, nullable=False, default=0, server_default=db.text("0"))
+    elapsed_seconds = db.Column(db.Integer, nullable=False, default=0, server_default=db.text("0"))
+    is_solved = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text("0"))
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     updated_at = db.Column(
         db.DateTime,

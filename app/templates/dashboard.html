@@ -59,9 +59,28 @@
         </div>
 
         <div class="card game-card">
-            <h2>♟️ Damen- und Tuerme-Spiel</h2>
+            <div class="game-card-header">
+                <h2>♟️ Damen- und Tuerme-Spiel</h2>
+                <button class="info-button" id="infoButton" onclick="toggleInfoModal(true)" type="button"
+                    aria-label="Spielanleitung und Erklaerung anzeigen">i</button>
+            </div>
             <p class="board-size-info">Aktuelle Brettgroesse: <span id="boardSizeValue">8</span> x <span
                     id="boardSizeValueMirror">8</span></p>
+
+            <div class="game-stats" aria-label="Spielstatus">
+                <article class="game-stat-card">
+                    <p class="game-stat-label">Schritte</p>
+                    <p class="game-stat-value" id="stepCounterValue">0</p>
+                </article>
+                <article class="game-stat-card">
+                    <p class="game-stat-label">Zeit</p>
+                    <p class="game-stat-value" id="timerValue">00:00:00</p>
+                </article>
+                <article class="game-stat-card">
+                    <p class="game-stat-label">Status</p>
+                    <p class="game-stat-value game-stat-status" id="gameProgressState">Laeuft</p>
+                </article>
+            </div>
 
             <p id="statusMessage"></p>
             <div class="board" id="board"></div>
@@ -102,6 +121,37 @@
         <div class="card">
             <h3>📋 Figuren Positionen</h3>
             <ul id="queenList"></ul>
+        </div>
+
+        <div class="card">
+            <div class="history-header">
+                <div>
+                    <h3>⏱️ Bisherige Zeiten</h3>
+                    <p class="history-subtitle">Die Tabelle zeigt gespeicherte Save-Points mit Zeit und Schritten.</p>
+                </div>
+                <button class="btn secondary" onclick="refreshTimeHistory()" type="button">Aktualisieren</button>
+            </div>
+
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Save-Point</th>
+                            <th>Modus</th>
+                            <th>Brett</th>
+                            <th>Schritte</th>
+                            <th>Zeit</th>
+                            <th>Status</th>
+                            <th>Gespeichert</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeHistoryTableBody">
+                        <tr>
+                            <td colspan="7" class="history-empty">Noch keine gespeicherten Zeiten vorhanden.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -192,6 +242,32 @@
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
     <div class="sidebar-backdrop" id="saveBackdrop" onclick="toggleSavePanel(false)"></div>
     <div class="sidebar-backdrop" id="savePointsBackdrop" onclick="toggleSavePointsPanel(false)"></div>
+
+    <div class="modal-backdrop" id="infoModalBackdrop" onclick="toggleInfoModal(false)"></div>
+    <section class="modal" id="infoModal" aria-hidden="true" aria-labelledby="infoModalTitle">
+        <div class="modal-header">
+            <h3 id="infoModalTitle">Spielanleitung und Acht-Damen-Problem</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleInfoModal(false)" type="button">Schliessen</button>
+        </div>
+
+        <div class="modal-content">
+            <p>Setze pro Reihe genau eine Figur auf das Brett. Eine gueltige Loesung hat keine Konflikte.</p>
+
+            <h4>So funktioniert das Spiel</h4>
+            <p>Im Damen-Modus duerfen sich Damen weder in derselben Spalte noch diagonal angreifen. Im Tuerme-Modus
+                zaehlen nur Spalten-Konflikte. Mit einem Klick setzt oder entfernst du eine Figur.</p>
+
+            <h4>Was ist das Acht-Damen-Problem?</h4>
+            <p>Das klassische Acht-Damen-Problem fragt nach einer Anordnung von acht Damen auf einem 8x8-Brett, bei
+                der sich keine zwei Damen schlagen. Es ist ein bekanntes Beispiel fuer kombinatorische Suche und
+                Backtracking.</p>
+
+            <h4>Was zeigen Zeit und Schritte?</h4>
+            <p>Der Schrittzaehler erfasst deine Zuege auf dem Brett. Die Zeit laeuft fuer das aktuelle Spiel weiter,
+                auch wenn du die Seite neu laedst. Beim Speichern werden Zeit und Schritte zusammen mit dem Save-Point
+                abgelegt.</p>
+        </div>
+    </section>
 
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
