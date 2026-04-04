@@ -1,17 +1,21 @@
 :root {
-    --nav-bg-color: #172033;
-    --panel-bg-color: rgba(255, 255, 255, 0.18);
-    --panel-border-color: rgba(255, 255, 255, 0.24);
-    --text-color: #172033;
-    --muted-text-color: #475569;
-    --success-color: #15803d;
+    --bg: #f4efe7;
+    --bg-accent: #efe3cd;
+    --surface: rgba(255, 250, 242, 0.88);
+    --surface-strong: #fffaf2;
+    --surface-soft: rgba(255, 247, 235, 0.72);
+    --text-color: #1e1f1d;
+    --muted-text-color: #5f615c;
+    --navy: #1f3140;
+    --navy-soft: #324d63;
+    --gold: #c68b2c;
+    --gold-soft: #e7bf77;
+    --gold-pale: #f1ddae;
+    --line: rgba(31, 49, 64, 0.12);
+    --shadow: 0 24px 60px rgba(37, 42, 48, 0.14);
+    --success-color: #166534;
     --info-color: #1d4ed8;
-    --error-color: #b91c1c;
-}
-
-@font-face {
-    font-family: "Geist Sans";
-    src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+    --error-color: #991b1b;
 }
 
 *,
@@ -24,74 +28,103 @@ body {
     margin: 0;
     min-height: 100vh;
     color: var(--text-color);
-    font-family: "Geist Sans", system-ui, sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
     background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.45), transparent 32%),
-        linear-gradient(135deg, #d2ecff 0%, #b8c6db 48%, #7f8ea3 100%);
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(198, 139, 44, 0.2), transparent 20%),
+        linear-gradient(180deg, #f7f0e5 0%, #efe5d5 52%, #f4efe7 100%);
 }
 
-nav {
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.auth-nav {
     width: 100%;
-    min-height: 68px;
-    padding: 15px 30px;
+    margin: 0;
+    padding: 18px max(16px, calc((100vw - 1200px) / 2)) 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    background: var(--nav-bg-color);
+    gap: 18px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-top: 0;
+    border-right: 4px solid #12212d;
+    border-bottom: 4px solid #12212d;
+    border-left: 4px solid #12212d;
+    background: linear-gradient(180deg, rgba(17, 29, 39, 0.96), rgba(31, 49, 64, 0.94));
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px rgba(31, 49, 64, 0.18);
 }
 
-nav ul {
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff7eb;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+    color: #2c2215;
+    font-size: 22px;
+}
+
+.nav-links {
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
+    color: #ecf4fb;
 }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
+.nav-links a,
+.nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 11px 16px;
+    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-nav a:hover {
-    color: #93c5fd;
+.nav-links a:hover,
+.nav-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(231, 191, 119, 0.45);
+    color: #fff7eb;
 }
 
 .nav-form {
     margin: 0;
-    padding: 0;
-    width: auto;
-    background: none;
-    border: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-}
-
-.nav-button {
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: 0;
-    color: white;
-    font: inherit;
-    cursor: pointer;
-}
-
-.nav-button:hover {
-    transform: none;
-    box-shadow: none;
-    color: #93c5fd;
 }
 
 .auth-shell {
-    min-height: calc(100vh - 68px);
+    min-height: calc(100vh - 78px);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 16px;
+    padding: 38px 16px 48px;
 }
 
 .settings-shell {
@@ -99,18 +132,17 @@ nav a:hover {
 }
 
 .auth-panel {
-    width: min(420px, 100%);
+    width: min(460px, 100%);
     padding: 34px;
-    border-radius: 20px;
-    background: var(--panel-bg-color);
-    border: 1px solid var(--panel-border-color);
-    backdrop-filter: blur(16px);
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 250, 242, 0.94), rgba(245, 230, 205, 0.8));
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
     animation: fadeIn 0.8s ease;
 }
 
 .settings-panel {
-    width: min(900px, 100%);
+    width: min(980px, 100%);
 }
 
 .settings-grid {
@@ -134,12 +166,31 @@ nav a:hover {
 h1,
 h2 {
     margin-top: 0;
+    color: #182029;
+}
+
+h1 {
+    margin-bottom: 10px;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    font-size: clamp(2.2rem, 4vw, 3.6rem);
+}
+
+h2 {
+    margin-bottom: 10px;
+    font-size: 1.55rem;
+}
+
+.muted,
+.field-hint {
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    line-height: 1.6;
+    color: var(--muted-text-color);
 }
 
 .muted {
     margin: 0 0 20px;
-    color: var(--muted-text-color);
-    line-height: 1.5;
+    font-size: 17px;
 }
 
 form {
@@ -148,65 +199,56 @@ form {
     gap: 8px;
     margin-top: 18px;
     padding: 24px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 10px;
+    background: var(--surface-soft);
+    border: 1px solid rgba(31, 49, 64, 0.1);
 }
 
 label {
     margin-top: 8px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 0.03em;
 }
 
 input {
     width: 100%;
     padding: 12px 14px;
-    border: 1px solid rgba(71, 85, 105, 0.25);
-    border-radius: 10px;
+    border: 1px solid rgba(31, 49, 64, 0.16);
+    border-radius: 0;
     font: inherit;
     background: rgba(255, 255, 255, 0.86);
     color: var(--text-color);
 }
 
 input:focus {
-    outline: 2px solid rgba(59, 130, 246, 0.35);
-    border-color: rgba(59, 130, 246, 0.5);
+    outline: 2px solid rgba(198, 139, 44, 0.28);
+    border-color: rgba(198, 139, 44, 0.55);
 }
 
 .field-hint {
     margin: 0;
     font-size: 13px;
-    color: var(--muted-text-color);
-}
-
-.checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0 6px;
-}
-
-.checkbox-row input {
-    width: auto;
 }
 
 button {
     margin-top: 14px;
-    padding: 12px 16px;
+    min-height: 50px;
+    padding: 12px 18px;
     border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    color: #172033;
+    border-radius: 0;
+    background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+    color: #2d2418;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 12px 24px rgba(31, 49, 64, 0.16);
 }
 
 button:active {
@@ -220,18 +262,20 @@ button:active {
 }
 
 .button-row button {
-    flex: 1 1 160px;
+    flex: 1 1 180px;
 }
 
 .secondary-button {
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    background: linear-gradient(135deg, var(--navy), var(--navy-soft));
+    color: #f9fbfd;
 }
 
 .message {
     margin: 0 0 14px;
     padding: 12px 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 .message.error {
@@ -254,9 +298,9 @@ button:active {
     justify-content: center;
     margin: 8px 0 6px;
     padding: 18px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 10px;
+    background: rgba(255, 250, 242, 0.72);
+    border: 1px solid rgba(31, 49, 64, 0.12);
 }
 
 .qr-code {
@@ -266,7 +310,7 @@ button:active {
     min-width: 220px;
     min-height: 220px;
     padding: 10px;
-    border-radius: 14px;
+    border-radius: 8px;
     background: #ffffff;
     color: var(--muted-text-color);
     text-align: center;
@@ -276,15 +320,32 @@ button:active {
     display: block;
 }
 
-@media (max-width: 640px) {
-    nav {
-        padding: 16px 20px;
+@media (max-width: 760px) {
+    .auth-nav {
+        position: static;
+        padding: 18px 16px;
+        border-left-width: 0;
+        border-right-width: 0;
         flex-direction: column;
         align-items: flex-start;
     }
 
+    .brand {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .nav-links {
+        width: 100%;
+    }
+
+    .nav-links a,
+    .nav-button {
+        padding: 10px 14px;
+    }
+
     .auth-shell {
-        padding: 20px 12px 28px;
+        padding: 22px 12px 28px;
     }
 
     .auth-panel {

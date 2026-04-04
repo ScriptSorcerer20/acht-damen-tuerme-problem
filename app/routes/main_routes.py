@@ -226,7 +226,8 @@ def build_save_point_query():
 
 @main_bp.route("/")
 def home():
-    return render_template("index.html")
+    initial_language = request.accept_languages.best_match(["de", "en"]) or "de"
+    return render_template("index.html", initial_language=initial_language)
 
 
 @main_bp.route("/dashboard")
