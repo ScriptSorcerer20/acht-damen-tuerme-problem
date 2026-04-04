@@ -66,8 +66,31 @@
             <p id="statusMessage"></p>
             <div class="board" id="board"></div>
 
+            <div class="solver-panel">
+                <div class="solver-panel-header">
+                    <div>
+                        <h3>Solver-Ablauf</h3>
+                        <p class="solver-message" id="solverMessage">Bereite einen Ablauf vor und spiele ihn Schritt fuer Schritt ab.</p>
+                    </div>
+                    <p class="solver-step-info" id="solverStepInfo">Schritt 0 / 0</p>
+                </div>
+
+                <div class="solver-controls">
+                    <button class="btn" onclick="prepareSolutionTrace()" id="btnPrepareSolve" type="button">Solve Step-by-Step</button>
+                    <button class="btn secondary" onclick="instantSolve()" id="btnInstantSolve" type="button">Instant Solve</button>
+                    <button class="btn secondary" onclick="nextSolverStep()" id="btnNextStep" type="button">Next Step</button>
+                    <button class="btn secondary" onclick="toggleSolverPlayback()" id="btnPlayPause" type="button">Play Animation</button>
+                </div>
+
+                <div class="solver-speed">
+                    <label class="solver-speed-label" for="solverSpeedInput">Speed</label>
+                    <input id="solverSpeedInput" type="range" min="80" max="900" step="20" value="320"
+                        oninput="updateSolverSpeed(this.value)">
+                    <span class="solver-speed-value" id="solverSpeedValue">320 ms</span>
+                </div>
+            </div>
+
             <div class="controls">
-                <button class="btn" onclick="solve()">Solve</button>
                 <button class="btn" onclick="checkSolution()">Check</button>
                 <button class="btn secondary" onclick="resetBoard()">Reset</button>
 

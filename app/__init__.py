@@ -1,28 +1,11 @@
-from flask import Flask
 import os
-from flask_sqlalchemy import SQLAlchemy
+
+from flask import Flask
 from flask_login import LoginManager
-from sqlalchemy import inspect, text
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
-
-def apply_startup_migrations():
-    inspector = inspect(db.engine)
-
-    if "users" in inspector.get_table_names():
-        existing_columns = {column["name"] for column in inspector.get_columns("users")}
-        user_column_migrations = {
-            "two_factor_enabled": "ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN NOT NULL DEFAULT 0",
-            "two_factor_secret": "ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(64)",
-        }
-
-        for column_name, statement in user_column_migrations.items():
-            if column_name not in existing_columns:
-                db.session.execute(text(statement))
-
-        db.session.commit()
 
 def create_app():
     app = Flask(__name__)
@@ -47,7 +30,6 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        apply_startup_migrations()
 
     @login_manager.user_loader
     def load_user(user_id):

@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import datetime
 
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
@@ -25,6 +26,10 @@ def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
 
 def parse_favorite_flag(raw_value):
     return str(raw_value).lower() in {"1", "true", "yes", "on"}
+
+
+def get_position_label(row, col, board_size):
+    return f"{chr(65 + col)}{board_size - row}"
 
 
 def solve_queens(board_size):
@@ -62,6 +67,105 @@ def solve_rooks(board_size):
     rook_positions = list(range(board_size))
     random.shuffle(rook_positions)
     return rook_positions
+
+
+def build_queens_trace(board_size):
+    queen_positions = [-1] * board_size
+    steps = []
+
+    def is_queen_position_safe(row, col):
+        for previous_row in range(row):
+            previous_col = queen_positions[previous_row]
+
+            if previous_col == col:
+                return False
+
+            if abs(previous_col - col) == abs(previous_row - row):
+                return False
+
+        return True
+
+    def place_queen(row):
+        if row == board_size:
+            steps.append({
+                "type": "solution",
+                "row": None,
+                "col": None,
+                "board": queen_positions[:],
+                "message": f"Loesung gefunden. Alle {board_size} Damen stehen ohne Konflikte."
+            })
+            return True
+
+        for col in range(board_size):
+            if not is_queen_position_safe(row, col):
+                continue
+
+            queen_positions[row] = col
+            position = get_position_label(row, col, board_size)
+            steps.append({
+                "type": "place",
+                "row": row,
+                "col": col,
+                "board": queen_positions[:],
+                "message": f"Dame auf {position} gesetzt."
+            })
+
+            if place_queen(row + 1):
+                return True
+
+            queen_positions[row] = -1
+            steps.append({
+                "type": "remove",
+                "row": row,
+                "col": col,
+                "board": queen_positions[:],
+                "message": f"Backtracking: Dame von {position} entfernt."
+            })
+
+        return False
+
+    solved = place_queen(0)
+
+    return {
+        "mode": "queens",
+        "board_size": board_size,
+        "initial_board": [-1] * board_size,
+        "steps": steps,
+        "solved": solved
+    }
+
+
+def build_rooks_trace(board_size):
+    rook_positions = solve_rooks(board_size)
+    board = [-1] * board_size
+    steps = []
+
+    for row, col in enumerate(rook_positions):
+        board[row] = col
+        position = get_position_label(row, col, board_size)
+        steps.append({
+            "type": "place",
+            "row": row,
+            "col": col,
+            "board": board[:],
+            "message": f"Turm auf {position} gesetzt."
+        })
+
+    steps.append({
+        "type": "solution",
+        "row": None,
+        "col": None,
+        "board": board[:],
+        "message": f"Loesung gefunden. Alle {board_size} Tuerme stehen ohne Konflikte."
+    })
+
+    return {
+        "mode": "rooks",
+        "board_size": board_size,
+        "initial_board": [-1] * board_size,
+        "steps": steps,
+        "solved": True
+    }
 
 
 def serialize_game_state(game_state):
@@ -149,10 +253,22 @@ def solve_queens_route():
     return jsonify(solve_queens(board_size))
 
 
+@main_bp.route("/solve_trace")
+def solve_queens_trace_route():
+    board_size = parse_board_size(request.args.get("size"))
+    return jsonify(build_queens_trace(board_size))
+
+
 @main_bp.route("/solve_rooks")
 def solve_rooks_route():
     board_size = parse_board_size(request.args.get("size"))
     return jsonify(solve_rooks(board_size))
+
+
+@main_bp.route("/solve_rooks_trace")
+def solve_rooks_trace_route():
+    board_size = parse_board_size(request.args.get("size"))
+    return jsonify(build_rooks_trace(board_size))
 
 
 @main_bp.route("/save", methods=["POST"])
@@ -166,6 +282,7 @@ def save_game():
     save_name = (data.get("saveName") or "").strip() or f"{piece_mode.title()} Save"
     save_note = (data.get("saveNote") or "").strip()
     is_favorite = bool(data.get("isFavorite"))
+    timestamp = datetime.utcnow()
 
     game_state = GameState(
         user_id=current_user.id,
@@ -174,7 +291,9 @@ def save_game():
         board_size=board_size,
         save_name=save_name,
         save_note=save_note,
-        is_favorite=is_favorite
+        is_favorite=is_favorite,
+        created_at=timestamp,
+        updated_at=timestamp
     )
 
     db.session.add(game_state)
