@@ -2,7 +2,6 @@ const DEFAULT_BOARD_SIZE = 8;
 const MIN_BOARD_SIZE = 4;
 const MAX_BOARD_SIZE = 13;
 const EMPTY_CELL = -1;
-const DEFAULT_SOLVER_MESSAGE = "Bereite einen Ablauf vor und spiele ihn Schritt fuer Schritt ab.";
 const GAME_STORAGE_KEY = "eight-queens-dashboard-session-v1";
 
 let mode = "queens";
@@ -26,20 +25,56 @@ let currentSolverHighlight = null;
 const boardDiv = document.getElementById("board");
 const statusMessage = document.getElementById("statusMessage");
 const queenList = document.getElementById("queenList");
+const pieceCountBadge = document.getElementById("pieceCountBadge");
+const navDashboardLink = document.getElementById("navDashboardLink");
+const langSwitch = document.getElementById("langSwitch");
+const accountLabel = document.getElementById("accountLabel");
+const introKicker = document.getElementById("introKicker");
+const introTitle = document.getElementById("introTitle");
+const introText = document.getElementById("introText");
+const infoButton = document.getElementById("infoButton");
+const gameModeEyebrow = document.getElementById("gameModeEyebrow");
+const gameTitle = document.getElementById("gameTitle");
+const boardModeText = document.getElementById("boardModeText");
+const boardSizeInfoPrefix = document.getElementById("boardSizeInfoPrefix");
+const pieceListTitle = document.getElementById("pieceListTitle");
+const infoModalTitle = document.getElementById("infoModalTitle");
+const infoModeRuleText = document.getElementById("infoModeRuleText");
+const infoModalProblemHeading = document.getElementById("infoModalProblemHeading");
+const infoModalProblemText = document.getElementById("infoModalProblemText");
+const stepsLabel = document.getElementById("stepsLabel");
+const timeLabel = document.getElementById("timeLabel");
+const statusLabel = document.getElementById("statusLabel");
 const stepCounterValue = document.getElementById("stepCounterValue");
 const timerValue = document.getElementById("timerValue");
 const gameProgressState = document.getElementById("gameProgressState");
+const solvedCelebration = document.getElementById("solvedCelebration");
+const solvedCelebrationTitle = document.getElementById("solvedCelebrationTitle");
+const solvedCelebrationText = document.getElementById("solvedCelebrationText");
 const btnQueens = document.getElementById("btnQueens");
 const btnRooks = document.getElementById("btnRooks");
 const btnPrepareSolve = document.getElementById("btnPrepareSolve");
 const btnInstantSolve = document.getElementById("btnInstantSolve");
 const btnNextStep = document.getElementById("btnNextStep");
 const btnPlayPause = document.getElementById("btnPlayPause");
+const btnReset = document.getElementById("btnReset");
+const btnSave = document.getElementById("btnSave");
+const btnLoad = document.getElementById("btnLoad");
 const solverMessage = document.getElementById("solverMessage");
 const solverStepInfo = document.getElementById("solverStepInfo");
+const solverKicker = document.getElementById("solverKicker");
+const solverTitle = document.getElementById("solverTitle");
+const animationSolverTitle = document.getElementById("animationSolverTitle");
+const animationSolverText = document.getElementById("animationSolverText");
+const instantSolverTitle = document.getElementById("instantSolverTitle");
+const instantSolverText = document.getElementById("instantSolverText");
 const solverSpeedInput = document.getElementById("solverSpeedInput");
 const solverSpeedValue = document.getElementById("solverSpeedValue");
+const solverSpeedLabel = document.getElementById("solverSpeedLabel");
 const settingsSidebar = document.getElementById("settingsSidebar");
+const settingsTrigger = document.getElementById("settingsTrigger");
+const settingsTriggerArrow = document.getElementById("settingsTriggerArrow");
+const settingsTriggerLabel = document.getElementById("settingsTriggerLabel");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 const saveSidebar = document.getElementById("saveSidebar");
 const saveBackdrop = document.getElementById("saveBackdrop");
@@ -50,17 +85,368 @@ const boardSizeValue = document.getElementById("boardSizeValue");
 const boardSizeValueMirror = document.getElementById("boardSizeValueMirror");
 const sidebarBoardSizeValue = document.getElementById("sidebarBoardSizeValue");
 const sidebarBoardSizeValueMirror = document.getElementById("sidebarBoardSizeValueMirror");
+const settingsSidebarTitle = document.getElementById("settingsSidebarTitle");
+const settingsSidebarClose = document.getElementById("settingsSidebarClose");
+const settingsSidebarText = document.getElementById("settingsSidebarText");
+const boardSizeInputLabel = document.getElementById("boardSizeInputLabel");
+const applyBoardSizeButton = document.getElementById("applyBoardSizeButton");
+const settingsSidebarHint = document.getElementById("settingsSidebarHint");
 const savePointsList = document.getElementById("savePointsList");
 const saveNameInput = document.getElementById("saveNameInput");
 const saveNoteInput = document.getElementById("saveNoteInput");
 const saveFavoriteInput = document.getElementById("saveFavoriteInput");
+const saveSidebarTitle = document.getElementById("saveSidebarTitle");
+const saveSidebarClose = document.getElementById("saveSidebarClose");
+const saveSidebarText = document.getElementById("saveSidebarText");
+const saveNameLabel = document.getElementById("saveNameLabel");
+const saveNoteLabel = document.getElementById("saveNoteLabel");
+const saveFavoriteLabel = document.getElementById("saveFavoriteLabel");
+const saveNowButton = document.getElementById("saveNowButton");
 const savePointModeFilter = document.getElementById("savePointModeFilter");
 const savePointSizeFilter = document.getElementById("savePointSizeFilter");
 const savePointSortFilter = document.getElementById("savePointSortFilter");
 const savePointFavoritesOnly = document.getElementById("savePointFavoritesOnly");
+const savePointsSidebarTitle = document.getElementById("savePointsSidebarTitle");
+const savePointsSidebarClose = document.getElementById("savePointsSidebarClose");
+const savePointsSidebarText = document.getElementById("savePointsSidebarText");
+const savePointModeFilterLabel = document.getElementById("savePointModeFilterLabel");
+const savePointSizeFilterLabel = document.getElementById("savePointSizeFilterLabel");
+const savePointSortFilterLabel = document.getElementById("savePointSortFilterLabel");
+const savePointFavoritesOnlyLabel = document.getElementById("savePointFavoritesOnlyLabel");
+const savePointsEmptyState = document.getElementById("savePointsEmptyState");
+const historyKicker = document.getElementById("historyKicker");
+const historyTitle = document.getElementById("historyTitle");
+const historySubtitle = document.getElementById("historySubtitle");
+const btnRefreshHistory = document.getElementById("btnRefreshHistory");
+const historyHeadSave = document.getElementById("historyHeadSave");
+const historyHeadMode = document.getElementById("historyHeadMode");
+const historyHeadBoard = document.getElementById("historyHeadBoard");
+const historyHeadSteps = document.getElementById("historyHeadSteps");
+const historyHeadTime = document.getElementById("historyHeadTime");
+const historyHeadStatus = document.getElementById("historyHeadStatus");
+const historyHeadSaved = document.getElementById("historyHeadSaved");
 const timeHistoryTableBody = document.getElementById("timeHistoryTableBody");
 const infoModal = document.getElementById("infoModal");
 const infoModalBackdrop = document.getElementById("infoModalBackdrop");
+
+const SUPPORTED_LANGUAGES = ["de", "en"];
+let currentLanguage = "de";
+
+const MODE_COPY = {
+    de: {
+        queens: {
+            singular: "Dame",
+            plural: "Damen",
+            eyebrow: "Damen-Modus",
+            gameTitle: "Damen-Spielbrett",
+            boardText: "Platziere Damen so, dass keine zwei dieselbe Spalte oder Diagonale teilen.",
+            infoTitle: "Spielregeln und Acht-Damen-Problem",
+            infoRuleText: "Im Damen-Modus dürfen sich Damen weder in derselben Spalte noch diagonal angreifen. Mit einem Klick setzt oder entfernst du eine Figur.",
+            infoProblemHeading: "Was ist das Acht-Damen-Problem?",
+            infoProblemText: "Das klassische Acht-Damen-Problem fragt nach einer Anordnung von acht Damen auf einem 8x8-Brett, bei der sich keine zwei Damen schlagen. Es ist ein bekanntes Beispiel für kombinatorische Suche und Backtracking."
+        },
+        rooks: {
+            singular: "Turm",
+            plural: "Türme",
+            eyebrow: "Türme-Modus",
+            gameTitle: "Türme-Spielbrett",
+            boardText: "Platziere Türme so, dass keine zwei dieselbe Spalte teilen.",
+            infoTitle: "Spielregeln und Acht-Türme-Problem",
+            infoRuleText: "Im Türme-Modus duerfen sich Türme nicht in derselben Spalte stehen. Diagonalen spielen hier keine Rolle. Mit einem Klick setzt oder entfernst du eine Figur.",
+            infoProblemHeading: "Was ist das Acht-Türme-Problem?",
+            infoProblemText: "Beim Acht-Türme-Problem suchst du eine Anordnung von acht Türmen auf einem 8x8-Brett, bei der sich keine zwei Türme angreifen. Es ist eine einfachere Variante, um systematische Suche und Konfliktprüfung sichtbar zu machen."
+        }
+    },
+    en: {
+        queens: {
+            singular: "Queen",
+            plural: "Queens",
+            eyebrow: "Queens Mode",
+            gameTitle: "Queens Board",
+            boardText: "Place queens so that no two share the same column or diagonal.",
+            infoTitle: "Rules and the Eight Queens Puzzle",
+            infoRuleText: "In queens mode, queens may not attack each other in the same column or on diagonals. Click once to place or remove a piece.",
+            infoProblemHeading: "What is the Eight Queens puzzle?",
+            infoProblemText: "The classic Eight Queens puzzle asks for eight queens on an 8x8 board so that no two queens attack each other. It is a well-known example of combinatorial search and backtracking."
+        },
+        rooks: {
+            singular: "Rook",
+            plural: "Rooks",
+            eyebrow: "Rooks Mode",
+            gameTitle: "Rooks Board",
+            boardText: "Place rooks so that no two share the same column.",
+            infoTitle: "Rules and the Eight Rooks Puzzle",
+            infoRuleText: "In rooks mode, rooks may not stand in the same column. Diagonals do not matter here. Click once to place or remove a piece.",
+            infoProblemHeading: "What is the Eight Rooks puzzle?",
+            infoProblemText: "In the Eight Rooks puzzle, you arrange eight rooks on an 8x8 board so that no two rooks attack each other. It is a simpler variant that helps visualize systematic search and conflict checking."
+        }
+    }
+};
+
+const UI_TRANSLATIONS = {
+    de: {
+        navDashboard: "Dashboard",
+        accountLabel: "Account",
+        introKicker: "Puzzle-Modus",
+        introTitle: "Wähl deinen Modus und löse das Brett auf deine Art.",
+        introText: "Wechsle zwischen Damen und Türmen, nutze Animation oder Sofort-Lösung und öffne die Brett-Einstellungen jederzeit ueber den linken Seiten-Tab.",
+        infoButton: "Regeln & Hilfe",
+        stepsLabel: "Schritte",
+        timeLabel: "Zeit",
+        statusLabel: "Status",
+        progressRunning: "Läuft",
+        progressSolved: "Gelöst",
+        boardSizePrefix: ({ modeLabel }) => `Aktuelle Brettgrösse im ${modeLabel}-Modus:`,
+        solverKicker: "Solver",
+        solverTitle: "Lösungswerkzeuge",
+        animationSolverTitle: "Animations-Solver",
+        animationSolverText: "Bereite den Lösungsweg vor, gehe ihn manuell Schritt für Schritt durch oder spiele die Animation automatisch ab.",
+        instantSolverTitle: "Sofort-Lösung",
+        instantSolverText: "Lade direkt eine gültige Lösung, ohne Zwischenschritte oder Animation.",
+        defaultSolverMessage: "Bereite einen Ablauf vor und spiele ihn Schritt für Schritt ab.",
+        solverReady: ({ modeLabel }) => `Solver für ${modeLabel} bereit. ${t("defaultSolverMessage")}`,
+        solverSpeedLabel: "Animationsgeschwindigkeit",
+        btnPrepareSolve: "Animation vorbereiten",
+        btnPrepareSolveLoading: "Animation wird vorbereitet...",
+        btnNextStep: "Nächster Schritt",
+        btnPlayPause: "Animation abspielen",
+        btnPlayReplay: "Animation erneut abspielen",
+        btnPlayPauseRunning: "Animation pausieren",
+        btnInstantSolve: "Sofort lösen",
+        btnReset: "Brett zurücksetzen",
+        settingsTrigger: "Brett-Einstellungen",
+        settingsSidebarTitle: "Brett-Einstellungen",
+        settingsSidebarClose: "Schliessen",
+        settingsSidebarText: "Passe die Brettgroesse zwischen 4 und 13 an.",
+        boardSizeInputLabel: "Grösse",
+        applyBoardSizeButton: "Grösse anwenden",
+        settingsSidebarHint: "Beim ändern wird das Brett zur Sicherheit zurückgesetzt. Auf dem Handy ist 8x8 eingeplant, grössere Bretter können abgeschnitten wirken.",
+        btnSave: "Speichern",
+        btnLoad: "Save-Points",
+        saveSidebarTitle: "Speicherpunkt",
+        saveSidebarClose: "Schliessen",
+        saveSidebarText: "Gib dem Spielstand einen klaren Namen und optional eine kurze Notiz.",
+        saveNameLabel: "Name",
+        saveNamePlaceholder: "z. B. Fast gelöste Dame 8x8",
+        saveNoteLabel: "Notiz",
+        saveNotePlaceholder: "z. B. Gute Startposition fuer Türmetest",
+        saveFavoriteLabel: "Als Favorit markieren",
+        saveNowButton: "Jetzt speichern",
+        savePointsSidebarTitle: "Save-Points",
+        savePointsSidebarClose: "Schliessen",
+        savePointsSidebarText: "Wähle einen Speicherstand aus der Liste.",
+        savePointModeFilterLabel: "Modus",
+        savePointSizeFilterLabel: "Brettgrösse",
+        savePointSortFilterLabel: "Sortierung",
+        savePointFavoritesOnlyLabel: "Nur Favoriten anzeigen",
+        savePointsEmptyState: "Noch keine Speicherstände gefunden.",
+        filterAll: "Alle",
+        filterNewest: "Neueste zuerst",
+        filterOldest: "älteste zuerst",
+        filterUpdated: "Zuletzt bearbeitet",
+        filterFavorites: "Favoriten zuerst",
+        historyKicker: "Save-Points",
+        historyTitle: "Gespeicherte Zeiten und Fortschritte",
+        historySubtitle: "Die Tabelle zeigt gespeicherte Save-Points mit Zeit, Schritten und Status.",
+        btnRefreshHistory: "Aktualisieren",
+        historyHeadSave: "Save-Point",
+        historyHeadMode: "Modus",
+        historyHeadBoard: "Brett",
+        historyHeadSteps: "Schritte",
+        historyHeadTime: "Zeit",
+        historyHeadStatus: "Status",
+        historyHeadSaved: "Gespeichert",
+        pieceListTitle: ({ modeLabel }) => `Positionen der ${modeLabel}`,
+        historyEmpty: "Noch keine gespeicherten Zeiten vorhanden.",
+        placedWord: "gesetzt",
+        noSavePointsFiltered: "Keine Speicherstände fuer diese Filter gefunden.",
+        previewEmpty: "Noch keine Figuren gesetzt",
+        createdLabel: "Erstellt",
+        updatedLabel: "Aktualisiert",
+        previewLabel: "Vorschau",
+        noteLabel: "Notiz",
+        noNote: "Keine Notiz",
+        stepsMeta: "Schritte",
+        timeMeta: "Zeit",
+        solvedMeta: "Gelöst",
+        openMeta: "Offen",
+        loadButton: "Laden",
+        favoriteAddButton: "Als Favorit",
+        favoriteRemoveButton: "Favorit entfernen",
+        deleteButton: "Löschen",
+        celebrationTitle: "Richtig geloöst!",
+        celebrationText: ({ modeLabel, duration }) => `Stark gemacht. Deine ${modeLabel.toLowerCase()}-Lösung ist konfliktfrei in ${duration}.`,
+        settingsApplied: ({ size }) => `Brettgrösse auf ${size} x ${size} gesetzt.`,
+        modeActivated: ({ piece }) => `${piece}-Modus aktiviert.`,
+        solverDiscardedManual: "Solver-Ablauf verworfen, weil das Brett manuell geändert wurde.",
+        solverDiscardedStatus: "Solver-Ablauf verworfen. Bereite ihn bei Bedarf neu vor.",
+        solvedPerfect: ({ duration }) => `Perfekt gelöst in ${duration}.`,
+        animationReset: "Animations-Ablauf zurückgesetzt. Starte die Animation erneut oder gehe weiter mit Nächster Schritt.",
+        animationPreparing: ({ modeLabel, size }) => `Berechne den Animations-Ablauf für ${modeLabel.toLowerCase()} auf ${size} x ${size}...`,
+        animationPreparingStatus: ({ size }) => `Animations-Solver berechnet die Schritte fuer ${size} x ${size}.`,
+        noSolution: "Keine Lösung gefunden.",
+        noSolutionStatus: "Keine Lösung fuer dieses Brett gefunden.",
+        animationReady: ({ steps, queensMode }) => queensMode
+            ? `Animations-Ablauf bereit mit ${steps} Schritten. Nutze Nächster Schritt oder Animation abspielen, um das Backtracking zu verfolgen.`
+            : `Animations-Ablauf bereit mit ${steps} Schritten. Nutze Nächster Schritt oder Animation abspielen.`,
+        animationReadyStatus: "Animations-Solver bereit. Nutze Nächster Schritt oder Animation abspielen.",
+        animationLoadError: "Der Solver-Ablauf konnte nicht geladen werden.",
+        animationFinishedStatus: ({ size }) => `Loesung für ${size} x ${size} Schritt fuer Schritt aufgebaut.`,
+        animationAlreadyFinished: "Der Animations-Ablauf ist bereits abgeschlossen.",
+        animationPaused: "Animations-Solver pausiert.",
+        animationRunning: "Animations-Solver läuft.",
+        instantLoading: ({ modeLabel, size }) => `Lade die Sofort-Lösung für ${modeLabel.toLowerCase()} auf ${size} x ${size}...`,
+        instantLoadingStatus: "Sofort-Lösung wird geladen.",
+        instantLoaded: "Sofort-Lösung geladen. Starte den Animations-Solver, wenn du den Lösungsweg sehen möchtest.",
+        instantLoadedStatus: ({ size }) => `Sofort-Loesung für ${size} x ${size} geladen.`,
+        instantLoadError: "Die Sofort-Lösung konnte nicht geladen werden.",
+        saveError: "Der Speicherstand konnte nicht gespeichert werden.",
+        saveSuccess: ({ name }) => `Speicherpunkt "${name}" gespeichert.`,
+        loadError: "Dieser Speicherstand konnte nicht geladen werden.",
+        loadSuccess: ({ name }) => `Speicherpunkt "${name}" geladen.`,
+        favoriteError: "Favorit konnte nicht aktualisiert werden.",
+        favoriteSuccess: "Favoritenstatus aktualisiert.",
+        deleteConfirm: "Diesen Speicherpunkt wirklich löschen?",
+        deleteError: "Speicherpunkt konnte nicht gelöscht werden.",
+        deleteSuccess: "Speicherpunkt geloescht.",
+        pieceCount: ({ count }) => `${count} gesetzt`,
+        pieceEmpty: ({ modeLabel }) => `Noch keine ${modeLabel.toLowerCase()} gesetzt.`,
+        saveDefaultName: ({ piece, size, count }) => `${piece} ${size}x${size} - ${count} gesetzt`,
+        speedValue: ({ speed }) => `${speed} ms`,
+        languageSwitchAria: "Sprache wechseln"
+    },
+    en: {
+        navDashboard: "Dashboard",
+        accountLabel: "Account",
+        introKicker: "Puzzle Mode",
+        introTitle: "Choose your mode and solve the board your way.",
+        introText: "Switch between queens and rooks, use animation or instant solve, and open board settings anytime from the left side tab.",
+        infoButton: "Rules & Help",
+        stepsLabel: "Steps",
+        timeLabel: "Time",
+        statusLabel: "Status",
+        progressRunning: "Running",
+        progressSolved: "Solved",
+        boardSizePrefix: ({ modeLabel }) => `Current board size in ${modeLabel} mode:`,
+        solverKicker: "Solver",
+        solverTitle: "Solving Tools",
+        animationSolverTitle: "Animation Solver",
+        animationSolverText: "Prepare the solving path, step through it manually, or play the animation automatically.",
+        instantSolverTitle: "Instant Solve",
+        instantSolverText: "Load a valid solution directly, without intermediate steps or animation.",
+        defaultSolverMessage: "Prepare a solving trace and play it back step by step.",
+        solverReady: ({ modeLabel }) => `Solver for ${modeLabel} is ready. ${t("defaultSolverMessage")}`,
+        solverSpeedLabel: "Animation speed",
+        btnPrepareSolve: "Prepare animation",
+        btnPrepareSolveLoading: "Preparing animation...",
+        btnNextStep: "Next step",
+        btnPlayPause: "Play animation",
+        btnPlayReplay: "Replay animation",
+        btnPlayPauseRunning: "Pause animation",
+        btnInstantSolve: "Solve instantly",
+        btnReset: "Reset board",
+        settingsTrigger: "Board settings",
+        settingsSidebarTitle: "Board Settings",
+        settingsSidebarClose: "Close",
+        settingsSidebarText: "Adjust the board size between 4 and 13.",
+        boardSizeInputLabel: "Size",
+        applyBoardSizeButton: "Apply size",
+        settingsSidebarHint: "Changing the size resets the board for safety. On phones, 8x8 is the intended maximum for a reliable fit and larger boards may appear cropped.",
+        btnSave: "Save",
+        btnLoad: "Save points",
+        saveSidebarTitle: "Save Point",
+        saveSidebarClose: "Close",
+        saveSidebarText: "Give the current run a clear name and optionally a short note.",
+        saveNameLabel: "Name",
+        saveNamePlaceholder: "e.g. Nearly solved queen 8x8",
+        saveNoteLabel: "Note",
+        saveNotePlaceholder: "e.g. Strong starting position for rook test",
+        saveFavoriteLabel: "Mark as favorite",
+        saveNowButton: "Save now",
+        savePointsSidebarTitle: "Save Points",
+        savePointsSidebarClose: "Close",
+        savePointsSidebarText: "Choose a saved state from the list.",
+        savePointModeFilterLabel: "Mode",
+        savePointSizeFilterLabel: "Board size",
+        savePointSortFilterLabel: "Sorting",
+        savePointFavoritesOnlyLabel: "Show favorites only",
+        savePointsEmptyState: "No saved states yet.",
+        filterAll: "All",
+        filterNewest: "Newest first",
+        filterOldest: "Oldest first",
+        filterUpdated: "Recently updated",
+        filterFavorites: "Favorites first",
+        historyKicker: "Save Points",
+        historyTitle: "Saved Times and Progress",
+        historySubtitle: "The table shows saved runs with time, steps, and status.",
+        btnRefreshHistory: "Refresh",
+        historyHeadSave: "Save Point",
+        historyHeadMode: "Mode",
+        historyHeadBoard: "Board",
+        historyHeadSteps: "Steps",
+        historyHeadTime: "Time",
+        historyHeadStatus: "Status",
+        historyHeadSaved: "Saved",
+        pieceListTitle: ({ modeLabel }) => `${modeLabel} positions`,
+        historyEmpty: "No saved times yet.",
+        placedWord: "placed",
+        noSavePointsFiltered: "No saved states found for these filters.",
+        previewEmpty: "No pieces placed yet",
+        createdLabel: "Created",
+        updatedLabel: "Updated",
+        previewLabel: "Preview",
+        noteLabel: "Note",
+        noNote: "No note",
+        stepsMeta: "Steps",
+        timeMeta: "Time",
+        solvedMeta: "Solved",
+        openMeta: "Open",
+        loadButton: "Load",
+        favoriteAddButton: "Favorite",
+        favoriteRemoveButton: "Remove favorite",
+        deleteButton: "Delete",
+        celebrationTitle: "Correctly solved!",
+        celebrationText: ({ modeLabel, duration }) => `Well done. Your ${modeLabel.toLowerCase()} solution is conflict-free in ${duration}.`,
+        settingsApplied: ({ size }) => `Board size set to ${size} x ${size}.`,
+        modeActivated: ({ piece }) => `${piece} mode activated.`,
+        solverDiscardedManual: "Solver trace discarded because the board was changed manually.",
+        solverDiscardedStatus: "Solver trace discarded. Prepare it again if needed.",
+        solvedPerfect: ({ duration }) => `Perfectly solved in ${duration}.`,
+        animationReset: "Animation trace reset. Start the animation again or continue with Next step.",
+        animationPreparing: ({ modeLabel, size }) => `Preparing the animation trace for ${modeLabel.toLowerCase()} on ${size} x ${size}...`,
+        animationPreparingStatus: ({ size }) => `Animation solver is preparing the steps for ${size} x ${size}.`,
+        noSolution: "No solution found.",
+        noSolutionStatus: "No solution found for this board.",
+        animationReady: ({ steps, queensMode }) => queensMode
+            ? `Animation trace ready with ${steps} steps. Use Next step or Play animation to follow the backtracking process.`
+            : `Animation trace ready with ${steps} steps. Use Next step or Play animation.`,
+        animationReadyStatus: "Animation solver ready. Use Next step or Play animation.",
+        animationLoadError: "The solver trace could not be loaded.",
+        animationFinishedStatus: ({ size }) => `Solution for ${size} x ${size} was built step by step.`,
+        animationAlreadyFinished: "The animation trace is already complete.",
+        animationPaused: "Animation solver paused.",
+        animationRunning: "Animation solver is running.",
+        instantLoading: ({ modeLabel, size }) => `Loading the instant solution for ${modeLabel.toLowerCase()} on ${size} x ${size}...`,
+        instantLoadingStatus: "Instant solution is loading.",
+        instantLoaded: "Instant solution loaded. Start the animation solver if you want to see the solving path.",
+        instantLoadedStatus: ({ size }) => `Instant solution for ${size} x ${size} loaded.`,
+        instantLoadError: "The instant solution could not be loaded.",
+        saveError: "The save point could not be saved.",
+        saveSuccess: ({ name }) => `Save point "${name}" saved.`,
+        loadError: "This save point could not be loaded.",
+        loadSuccess: ({ name }) => `Save point "${name}" loaded.`,
+        favoriteError: "Favorite status could not be updated.",
+        favoriteSuccess: "Favorite status updated.",
+        deleteConfirm: "Really delete this save point?",
+        deleteError: "Save point could not be deleted.",
+        deleteSuccess: "Save point deleted.",
+        pieceCount: ({ count }) => `${count} placed`,
+        pieceEmpty: ({ modeLabel }) => `No ${modeLabel.toLowerCase()} placed yet.`,
+        saveDefaultName: ({ piece, size, count }) => `${piece} ${size}x${size} - ${count} placed`,
+        speedValue: ({ speed }) => `${speed} ms`,
+        languageSwitchAria: "Switch language"
+    }
+};
 
 function createEmptyBoard(size) {
     return Array(size).fill(EMPTY_CELL);
@@ -72,6 +458,44 @@ function clampBoardSize(size) {
 
 function getColumnLabel(index) {
     return String.fromCharCode(65 + index);
+}
+
+function normalizeLanguage(language) {
+    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
+    return SUPPORTED_LANGUAGES.includes(shortLanguage) ? shortLanguage : "de";
+}
+
+function getStoredLanguage() {
+    try {
+        return window.localStorage.getItem("preferredLanguage");
+    } catch (error) {
+        return null;
+    }
+}
+
+function storeLanguage(language) {
+    try {
+        window.localStorage.setItem("preferredLanguage", language);
+    } catch (error) {
+        return;
+    }
+}
+
+function detectBrowserLanguage() {
+    return normalizeLanguage(navigator.language || navigator.userLanguage || "de");
+}
+
+function t(key, params = {}) {
+    const value = UI_TRANSLATIONS[currentLanguage][key];
+    return typeof value === "function" ? value(params) : value;
+}
+
+function getDefaultSolverMessage() {
+    return t("defaultSolverMessage");
+}
+
+function getModeCopy(selectedMode = mode, language = currentLanguage) {
+    return MODE_COPY[language][selectedMode === "rooks" ? "rooks" : "queens"];
 }
 
 function sanitizeBoard(candidateBoard, size) {
@@ -130,8 +554,9 @@ function persistCurrentSession() {
 function updateProgressDisplay() {
     stepCounterValue.textContent = String(stepCount);
     timerValue.textContent = formatDuration(Math.floor(getElapsedMilliseconds() / 1000));
-    gameProgressState.textContent = isSolved ? "Geloest" : "Laeuft";
+    gameProgressState.textContent = isSolved ? t("progressSolved") : t("progressRunning");
     gameProgressState.style.color = isSolved ? "#15803d" : "#1d4ed8";
+    updateSolvedCelebration();
 }
 
 function stopGameTimer() {
@@ -187,6 +612,121 @@ function ensureFreshRunAfterSolvedBoard() {
 function updateModeButtons() {
     btnQueens.classList.toggle("active", mode === "queens");
     btnRooks.classList.toggle("active", mode === "rooks");
+    btnQueens.classList.toggle("secondary", mode !== "queens");
+    btnRooks.classList.toggle("secondary", mode !== "rooks");
+}
+
+function updateModeContent() {
+    const copy = getModeCopy(mode);
+
+    gameModeEyebrow.textContent = copy.eyebrow;
+    gameTitle.textContent = copy.gameTitle;
+    boardModeText.textContent = copy.boardText;
+    pieceListTitle.textContent = t("pieceListTitle", { modeLabel: copy.plural });
+    infoModalTitle.textContent = copy.infoTitle;
+    infoModeRuleText.textContent = copy.infoRuleText;
+    infoModalProblemHeading.textContent = copy.infoProblemHeading;
+    infoModalProblemText.textContent = copy.infoProblemText;
+    boardSizeInfoPrefix.textContent = t("boardSizePrefix", { modeLabel: copy.plural });
+}
+
+function updateSolvedCelebration() {
+    if (!isSolved) {
+        solvedCelebration.hidden = true;
+        return;
+    }
+
+    solvedCelebrationTitle.textContent = t("celebrationTitle");
+    solvedCelebrationText.textContent = t("celebrationText", {
+        modeLabel: getModeLabel(mode),
+        duration: formatDuration(Math.floor(getElapsedMilliseconds() / 1000))
+    });
+    solvedCelebration.hidden = false;
+}
+
+function applyLanguageContent() {
+    document.documentElement.lang = currentLanguage;
+    navDashboardLink.textContent = t("navDashboard");
+    accountLabel.textContent = t("accountLabel");
+    introKicker.textContent = t("introKicker");
+    introTitle.textContent = t("introTitle");
+    introText.textContent = t("introText");
+    infoButton.textContent = t("infoButton");
+    infoButton.setAttribute("aria-label", t("infoButton"));
+    stepsLabel.textContent = t("stepsLabel");
+    timeLabel.textContent = t("timeLabel");
+    statusLabel.textContent = t("statusLabel");
+    solverKicker.textContent = t("solverKicker");
+    solverTitle.textContent = t("solverTitle");
+    animationSolverTitle.textContent = t("animationSolverTitle");
+    animationSolverText.textContent = t("animationSolverText");
+    instantSolverTitle.textContent = t("instantSolverTitle");
+    instantSolverText.textContent = t("instantSolverText");
+    solverSpeedLabel.textContent = t("solverSpeedLabel");
+    btnNextStep.textContent = t("btnNextStep");
+    btnInstantSolve.textContent = t("btnInstantSolve");
+    btnReset.textContent = t("btnReset");
+    settingsSidebarTitle.textContent = t("settingsSidebarTitle");
+    settingsSidebarClose.textContent = t("settingsSidebarClose");
+    settingsSidebarText.textContent = t("settingsSidebarText");
+    boardSizeInputLabel.textContent = t("boardSizeInputLabel");
+    applyBoardSizeButton.textContent = t("applyBoardSizeButton");
+    settingsSidebarHint.textContent = t("settingsSidebarHint");
+    btnSave.textContent = t("btnSave");
+    btnLoad.textContent = t("btnLoad");
+    saveSidebarTitle.textContent = t("saveSidebarTitle");
+    saveSidebarClose.textContent = t("saveSidebarClose");
+    saveSidebarText.textContent = t("saveSidebarText");
+    saveNameLabel.textContent = t("saveNameLabel");
+    saveNameInput.placeholder = t("saveNamePlaceholder");
+    saveNoteLabel.textContent = t("saveNoteLabel");
+    saveNoteInput.placeholder = t("saveNotePlaceholder");
+    saveFavoriteLabel.textContent = t("saveFavoriteLabel");
+    saveNowButton.textContent = t("saveNowButton");
+    savePointsSidebarTitle.textContent = t("savePointsSidebarTitle");
+    savePointsSidebarClose.textContent = t("savePointsSidebarClose");
+    savePointsSidebarText.textContent = t("savePointsSidebarText");
+    savePointModeFilterLabel.textContent = t("savePointModeFilterLabel");
+    savePointSizeFilterLabel.textContent = t("savePointSizeFilterLabel");
+    savePointSortFilterLabel.textContent = t("savePointSortFilterLabel");
+    savePointFavoritesOnlyLabel.textContent = t("savePointFavoritesOnlyLabel");
+    savePointsEmptyState.textContent = t("savePointsEmptyState");
+    historyKicker.textContent = t("historyKicker");
+    historyTitle.textContent = t("historyTitle");
+    historySubtitle.textContent = t("historySubtitle");
+    btnRefreshHistory.textContent = t("btnRefreshHistory");
+    historyHeadSave.textContent = t("historyHeadSave");
+    historyHeadMode.textContent = t("historyHeadMode");
+    historyHeadBoard.textContent = t("historyHeadBoard");
+    historyHeadSteps.textContent = t("historyHeadSteps");
+    historyHeadTime.textContent = t("historyHeadTime");
+    historyHeadStatus.textContent = t("historyHeadStatus");
+    historyHeadSaved.textContent = t("historyHeadSaved");
+
+    savePointModeFilter.options[0].textContent = t("filterAll");
+    savePointModeFilter.options[1].textContent = getModeCopy("queens").plural;
+    savePointModeFilter.options[2].textContent = getModeCopy("rooks").plural;
+    savePointSizeFilter.options[0].textContent = t("filterAll");
+    savePointSortFilter.options[0].textContent = t("filterNewest");
+    savePointSortFilter.options[1].textContent = t("filterOldest");
+    savePointSortFilter.options[2].textContent = t("filterUpdated");
+    savePointSortFilter.options[3].textContent = t("filterFavorites");
+
+    langSwitch.textContent = currentLanguage.toUpperCase();
+    langSwitch.setAttribute("aria-label", t("languageSwitchAria"));
+    langSwitch.title = currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
+
+    updateModeContent();
+    updateQueenList();
+    updateProgressDisplay();
+    updateSolverSpeed(solverSpeedMs);
+    updateSolverControls();
+}
+
+function updateSettingsTrigger(isOpen = settingsSidebar.classList.contains("open")) {
+    settingsTrigger.setAttribute("aria-expanded", String(isOpen));
+    settingsTriggerArrow.textContent = isOpen ? "←" : "→";
+    settingsTriggerLabel.textContent = t("settingsTrigger");
 }
 
 function updateBoardSizeDisplays(size) {
@@ -202,14 +742,14 @@ function setStatus(message = "", color = "") {
     statusMessage.style.color = color;
 }
 
-function setSolverMessage(message = DEFAULT_SOLVER_MESSAGE) {
+function setSolverMessage(message = getDefaultSolverMessage()) {
     solverMessage.textContent = message;
 }
 
 function updateSolverSpeed(rawValue) {
     solverSpeedMs = Number(rawValue);
     solverSpeedInput.value = String(solverSpeedMs);
-    solverSpeedValue.textContent = `${solverSpeedMs} ms`;
+    solverSpeedValue.textContent = t("speedValue", { speed: solverSpeedMs });
 
     if (isSolverPlaying()) {
         stopSolverPlayback(false);
@@ -218,10 +758,19 @@ function updateSolverSpeed(rawValue) {
 }
 
 function updateBoardLayout() {
-    const cellSize = Math.max(32, Math.min(60, Math.floor(480 / boardSize)));
+    let cellSize = Math.max(32, Math.min(60, Math.floor(480 / boardSize)));
+    let labelSize = cellSize;
+
+    if (window.innerWidth <= 760) {
+        const labelRatio = 0.72;
+        const availableWidth = Math.max(250, window.innerWidth - 26);
+        cellSize = Math.max(24, Math.floor(availableWidth / (boardSize + labelRatio)));
+        labelSize = Math.max(18, Math.floor(cellSize * labelRatio));
+    }
 
     boardDiv.style.setProperty("--board-size", boardSize);
     boardDiv.style.setProperty("--cell-size", `${cellSize}px`);
+    boardDiv.style.setProperty("--label-size", `${labelSize}px`);
 }
 
 function isSolverPlaying() {
@@ -255,20 +804,20 @@ function updateSolverControls() {
     btnNextStep.disabled = solverLoading || hasCompletedSolverTrace();
     btnPlayPause.disabled = solverLoading;
 
-    btnPrepareSolve.textContent = solverLoading ? "Preparing..." : "Solve Step-by-Step";
+    btnPrepareSolve.textContent = solverLoading ? t("btnPrepareSolveLoading") : t("btnPrepareSolve");
 
     if (isSolverPlaying()) {
-        btnPlayPause.textContent = "Pause";
+        btnPlayPause.textContent = t("btnPlayPauseRunning");
     } else if (hasCompletedSolverTrace()) {
-        btnPlayPause.textContent = "Replay Animation";
+        btnPlayPause.textContent = t("btnPlayReplay");
     } else {
-        btnPlayPause.textContent = "Play Animation";
+        btnPlayPause.textContent = t("btnPlayPause");
     }
 
     solverStepInfo.textContent = `Schritt ${currentStep} / ${solverSteps.length}`;
 }
 
-function discardSolverTrace(message = DEFAULT_SOLVER_MESSAGE) {
+function discardSolverTrace(message = getDefaultSolverMessage()) {
     solverRequestId += 1;
     solverLoading = false;
     stopSolverPlayback(false);
@@ -286,7 +835,7 @@ function rewindSolverTrace() {
     solverStepIndex = -1;
     currentSolverHighlight = null;
     board = createEmptyBoard(boardSize);
-    setSolverMessage("Ablauf zurueckgesetzt. Starte die Animation erneut oder gehe weiter mit Next Step.");
+    setSolverMessage(t("animationReset"));
     drawBoard();
     updateSolverControls();
 }
@@ -298,10 +847,11 @@ function setMode(newMode) {
 
     mode = newMode;
     updateModeButtons();
+    updateModeContent();
     resetBoard({
-        statusMessageText: `${getPieceLabel(mode)}-Modus aktiviert.`,
+        statusMessageText: t("modeActivated", { piece: getPieceLabel(mode) }),
         statusColor: "#2563eb",
-        solverMessageText: `${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`
+        solverMessageText: t("solverReady", { modeLabel: getModeLabel(mode) })
     });
 }
 
@@ -355,23 +905,6 @@ function finishSolvedRun() {
     stopGameTimer();
     updateProgressDisplay();
     persistCurrentSession();
-}
-
-function checkSolution() {
-    const allPlaced = board.every((col) => col !== EMPTY_CELL);
-
-    if (!allPlaced) {
-        setStatus("Noch nicht alle Figuren platziert.", "#d97706");
-        return;
-    }
-
-    if (getConflicts().length > 0) {
-        setStatus("Es gibt Konflikte auf dem Brett.", "red");
-        return;
-    }
-
-    finishSolvedRun();
-    setStatus(`Perfekt geloest in ${formatDuration(Math.floor(getElapsedMilliseconds() / 1000))}.`, "green");
 }
 
 function drawBoard() {
@@ -433,8 +966,8 @@ function placeQueen(row, col) {
     ensureFreshRunAfterSolvedBoard();
 
     if (hasPreparedSolverTrace() || isSolverPlaying()) {
-        discardSolverTrace("Solver-Ablauf verworfen, weil das Brett manuell geaendert wurde.");
-        setStatus("Solver-Ablauf verworfen. Bereite ihn bei Bedarf neu vor.", "#d97706");
+        discardSolverTrace(t("solverDiscardedManual"));
+        setStatus(t("solverDiscardedStatus"), "#d97706");
     } else {
         setStatus();
     }
@@ -447,7 +980,7 @@ function placeQueen(row, col) {
 
     if (isBoardSolved()) {
         finishSolvedRun();
-        setStatus(`Perfekt geloest in ${formatDuration(Math.floor(getElapsedMilliseconds() / 1000))}.`, "green");
+        setStatus(t("solvedPerfect", { duration: formatDuration(Math.floor(getElapsedMilliseconds() / 1000)) }), "green");
     } else {
         persistCurrentSession();
     }
@@ -461,12 +994,12 @@ function previewBoardSize(size) {
 
 function applyBoardSize() {
     boardSize = pendingBoardSize;
-    discardSolverTrace(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
+    discardSolverTrace(t("solverReady", { modeLabel: getModeLabel(mode) }));
     board = createEmptyBoard(boardSize);
     currentSolverHighlight = null;
     resetProgress();
     updateBoardSizeDisplays(boardSize);
-    setStatus(`Brettgroesse auf ${boardSize} x ${boardSize} gesetzt.`, "#2563eb");
+    setStatus(t("settingsApplied", { size: boardSize }), "#2563eb");
     drawBoard();
     toggleSidebar(false);
 }
@@ -482,6 +1015,7 @@ function toggleSidebar(forceOpen) {
     settingsSidebar.classList.toggle("open", shouldOpen);
     sidebarBackdrop.classList.toggle("visible", shouldOpen);
     settingsSidebar.setAttribute("aria-hidden", String(!shouldOpen));
+    updateSettingsTrigger(shouldOpen);
 }
 
 function toggleSavePanel(forceOpen) {
@@ -519,7 +1053,7 @@ function toggleInfoModal(forceOpen) {
 }
 
 function getPieceLabel(selectedMode) {
-    return selectedMode === "queens" ? "Dame" : "Turm";
+    return getModeCopy(selectedMode).singular;
 }
 
 function getPlacedPieceCount() {
@@ -527,7 +1061,11 @@ function getPlacedPieceCount() {
 }
 
 function resetSaveForm() {
-    saveNameInput.value = `${getPieceLabel(mode)} ${boardSize}x${boardSize} - ${getPlacedPieceCount()} gesetzt`;
+    saveNameInput.value = t("saveDefaultName", {
+        piece: getPieceLabel(mode),
+        size: boardSize,
+        count: getPlacedPieceCount()
+    });
     saveNoteInput.value = "";
     saveFavoriteInput.checked = false;
 }
@@ -552,7 +1090,7 @@ function getBoardPreview(savedBoard, limit = 4) {
         }
     }
 
-    return preview.length > 0 ? preview.join(", ") : "Noch keine Figuren gesetzt";
+    return preview.length > 0 ? preview.join(", ") : t("previewEmpty");
 }
 
 function getSavePointFilters() {
@@ -585,14 +1123,14 @@ function createSavePointActionButton(label, className, onClick) {
 }
 
 function getModeLabel(selectedMode) {
-    return selectedMode === "rooks" ? "Tuerme" : "Damen";
+    return getModeCopy(selectedMode).plural;
 }
 
 function renderSavePoints(savePoints) {
     savePointsList.innerHTML = "";
 
     if (savePoints.length === 0) {
-        savePointsList.innerHTML = '<p class="sidebar-hint">Keine Speicherstaende fuer diese Filter gefunden.</p>';
+        savePointsList.innerHTML = `<p class="sidebar-hint">${t("noSavePointsFiltered")}</p>`;
         return;
     }
 
@@ -609,28 +1147,28 @@ function renderSavePoints(savePoints) {
         item.className = "save-point-card";
         title.textContent = `${savePoint.is_favorite ? "★ " : ""}${savePoint.save_name}`;
         createdAt.className = "save-point-meta";
-        createdAt.textContent = `Erstellt: ${savePoint.created_at}`;
+        createdAt.textContent = `${t("createdLabel")}: ${savePoint.created_at}`;
         updatedAt.className = "save-point-meta";
-        updatedAt.textContent = `Aktualisiert: ${savePoint.updated_at}`;
+        updatedAt.textContent = `${t("updatedLabel")}: ${savePoint.updated_at}`;
         boardMeta.className = "save-point-meta";
-        boardMeta.textContent = `${getPieceLabel(savePoint.mode)} | ${savePoint.board_size} x ${savePoint.board_size} | ${savePoint.pieces_placed}/${savePoint.board_size} gesetzt`;
+        boardMeta.textContent = `${getPieceLabel(savePoint.mode)} | ${savePoint.board_size} x ${savePoint.board_size} | ${savePoint.pieces_placed}/${savePoint.board_size} ${t("placedWord")}`;
         preview.className = "save-point-preview";
-        preview.textContent = `Vorschau: ${getBoardPreview(savePoint.board)}`;
+        preview.textContent = `${t("previewLabel")}: ${getBoardPreview(savePoint.board)}`;
         note.className = "save-point-note";
-        note.textContent = savePoint.save_note ? `Notiz: ${savePoint.save_note}` : "Notiz: Keine Notiz";
+        note.textContent = savePoint.save_note ? `${t("noteLabel")}: ${savePoint.save_note}` : `${t("noteLabel")}: ${t("noNote")}`;
         actions.className = "save-point-actions";
 
         const progressMeta = document.createElement("p");
         progressMeta.className = "save-point-meta";
-        progressMeta.textContent = `Schritte: ${savePoint.step_count || 0} | Zeit: ${formatDuration(savePoint.elapsed_seconds)} | Status: ${savePoint.is_solved ? "Geloest" : "Offen"}`;
+        progressMeta.textContent = `${t("stepsMeta")}: ${savePoint.step_count || 0} | ${t("timeMeta")}: ${formatDuration(savePoint.elapsed_seconds)} | ${t("statusLabel")}: ${savePoint.is_solved ? t("solvedMeta") : t("openMeta")}`;
 
-        actions.appendChild(createSavePointActionButton("Laden", "btn", () => loadSavePoint(savePoint.id)));
+        actions.appendChild(createSavePointActionButton(t("loadButton"), "btn", () => loadSavePoint(savePoint.id)));
         actions.appendChild(createSavePointActionButton(
-            savePoint.is_favorite ? "Favorit entfernen" : "Als Favorit",
+            savePoint.is_favorite ? t("favoriteRemoveButton") : t("favoriteAddButton"),
             "btn secondary",
             () => toggleSavePointFavorite(savePoint.id)
         ));
-        actions.appendChild(createSavePointActionButton("Loeschen", "btn ghost", () => deleteSavePoint(savePoint.id)));
+        actions.appendChild(createSavePointActionButton(t("deleteButton"), "btn ghost", () => deleteSavePoint(savePoint.id)));
 
         item.appendChild(title);
         item.appendChild(createdAt);
@@ -648,7 +1186,7 @@ function renderTimeHistory(savePoints) {
     timeHistoryTableBody.innerHTML = "";
 
     if (savePoints.length === 0) {
-        timeHistoryTableBody.innerHTML = '<tr><td colspan="7" class="history-empty">Noch keine gespeicherten Zeiten vorhanden.</td></tr>';
+        timeHistoryTableBody.innerHTML = `<tr><td colspan="7" class="history-empty">${t("historyEmpty")}</td></tr>`;
         return;
     }
 
@@ -660,7 +1198,7 @@ function renderTimeHistory(savePoints) {
             `${savePoint.board_size} x ${savePoint.board_size}`,
             String(savePoint.step_count || 0),
             formatDuration(savePoint.elapsed_seconds),
-            savePoint.is_solved ? "Geloest" : "Offen",
+            savePoint.is_solved ? t("solvedMeta") : t("openMeta"),
             savePoint.updated_at
         ];
 
@@ -698,7 +1236,7 @@ async function openSavePointsPanel() {
 }
 
 function applyLoadedGame(data) {
-    discardSolverTrace(`${getPieceLabel(data.mode || "queens")}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
+    discardSolverTrace(t("solverReady", { modeLabel: getModeLabel(data.mode || "queens") }));
 
     const restoredBoardSize = Array.isArray(data.board) ? clampBoardSize(data.board.length) : DEFAULT_BOARD_SIZE;
 
@@ -714,6 +1252,7 @@ function applyLoadedGame(data) {
     });
 
     updateModeButtons();
+    updateModeContent();
     updateBoardSizeDisplays(boardSize);
     drawBoard();
     updateProgressDisplay();
@@ -742,7 +1281,7 @@ function applySolverStep(step) {
         currentSolverHighlight = null;
     }
 
-    setSolverMessage(step.message || DEFAULT_SOLVER_MESSAGE);
+    setSolverMessage(step.message || getDefaultSolverMessage());
     drawBoard();
     persistCurrentSession();
     updateSolverControls();
@@ -761,7 +1300,7 @@ function advanceSolverStep() {
     if (hasCompletedSolverTrace()) {
         finishSolvedRun();
         stopSolverPlayback(false);
-        setStatus(`Loesung fuer ${boardSize} x ${boardSize} Schritt fuer Schritt aufgebaut.`, "green");
+        setStatus(t("animationFinishedStatus", { size: boardSize }), "green");
         updateSolverControls();
     }
 
@@ -814,8 +1353,8 @@ async function prepareSolutionTrace() {
     solverSteps = [];
     solverStepIndex = -1;
     currentSolverHighlight = null;
-    setSolverMessage(`Berechne ${getPieceLabel(mode)}-Ablauf fuer ${boardSize} x ${boardSize}...`);
-    setStatus(`Solver berechnet die Schritte fuer ${boardSize} x ${boardSize}.`, "#2563eb");
+    setSolverMessage(t("animationPreparing", { modeLabel: getModeLabel(mode), size: boardSize }));
+    setStatus(t("animationPreparingStatus", { size: boardSize }), "#2563eb");
     updateSolverControls();
 
     try {
@@ -837,19 +1376,15 @@ async function prepareSolutionTrace() {
         currentSolverHighlight = null;
 
         if (!trace.solved || solverSteps.length === 0) {
-            setSolverMessage("Keine Loesung gefunden.");
-            setStatus("Keine Loesung fuer dieses Brett gefunden.", "red");
+            setSolverMessage(t("noSolution"));
+            setStatus(t("noSolutionStatus"), "red");
             drawBoard();
             persistCurrentSession();
             return false;
         }
 
-        setSolverMessage(
-            mode === "queens"
-                ? `Ablauf bereit mit ${solverSteps.length} Schritten. Nutze Next Step oder Play Animation, um das Backtracking zu verfolgen.`
-                : `Ablauf bereit mit ${solverSteps.length} Schritten. Nutze Next Step oder starte die Animation.`
-        );
-        setStatus("Solver-Ablauf bereit. Nutze Next Step oder Play Animation.", "#2563eb");
+        setSolverMessage(t("animationReady", { steps: solverSteps.length, queensMode: mode === "queens" }));
+        setStatus(t("animationReadyStatus"), "#2563eb");
         drawBoard();
         return true;
     } catch (error) {
@@ -857,8 +1392,8 @@ async function prepareSolutionTrace() {
             return false;
         }
 
-        setSolverMessage("Der Solver-Ablauf konnte nicht geladen werden.");
-        setStatus("Der Solver-Ablauf konnte nicht geladen werden.", "red");
+        setSolverMessage(t("animationLoadError"));
+        setStatus(t("animationLoadError"), "red");
         return false;
     } finally {
         if (requestId === solverRequestId) {
@@ -886,7 +1421,7 @@ async function nextSolverStep() {
     }
 
     if (!advanceSolverStep()) {
-        setStatus("Der Solver-Ablauf ist bereits abgeschlossen.", "#2563eb");
+        setStatus(t("animationAlreadyFinished"), "#2563eb");
     }
 }
 
@@ -897,7 +1432,7 @@ async function toggleSolverPlayback() {
 
     if (isSolverPlaying()) {
         stopSolverPlayback();
-        setStatus("Solver-Animation pausiert.", "#2563eb");
+        setStatus(t("animationPaused"), "#2563eb");
         return;
     }
 
@@ -913,7 +1448,7 @@ async function toggleSolverPlayback() {
         rewindSolverTrace();
     }
 
-    setStatus("Solver-Animation laeuft.", "#2563eb");
+    setStatus(t("animationRunning"), "#2563eb");
     startSolverPlayback(true);
 }
 
@@ -934,8 +1469,8 @@ async function instantSolve() {
     solverSteps = [];
     solverStepIndex = -1;
     currentSolverHighlight = null;
-    setSolverMessage(`Lade sofortige ${getPieceLabel(mode)}-Loesung fuer ${boardSize} x ${boardSize}...`);
-    setStatus(`Sofortige Loesung wird geladen.`, "#2563eb");
+    setSolverMessage(t("instantLoading", { modeLabel: getModeLabel(mode), size: boardSize }));
+    setStatus(t("instantLoadingStatus"), "#2563eb");
     updateSolverControls();
 
     try {
@@ -954,8 +1489,8 @@ async function instantSolve() {
         board = mode === "queens" && Array.isArray(solution[0]) ? solution[0].slice() : solution.slice();
         currentSolverHighlight = null;
         finishSolvedRun();
-        setSolverMessage("Sofortige Loesung geladen. Starte Solve Step-by-Step, wenn du den Ablauf sehen moechtest.");
-        setStatus(`Loesung fuer ${boardSize} x ${boardSize} sofort geladen.`, "green");
+        setSolverMessage(t("instantLoaded"));
+        setStatus(t("instantLoadedStatus", { size: boardSize }), "green");
         drawBoard();
         persistCurrentSession();
     } catch (error) {
@@ -963,8 +1498,8 @@ async function instantSolve() {
             return;
         }
 
-        setSolverMessage("Die sofortige Loesung konnte nicht geladen werden.");
-        setStatus("Die sofortige Loesung konnte nicht geladen werden.", "red");
+        setSolverMessage(t("instantLoadError"));
+        setStatus(t("instantLoadError"), "red");
     } finally {
         if (requestId === solverRequestId) {
             solverLoading = false;
@@ -977,7 +1512,7 @@ function resetBoard(options = {}) {
     const {
         statusMessageText = "",
         statusColor = "",
-        solverMessageText = `${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`
+        solverMessageText = t("solverReady", { modeLabel: getModeLabel(mode) })
     } = options;
 
     discardSolverTrace(solverMessageText);
@@ -996,7 +1531,6 @@ function resetBoard(options = {}) {
 
 function updateQueenList() {
     queenList.innerHTML = "";
-
     let count = 1;
 
     for (let row = 0; row < boardSize; row++) {
@@ -1008,9 +1542,19 @@ function updateQueenList() {
         const position = `${getColumnLabel(col)}${boardSize - row}`;
         const li = document.createElement("li");
 
-        li.textContent = `${mode === "queens" ? "Dame" : "Turm"} ${count}: ${position}`;
+        li.textContent = `${getPieceLabel(mode)} ${count}: ${position}`;
         queenList.appendChild(li);
         count += 1;
+    }
+
+    const placedPieces = count - 1;
+    pieceCountBadge.textContent = t("pieceCount", { count: placedPieces });
+
+    if (placedPieces === 0) {
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "empty";
+        emptyItem.textContent = t("pieceEmpty", { modeLabel: getModeLabel(mode) });
+        queenList.appendChild(emptyItem);
     }
 }
 
@@ -1034,7 +1578,7 @@ async function saveGame() {
     });
 
     if (!response.ok) {
-        setStatus("Der Speicherstand konnte nicht gespeichert werden.", "red");
+        setStatus(t("saveError"), "red");
         return;
     }
 
@@ -1043,7 +1587,7 @@ async function saveGame() {
     toggleSavePanel(false);
     await refreshSavePoints();
     await refreshTimeHistory();
-    setStatus(`Speicherpunkt "${data.save_point.save_name}" gespeichert.`, "green");
+    setStatus(t("saveSuccess", { name: data.save_point.save_name }), "green");
 }
 
 async function loadGame() {
@@ -1056,14 +1600,14 @@ async function loadSavePoint(savePointId) {
     const response = await fetch(`/load/${savePointId}`);
 
     if (!response.ok) {
-        setStatus("Dieser Speicherstand konnte nicht geladen werden.", "red");
+        setStatus(t("loadError"), "red");
         return;
     }
 
     const data = await response.json();
 
     applyLoadedGame(data);
-    setStatus(`Speicherpunkt "${data.save_name}" geladen.`, "green");
+    setStatus(t("loadSuccess", { name: data.save_name }), "green");
     toggleSavePointsPanel(false);
 }
 
@@ -1073,17 +1617,17 @@ async function toggleSavePointFavorite(savePointId) {
     });
 
     if (!response.ok) {
-        setStatus("Favorit konnte nicht aktualisiert werden.", "red");
+        setStatus(t("favoriteError"), "red");
         return;
     }
 
     await refreshSavePoints();
     await refreshTimeHistory();
-    setStatus("Favoritenstatus aktualisiert.", "#2563eb");
+    setStatus(t("favoriteSuccess"), "#2563eb");
 }
 
 async function deleteSavePoint(savePointId) {
-    const confirmed = window.confirm("Diesen Speicherpunkt wirklich loeschen?");
+    const confirmed = window.confirm(t("deleteConfirm"));
 
     if (!confirmed) {
         return;
@@ -1094,13 +1638,13 @@ async function deleteSavePoint(savePointId) {
     });
 
     if (!response.ok) {
-        setStatus("Speicherpunkt konnte nicht geloescht werden.", "red");
+        setStatus(t("deleteError"), "red");
         return;
     }
 
     await refreshSavePoints();
     await refreshTimeHistory();
-    setStatus("Speicherpunkt geloescht.", "#2563eb");
+    setStatus(t("deleteSuccess"), "#2563eb");
 }
 
 function restoreSessionFromStorage() {
@@ -1122,6 +1666,7 @@ function restoreSessionFromStorage() {
         currentSolverHighlight = null;
 
         updateModeButtons();
+        updateModeContent();
         updateBoardSizeDisplays(boardSize);
         drawBoard();
         resetProgress({
@@ -1137,12 +1682,13 @@ function restoreSessionFromStorage() {
 }
 
 async function initializeDashboard() {
+    currentLanguage = normalizeLanguage(getStoredLanguage() || detectBrowserLanguage());
     pendingBoardSize = boardSize;
     updateModeButtons();
     updateBoardSizeDisplays(boardSize);
-    updateSolverSpeed(solverSpeedMs);
-    setSolverMessage(`${getPieceLabel(mode)}-Solver bereit. ${DEFAULT_SOLVER_MESSAGE}`);
-    updateSolverControls();
+    applyLanguageContent();
+    updateSettingsTrigger(false);
+    setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
 
     if (!restoreSessionFromStorage()) {
         resetProgress();
@@ -1153,10 +1699,28 @@ async function initializeDashboard() {
     await refreshTimeHistory();
 }
 
+if (langSwitch) {
+    langSwitch.addEventListener("click", async () => {
+        currentLanguage = currentLanguage === "de" ? "en" : "de";
+        storeLanguage(currentLanguage);
+        applyLanguageContent();
+        resetSaveForm();
+        await refreshTimeHistory();
+
+        if (savePointsSidebar.classList.contains("open")) {
+            await refreshSavePoints();
+        }
+    });
+}
+
 window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
         closeAllPanels();
     }
+});
+
+window.addEventListener("resize", () => {
+    drawBoard();
 });
 
 initializeDashboard();
