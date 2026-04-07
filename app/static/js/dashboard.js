@@ -26,13 +26,7 @@ const boardDiv = document.getElementById("board");
 const statusMessage = document.getElementById("statusMessage");
 const queenList = document.getElementById("queenList");
 const pieceCountBadge = document.getElementById("pieceCountBadge");
-const navDashboardLink = document.getElementById("navDashboardLink");
 const langSwitch = document.getElementById("langSwitch");
-const accountLabel = document.getElementById("accountLabel");
-const introKicker = document.getElementById("introKicker");
-const introTitle = document.getElementById("introTitle");
-const introText = document.getElementById("introText");
-const infoButton = document.getElementById("infoButton");
 const gameModeEyebrow = document.getElementById("gameModeEyebrow");
 const gameTitle = document.getElementById("gameTitle");
 const boardModeText = document.getElementById("boardModeText");
@@ -42,9 +36,6 @@ const infoModalTitle = document.getElementById("infoModalTitle");
 const infoModeRuleText = document.getElementById("infoModeRuleText");
 const infoModalProblemHeading = document.getElementById("infoModalProblemHeading");
 const infoModalProblemText = document.getElementById("infoModalProblemText");
-const stepsLabel = document.getElementById("stepsLabel");
-const timeLabel = document.getElementById("timeLabel");
-const statusLabel = document.getElementById("statusLabel");
 const stepCounterValue = document.getElementById("stepCounterValue");
 const timerValue = document.getElementById("timerValue");
 const gameProgressState = document.getElementById("gameProgressState");
@@ -57,20 +48,10 @@ const btnPrepareSolve = document.getElementById("btnPrepareSolve");
 const btnInstantSolve = document.getElementById("btnInstantSolve");
 const btnNextStep = document.getElementById("btnNextStep");
 const btnPlayPause = document.getElementById("btnPlayPause");
-const btnReset = document.getElementById("btnReset");
-const btnSave = document.getElementById("btnSave");
-const btnLoad = document.getElementById("btnLoad");
 const solverMessage = document.getElementById("solverMessage");
 const solverStepInfo = document.getElementById("solverStepInfo");
-const solverKicker = document.getElementById("solverKicker");
-const solverTitle = document.getElementById("solverTitle");
-const animationSolverTitle = document.getElementById("animationSolverTitle");
-const animationSolverText = document.getElementById("animationSolverText");
-const instantSolverTitle = document.getElementById("instantSolverTitle");
-const instantSolverText = document.getElementById("instantSolverText");
 const solverSpeedInput = document.getElementById("solverSpeedInput");
 const solverSpeedValue = document.getElementById("solverSpeedValue");
-const solverSpeedLabel = document.getElementById("solverSpeedLabel");
 const settingsSidebar = document.getElementById("settingsSidebar");
 const settingsTrigger = document.getElementById("settingsTrigger");
 const settingsTriggerArrow = document.getElementById("settingsTriggerArrow");
@@ -85,46 +66,14 @@ const boardSizeValue = document.getElementById("boardSizeValue");
 const boardSizeValueMirror = document.getElementById("boardSizeValueMirror");
 const sidebarBoardSizeValue = document.getElementById("sidebarBoardSizeValue");
 const sidebarBoardSizeValueMirror = document.getElementById("sidebarBoardSizeValueMirror");
-const settingsSidebarTitle = document.getElementById("settingsSidebarTitle");
-const settingsSidebarClose = document.getElementById("settingsSidebarClose");
-const settingsSidebarText = document.getElementById("settingsSidebarText");
-const boardSizeInputLabel = document.getElementById("boardSizeInputLabel");
-const applyBoardSizeButton = document.getElementById("applyBoardSizeButton");
-const settingsSidebarHint = document.getElementById("settingsSidebarHint");
 const savePointsList = document.getElementById("savePointsList");
 const saveNameInput = document.getElementById("saveNameInput");
 const saveNoteInput = document.getElementById("saveNoteInput");
 const saveFavoriteInput = document.getElementById("saveFavoriteInput");
-const saveSidebarTitle = document.getElementById("saveSidebarTitle");
-const saveSidebarClose = document.getElementById("saveSidebarClose");
-const saveSidebarText = document.getElementById("saveSidebarText");
-const saveNameLabel = document.getElementById("saveNameLabel");
-const saveNoteLabel = document.getElementById("saveNoteLabel");
-const saveFavoriteLabel = document.getElementById("saveFavoriteLabel");
-const saveNowButton = document.getElementById("saveNowButton");
 const savePointModeFilter = document.getElementById("savePointModeFilter");
 const savePointSizeFilter = document.getElementById("savePointSizeFilter");
 const savePointSortFilter = document.getElementById("savePointSortFilter");
 const savePointFavoritesOnly = document.getElementById("savePointFavoritesOnly");
-const savePointsSidebarTitle = document.getElementById("savePointsSidebarTitle");
-const savePointsSidebarClose = document.getElementById("savePointsSidebarClose");
-const savePointsSidebarText = document.getElementById("savePointsSidebarText");
-const savePointModeFilterLabel = document.getElementById("savePointModeFilterLabel");
-const savePointSizeFilterLabel = document.getElementById("savePointSizeFilterLabel");
-const savePointSortFilterLabel = document.getElementById("savePointSortFilterLabel");
-const savePointFavoritesOnlyLabel = document.getElementById("savePointFavoritesOnlyLabel");
-const savePointsEmptyState = document.getElementById("savePointsEmptyState");
-const historyKicker = document.getElementById("historyKicker");
-const historyTitle = document.getElementById("historyTitle");
-const historySubtitle = document.getElementById("historySubtitle");
-const btnRefreshHistory = document.getElementById("btnRefreshHistory");
-const historyHeadSave = document.getElementById("historyHeadSave");
-const historyHeadMode = document.getElementById("historyHeadMode");
-const historyHeadBoard = document.getElementById("historyHeadBoard");
-const historyHeadSteps = document.getElementById("historyHeadSteps");
-const historyHeadTime = document.getElementById("historyHeadTime");
-const historyHeadStatus = document.getElementById("historyHeadStatus");
-const historyHeadSaved = document.getElementById("historyHeadSaved");
 const timeHistoryTableBody = document.getElementById("timeHistoryTableBody");
 const infoModal = document.getElementById("infoModal");
 const infoModalBackdrop = document.getElementById("infoModalBackdrop");
@@ -152,7 +101,7 @@ const MODE_COPY = {
             gameTitle: "Türme-Spielbrett",
             boardText: "Platziere Türme so, dass keine zwei dieselbe Spalte teilen.",
             infoTitle: "Spielregeln und Acht-Türme-Problem",
-            infoRuleText: "Im Türme-Modus duerfen sich Türme nicht in derselben Spalte stehen. Diagonalen spielen hier keine Rolle. Mit einem Klick setzt oder entfernst du eine Figur.",
+            infoRuleText: "Im Türme-Modus dürfen sich Türme nicht in derselben Spalte stehen. Diagonalen spielen hier keine Rolle. Mit einem Klick setzt oder entfernst du eine Figur.",
             infoProblemHeading: "Was ist das Acht-Türme-Problem?",
             infoProblemText: "Beim Acht-Türme-Problem suchst du eine Anordnung von acht Türmen auf einem 8x8-Brett, bei der sich keine zwei Türme angreifen. Es ist eine einfachere Variante, um systematische Suche und Konfliktprüfung sichtbar zu machen."
         }
@@ -183,14 +132,22 @@ const MODE_COPY = {
     }
 };
 
-const UI_TRANSLATIONS = {
+const translations = {
     de: {
+        pageTitle: "Dashboard",
+        navBrand: "8-Damen- und 8-Türme Solver",
         navDashboard: "Dashboard",
+        navLogout: "Logout",
         accountLabel: "Account",
+        accountShortcutAria: "Konto und Login-Einstellungen öffnen",
         introKicker: "Puzzle-Modus",
         introTitle: "Wähl deinen Modus und löse das Brett auf deine Art.",
         introText: "Wechsle zwischen Damen und Türmen, nutze Animation oder Sofort-Lösung und öffne die Brett-Einstellungen jederzeit ueber den linken Seiten-Tab.",
+        modeSwitchAria: "Spielmodus",
+        btnQueens: "Damen",
+        btnRooks: "Türme",
         infoButton: "Regeln & Hilfe",
+        gameStatsAria: "Spielstatus",
         stepsLabel: "Schritte",
         timeLabel: "Zeit",
         statusLabel: "Status",
@@ -256,6 +213,11 @@ const UI_TRANSLATIONS = {
         historyHeadTime: "Zeit",
         historyHeadStatus: "Status",
         historyHeadSaved: "Gespeichert",
+        infoModalClose: "Schliessen",
+        infoModalIntro: "Setze pro Reihe genau eine Figur auf das Brett. Eine gültige Lösung hat keine Konflikte.",
+        infoModalModeHeading: "So funktioniert der aktuelle Modus",
+        infoModalTimeHeading: "Was zeigen Zeit und Schritte?",
+        infoModalTimeText: "Der Schrittzähler erfasst deine Züge auf dem Brett. Die Zeit läuft für das aktuelle Spiel weiter, auch wenn du die Seite neu lädst. Beim Speichern werden Zeit und Schritte zusammen mit dem Save-Point abgelegt.",
         pieceListTitle: ({ modeLabel }) => `Positionen der ${modeLabel}`,
         historyEmpty: "Noch keine gespeicherten Zeiten vorhanden.",
         placedWord: "gesetzt",
@@ -312,16 +274,27 @@ const UI_TRANSLATIONS = {
         pieceCount: ({ count }) => `${count} gesetzt`,
         pieceEmpty: ({ modeLabel }) => `Noch keine ${modeLabel.toLowerCase()} gesetzt.`,
         saveDefaultName: ({ piece, size, count }) => `${piece} ${size}x${size} - ${count} gesetzt`,
+        filterQueens: "Damen",
+        filterRooks: "Türme",
+        solverStepInfo: ({ currentStep, totalSteps }) => `Schritt ${currentStep} / ${totalSteps}`,
         speedValue: ({ speed }) => `${speed} ms`,
         languageSwitchAria: "Sprache wechseln"
     },
     en: {
+        pageTitle: "Dashboard",
+        navBrand: "8 Queens and 8 Rooks Solver",
         navDashboard: "Dashboard",
+        navLogout: "Logout",
         accountLabel: "Account",
+        accountShortcutAria: "Open account and login settings",
         introKicker: "Puzzle Mode",
         introTitle: "Choose your mode and solve the board your way.",
         introText: "Switch between queens and rooks, use animation or instant solve, and open board settings anytime from the left side tab.",
+        modeSwitchAria: "Game mode",
+        btnQueens: "Queens",
+        btnRooks: "Rooks",
         infoButton: "Rules & Help",
+        gameStatsAria: "Game status",
         stepsLabel: "Steps",
         timeLabel: "Time",
         statusLabel: "Status",
@@ -387,6 +360,11 @@ const UI_TRANSLATIONS = {
         historyHeadTime: "Time",
         historyHeadStatus: "Status",
         historyHeadSaved: "Saved",
+        infoModalClose: "Close",
+        infoModalIntro: "Place exactly one piece in each row. A valid solution has no conflicts.",
+        infoModalModeHeading: "How the current mode works",
+        infoModalTimeHeading: "What do time and steps show?",
+        infoModalTimeText: "The step counter records your moves on the board. Time keeps running for the current game even if you reload the page. When saving, time and steps are stored together with the save point.",
         pieceListTitle: ({ modeLabel }) => `${modeLabel} positions`,
         historyEmpty: "No saved times yet.",
         placedWord: "placed",
@@ -443,6 +421,9 @@ const UI_TRANSLATIONS = {
         pieceCount: ({ count }) => `${count} placed`,
         pieceEmpty: ({ modeLabel }) => `No ${modeLabel.toLowerCase()} placed yet.`,
         saveDefaultName: ({ piece, size, count }) => `${piece} ${size}x${size} - ${count} placed`,
+        filterQueens: "Queens",
+        filterRooks: "Rooks",
+        solverStepInfo: ({ currentStep, totalSteps }) => `Step ${currentStep} / ${totalSteps}`,
         speedValue: ({ speed }) => `${speed} ms`,
         languageSwitchAria: "Switch language"
     }
@@ -486,12 +467,75 @@ function detectBrowserLanguage() {
 }
 
 function t(key, params = {}) {
-    const value = UI_TRANSLATIONS[currentLanguage][key];
+    const value = translations[currentLanguage][key];
     return typeof value === "function" ? value(params) : value;
 }
 
 function getDefaultSolverMessage() {
     return t("defaultSolverMessage");
+}
+
+function applyTextTranslations() {
+    document.documentElement.lang = currentLanguage;
+    document.body.dataset.language = currentLanguage;
+
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+        const key = element.dataset.i18n;
+        const translatedText = t(key);
+
+        if (translatedText === undefined) {
+            return;
+        }
+
+        if (element.tagName === "TITLE" || String(translatedText).includes("<br")) {
+            element.innerHTML = translatedText;
+            return;
+        }
+
+        element.textContent = translatedText;
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+        const translatedText = t(element.dataset.i18nPlaceholder);
+
+        if (translatedText === undefined) {
+            return;
+        }
+
+        element.setAttribute("placeholder", translatedText);
+    });
+
+    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+        const translatedText = t(element.dataset.i18nAriaLabel);
+
+        if (translatedText === undefined) {
+            return;
+        }
+
+        element.setAttribute("aria-label", translatedText);
+    });
+}
+
+function setLanguage(language) {
+    currentLanguage = normalizeLanguage(language);
+    applyTextTranslations();
+
+    langSwitch.textContent = currentLanguage.toUpperCase();
+    langSwitch.setAttribute("aria-label", t("languageSwitchAria"));
+    langSwitch.title = currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
+
+    updateSettingsTrigger();
+    updateModeContent();
+    updateQueenList();
+    updateProgressDisplay();
+    updateSolverSpeed(solverSpeedMs);
+    updateSolverControls();
+
+    if (!solverLoading && !hasPreparedSolverTrace()) {
+        setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
+    }
+
+    storeLanguage(currentLanguage);
 }
 
 function getModeCopy(selectedMode = mode, language = currentLanguage) {
@@ -644,85 +688,6 @@ function updateSolvedCelebration() {
     solvedCelebration.hidden = false;
 }
 
-function applyLanguageContent() {
-    document.documentElement.lang = currentLanguage;
-    navDashboardLink.textContent = t("navDashboard");
-    accountLabel.textContent = t("accountLabel");
-    introKicker.textContent = t("introKicker");
-    introTitle.textContent = t("introTitle");
-    introText.textContent = t("introText");
-    infoButton.textContent = t("infoButton");
-    infoButton.setAttribute("aria-label", t("infoButton"));
-    stepsLabel.textContent = t("stepsLabel");
-    timeLabel.textContent = t("timeLabel");
-    statusLabel.textContent = t("statusLabel");
-    solverKicker.textContent = t("solverKicker");
-    solverTitle.textContent = t("solverTitle");
-    animationSolverTitle.textContent = t("animationSolverTitle");
-    animationSolverText.textContent = t("animationSolverText");
-    instantSolverTitle.textContent = t("instantSolverTitle");
-    instantSolverText.textContent = t("instantSolverText");
-    solverSpeedLabel.textContent = t("solverSpeedLabel");
-    btnNextStep.textContent = t("btnNextStep");
-    btnInstantSolve.textContent = t("btnInstantSolve");
-    btnReset.textContent = t("btnReset");
-    settingsSidebarTitle.textContent = t("settingsSidebarTitle");
-    settingsSidebarClose.textContent = t("settingsSidebarClose");
-    settingsSidebarText.textContent = t("settingsSidebarText");
-    boardSizeInputLabel.textContent = t("boardSizeInputLabel");
-    applyBoardSizeButton.textContent = t("applyBoardSizeButton");
-    settingsSidebarHint.textContent = t("settingsSidebarHint");
-    btnSave.textContent = t("btnSave");
-    btnLoad.textContent = t("btnLoad");
-    saveSidebarTitle.textContent = t("saveSidebarTitle");
-    saveSidebarClose.textContent = t("saveSidebarClose");
-    saveSidebarText.textContent = t("saveSidebarText");
-    saveNameLabel.textContent = t("saveNameLabel");
-    saveNameInput.placeholder = t("saveNamePlaceholder");
-    saveNoteLabel.textContent = t("saveNoteLabel");
-    saveNoteInput.placeholder = t("saveNotePlaceholder");
-    saveFavoriteLabel.textContent = t("saveFavoriteLabel");
-    saveNowButton.textContent = t("saveNowButton");
-    savePointsSidebarTitle.textContent = t("savePointsSidebarTitle");
-    savePointsSidebarClose.textContent = t("savePointsSidebarClose");
-    savePointsSidebarText.textContent = t("savePointsSidebarText");
-    savePointModeFilterLabel.textContent = t("savePointModeFilterLabel");
-    savePointSizeFilterLabel.textContent = t("savePointSizeFilterLabel");
-    savePointSortFilterLabel.textContent = t("savePointSortFilterLabel");
-    savePointFavoritesOnlyLabel.textContent = t("savePointFavoritesOnlyLabel");
-    savePointsEmptyState.textContent = t("savePointsEmptyState");
-    historyKicker.textContent = t("historyKicker");
-    historyTitle.textContent = t("historyTitle");
-    historySubtitle.textContent = t("historySubtitle");
-    btnRefreshHistory.textContent = t("btnRefreshHistory");
-    historyHeadSave.textContent = t("historyHeadSave");
-    historyHeadMode.textContent = t("historyHeadMode");
-    historyHeadBoard.textContent = t("historyHeadBoard");
-    historyHeadSteps.textContent = t("historyHeadSteps");
-    historyHeadTime.textContent = t("historyHeadTime");
-    historyHeadStatus.textContent = t("historyHeadStatus");
-    historyHeadSaved.textContent = t("historyHeadSaved");
-
-    savePointModeFilter.options[0].textContent = t("filterAll");
-    savePointModeFilter.options[1].textContent = getModeCopy("queens").plural;
-    savePointModeFilter.options[2].textContent = getModeCopy("rooks").plural;
-    savePointSizeFilter.options[0].textContent = t("filterAll");
-    savePointSortFilter.options[0].textContent = t("filterNewest");
-    savePointSortFilter.options[1].textContent = t("filterOldest");
-    savePointSortFilter.options[2].textContent = t("filterUpdated");
-    savePointSortFilter.options[3].textContent = t("filterFavorites");
-
-    langSwitch.textContent = currentLanguage.toUpperCase();
-    langSwitch.setAttribute("aria-label", t("languageSwitchAria"));
-    langSwitch.title = currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
-
-    updateModeContent();
-    updateQueenList();
-    updateProgressDisplay();
-    updateSolverSpeed(solverSpeedMs);
-    updateSolverControls();
-}
-
 function updateSettingsTrigger(isOpen = settingsSidebar.classList.contains("open")) {
     settingsTrigger.setAttribute("aria-expanded", String(isOpen));
     settingsTriggerArrow.textContent = isOpen ? "←" : "→";
@@ -814,7 +779,10 @@ function updateSolverControls() {
         btnPlayPause.textContent = t("btnPlayPause");
     }
 
-    solverStepInfo.textContent = `Schritt ${currentStep} / ${solverSteps.length}`;
+    solverStepInfo.textContent = t("solverStepInfo", {
+        currentStep,
+        totalSteps: solverSteps.length
+    });
 }
 
 function discardSolverTrace(message = getDefaultSolverMessage()) {
@@ -1682,11 +1650,10 @@ function restoreSessionFromStorage() {
 }
 
 async function initializeDashboard() {
-    currentLanguage = normalizeLanguage(getStoredLanguage() || detectBrowserLanguage());
     pendingBoardSize = boardSize;
     updateModeButtons();
     updateBoardSizeDisplays(boardSize);
-    applyLanguageContent();
+    setLanguage(getStoredLanguage() || detectBrowserLanguage());
     updateSettingsTrigger(false);
     setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
 
@@ -1701,9 +1668,7 @@ async function initializeDashboard() {
 
 if (langSwitch) {
     langSwitch.addEventListener("click", async () => {
-        currentLanguage = currentLanguage === "de" ? "en" : "de";
-        storeLanguage(currentLanguage);
-        applyLanguageContent();
+        setLanguage(currentLanguage === "de" ? "en" : "de");
         resetSaveForm();
         await refreshTimeHistory();
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Settings</title>
+    <title data-i18n="pageTitle">Login Settings</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
@@ -13,22 +13,33 @@
     <nav class="auth-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
-            <span>8-Damen- und 8-Tuerme Solver</span>
+            <span data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
         </a>
 
         <ul class="nav-links">
-            <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('login.login_settings') }}">Login settings</a></li>
+            <li><a href="{{ url_for('main.dashboard') }}" data-i18n="navDashboard">Dashboard</a></li>
+            <li><a href="{{ url_for('login.login_settings') }}" data-i18n="navSettings">Login settings</a></li>
         </ul>
         <form action="{{ url_for('login.logout') }}" method="post" class="nav-form">
-            <button type="submit" class="nav-button">Logout</button>
+            <button type="submit" class="nav-button" id="logoutButton" data-i18n="navLogout">Logout</button>
         </form>
     </nav>
 
     <main class="auth-shell settings-shell">
         <section class="auth-panel settings-panel">
-            <h1>Login settings</h1>
-            <p class="muted">Manage authenticator app 2FA and your password without changing the registration flow.</p>
+            <div class="settings-topbar">
+                <a class="back-link" href="{{ url_for('main.dashboard') }}" data-i18n-aria-label="backToDashboardAria"
+                    aria-label="Back to dashboard">
+                    <span class="back-link-arrow" aria-hidden="true">&larr;</span>
+                    <span data-i18n="backToDashboard">Back to dashboard</span>
+                </a>
+
+                <button class="nav-button lang-switch" id="langSwitch" type="button" aria-label="Switch language">DE</button>
+            </div>
+
+            <h1 data-i18n="settingsTitle">Login settings</h1>
+            <p class="muted" data-i18n="settingsSubtitle">Manage authenticator app 2FA and your password without
+                changing the registration flow.</p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -47,76 +58,95 @@
                 <form action="{{ url_for('login.login_settings') }}" method="post">
                     <input type="hidden" name="action" value="disable_two_factor">
 
-                    <h2>Authenticator app 2FA</h2>
-                    <p class="field-hint">2FA is currently enabled for this account.</p>
-                    <p class="field-hint">Use Google Authenticator, Microsoft Authenticator, Authy, or another TOTP app to generate your 6-digit login codes.</p>
+                    <h2 data-i18n="twoFactorTitle">Authenticator app 2FA</h2>
+                    <p class="field-hint" data-i18n="twoFactorEnabledHint">2FA is currently enabled for this account.</p>
+                    <p class="field-hint" data-i18n="twoFactorEnabledAppHint">Use Google Authenticator, Microsoft
+                        Authenticator, Authy, or another TOTP app
+                        to generate your 6-digit login codes.</p>
 
-                    <button class="secondary-button" type="submit" data-loading-label="Disabling 2FA...">Disable 2FA</button>
+                    <button class="secondary-button" type="submit" data-loading-label="Disabling 2FA..."
+                        data-i18n="disableTwoFactorButton" data-i18n-loading-label="disableTwoFactorLoading">Disable
+                        2FA</button>
                 </form>
                 {% elif pending_two_factor_secret %}
                 <form action="{{ url_for('login.login_settings') }}" method="post">
                     <input type="hidden" name="action" value="confirm_two_factor_setup">
 
-                    <h2>Finish 2FA setup</h2>
-                    <p class="field-hint">Scan this QR code with your authenticator app, then enter the current 6-digit code to confirm.</p>
+                    <h2 data-i18n="finishSetupTitle">Finish 2FA setup</h2>
+                    <p class="field-hint" data-i18n="finishSetupHint">Scan this QR code with your authenticator app,
+                        then enter the current 6-digit
+                        code to confirm.</p>
 
                     <div class="qr-panel">
                         <div class="qr-code" data-qr-value="{{ pending_two_factor_uri }}"></div>
                     </div>
-                    <p class="field-hint">If scanning does not work, you can still use the manual setup key below.</p>
+                    <p class="field-hint" data-i18n="scanFallbackHint">If scanning does not work, you can still use the
+                        manual setup key below.</p>
 
-                    <label for="two_factor_secret">Manual setup key</label>
+                    <label for="two_factor_secret" data-i18n="manualSetupKey">Manual setup key</label>
                     <input id="two_factor_secret" type="text" value="{{ pending_two_factor_secret }}" readonly>
 
-                    <label for="two_factor_uri">Setup URI</label>
+                    <label for="two_factor_uri" data-i18n="setupUriLabel">Setup URI</label>
                     <input id="two_factor_uri" type="text" value="{{ pending_two_factor_uri }}" readonly>
-                    <p class="field-hint">This URI is used to generate the QR setup and can be copied as a fallback for compatible apps.</p>
+                    <p class="field-hint" data-i18n="setupUriHint">This URI is used to generate the QR setup and can be
+                        copied as a fallback for
+                        compatible apps.</p>
 
-                    <label for="code">Authenticator code</label>
-                    <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+                    <label for="code" data-i18n="authenticatorCodeLabel">Authenticator code</label>
+                    <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                        required>
 
                     <div class="button-row">
-                        <button class="magnetic" type="submit" data-loading-label="Enabling 2FA...">Confirm and enable</button>
+                        <button class="magnetic" type="submit" data-loading-label="Enabling 2FA..."
+                            data-i18n="confirmAndEnableButton" data-i18n-loading-label="confirmAndEnableLoading">Confirm and
+                            enable</button>
                     </div>
                 </form>
 
                 <form action="{{ url_for('login.login_settings') }}" method="post">
                     <input type="hidden" name="action" value="cancel_two_factor_setup">
 
-                    <h2>Cancel setup</h2>
-                    <p class="field-hint">Cancel the current authenticator setup if you want to restart with a new secret.</p>
+                    <h2 data-i18n="cancelSetupTitle">Cancel setup</h2>
+                    <p class="field-hint" data-i18n="cancelSetupHint">Cancel the current authenticator setup if you want
+                        to restart with a new
+                        secret.</p>
 
-                    <button class="secondary-button" type="submit">Cancel setup</button>
+                    <button class="secondary-button" type="submit" data-i18n="cancelSetupButton">Cancel setup</button>
                 </form>
                 {% else %}
                 <form action="{{ url_for('login.login_settings') }}" method="post">
                     <input type="hidden" name="action" value="start_two_factor_setup">
 
-                    <h2>Authenticator app 2FA</h2>
-                    <p class="field-hint">Protect your account with 6-digit codes from an authenticator app.</p>
-                    <p class="field-hint">After starting setup, you will get a QR code to scan and then confirm once with a live code.</p>
+                    <h2 data-i18n="twoFactorTitle">Authenticator app 2FA</h2>
+                    <p class="field-hint" data-i18n="startSetupHint">Protect your account with 6-digit codes from an
+                        authenticator app.</p>
+                    <p class="field-hint" data-i18n="startSetupHintFollowup">After starting setup, you will get a QR code to scan and then confirm once
+                        with a live code.</p>
 
-                    <button class="magnetic" type="submit" data-loading-label="Starting setup...">Start setup</button>
+                    <button class="magnetic" type="submit" data-loading-label="Starting setup..."
+                        data-i18n="startSetupButton" data-i18n-loading-label="startSetupLoading">Start setup</button>
                 </form>
                 {% endif %}
 
                 <form action="{{ url_for('login.login_settings') }}" method="post">
                     <input type="hidden" name="action" value="password">
 
-                    <h2>Change password</h2>
+                    <h2 data-i18n="changePasswordTitle">Change password</h2>
 
-                    <label for="current_password">Current password</label>
+                    <label for="current_password" data-i18n="currentPasswordLabel">Current password</label>
                     <input id="current_password" type="password" name="current_password" minlength="8" maxlength="128"
                         required>
 
-                    <label for="new_password">New password</label>
+                    <label for="new_password" data-i18n="newPasswordLabel">New password</label>
                     <input id="new_password" type="password" name="new_password" minlength="8" maxlength="128" required>
 
-                    <label for="confirm_password">Confirm new password</label>
+                    <label for="confirm_password" data-i18n="confirmPasswordLabel">Confirm new password</label>
                     <input id="confirm_password" type="password" name="confirm_password" minlength="8" maxlength="128"
                         required>
 
-                    <button class="magnetic" type="submit" data-loading-label="Updating password...">Update password</button>
+                    <button class="magnetic" type="submit" data-loading-label="Updating password..."
+                        data-i18n="updatePasswordButton" data-i18n-loading-label="updatePasswordLoading">Update
+                        password</button>
                 </form>
             </div>
         </section>

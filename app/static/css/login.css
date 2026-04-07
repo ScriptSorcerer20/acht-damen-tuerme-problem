@@ -117,6 +117,14 @@ a {
 
 .nav-form {
     margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: #ecf4fb;
 }
 
 .auth-shell {
@@ -143,6 +151,68 @@ a {
 
 .settings-panel {
     width: min(980px, 100%);
+}
+
+.settings-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(31, 49, 64, 0.08);
+    border: 1px solid rgba(31, 49, 64, 0.12);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    font-weight: 700;
+    color: var(--navy);
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.back-link:hover {
+    transform: translateY(-1px);
+    background: rgba(31, 49, 64, 0.12);
+    border-color: rgba(31, 49, 64, 0.18);
+}
+
+.back-link-arrow {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.lang-switch,
+#logoutButton {
+    margin-top: 0;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    line-height: 1.1;
+}
+
+.lang-switch {
+    min-width: 58px;
+    background: rgba(31, 49, 64, 0.08);
+    border: 1px solid rgba(31, 49, 64, 0.12);
+    color: var(--navy);
+}
+
+.lang-switch:hover {
+    color: var(--navy);
+    background: rgba(31, 49, 64, 0.12);
+    border-color: rgba(31, 49, 64, 0.18);
+    box-shadow: none;
+}
+
+#logoutButton {
+    color: #fff7eb;
 }
 
 .settings-grid {
@@ -342,6 +412,16 @@ button:active {
     .nav-links a,
     .nav-button {
         padding: 10px 14px;
+    }
+
+    .settings-topbar {
+        align-items: stretch;
+    }
+
+    .back-link,
+    .lang-switch {
+        width: 100%;
+        justify-content: center;
     }
 
     .auth-shell {
