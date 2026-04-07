@@ -1,0 +1,111 @@
+:root {
+    --footer-surface: rgba(18, 33, 45, 0.94);
+    --footer-line: rgba(231, 191, 119, 0.28);
+    --footer-text: #f7f1e6;
+    --footer-muted: rgba(247, 241, 230, 0.72);
+    --footer-link-bg: rgba(255, 255, 255, 0.06);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+body > main,
+body > .container {
+    flex: 1 0 auto;
+}
+
+body > main.auth-shell {
+    min-height: 0;
+}
+
+.page-footer {
+    margin-top: 32px;
+    border-top: 1px solid var(--footer-line);
+    background:
+        linear-gradient(180deg, rgba(17, 29, 39, 0.98), rgba(31, 49, 64, 0.96));
+    color: var(--footer-text);
+    box-shadow: 0 -18px 40px rgba(31, 49, 64, 0.08);
+}
+
+.page-footer-inner {
+    width: min(1200px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 26px 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.page-footer-copy {
+    display: grid;
+    gap: 10px;
+}
+
+.page-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.page-footer-mark {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #c68b2c, #e7bf77);
+    color: #2c2215;
+    font-size: 21px;
+}
+
+.page-footer-text {
+    margin: 0;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    color: var(--footer-muted);
+    line-height: 1.6;
+}
+
+.page-footer-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.page-footer-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid rgba(231, 191, 119, 0.24);
+    background: var(--footer-link-bg);
+    color: var(--footer-text);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    font-weight: 700;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.page-footer-links a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(231, 191, 119, 0.45);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 760px) {
+    .page-footer-inner {
+        padding: 22px 0 26px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-footer-links {
+        justify-content: flex-start;
+    }
+}

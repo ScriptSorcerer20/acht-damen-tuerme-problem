@@ -236,6 +236,16 @@ def dashboard():
     return render_template("dashboard.html", user=current_user)
 
 
+@main_bp.route("/privacy_policy")
+def privacy_policy():
+    return render_template("privacy.html")
+
+
+@main_bp.route("/imprint")
+def imprint():
+    return render_template("impressum.html")
+
+
 @main_bp.route("/check", methods=["POST"])
 def check():
     data = request.json

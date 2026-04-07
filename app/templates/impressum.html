@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pageTitle">Impressum</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+
+<body data-legal-page="imprint">
+    <header class="legal-header">
+        <nav class="legal-nav">
+            <a class="brand" href="{{ url_for('main.home') }}">
+                <span class="brand-mark">♛</span>
+                <span data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
+            </a>
+
+            <div class="legal-nav-links">
+                <button class="lang-switch" id="langSwitch" type="button" aria-label="Sprache wechseln">DE</button>
+                <a href="{{ url_for('main.home') }}" data-i18n="navHome">Startseite</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" data-i18n="navDashboard">Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('login.login') }}" data-i18n="navLogin">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="legal-main">
+        <section class="legal-hero">
+            <p class="legal-eyebrow" data-i18n="heroEyebrow">Rechtliche Hinweise</p>
+            <h1 data-i18n="heroTitle">Impressum</h1>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="contactTitle">Kontakt</h2>
+            <p>
+                <strong data-i18n="contactName">Jérôme Bachmann</strong><br>
+                <span data-i18n="contactEmailLabel">E-Mail:</span> jerome.bachmann@bachmannj.ch<br>
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="projectResponsibilityTitle">Projektverantwortung</h2>
+            <p data-i18n="projectResponsibilityText">
+                Dieses Webprojekt wurde im Rahmen eines Schulprojekts zum Acht-Damen- und Acht-Türme-Problem
+                erstellt. Inhaltlich verantwortlich ist die jeweils oben genannte verantwortliche Stelle.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="contentLiabilityTitle">Haftung für Inhalte</h2>
+            <p data-i18n="contentLiabilityText">
+                Die Inhalte dieser Website wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und
+                Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Bei Bekanntwerden von
+                Rechtsverletzungen werden entsprechende Inhalte umgehend überarbeitet oder entfernt.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="linksLiabilityTitle">Haftung fuer Links</h2>
+            <p data-i18n="linksLiabilityText">
+                Diese Website kann Links zu externen Angeboten enthalten. Fuer deren Inhalte sind ausschliesslich die
+                jeweiligen Betreiber verantwortlich. Eine permanente inhaltliche Kontrolle verlinkter Seiten ist ohne
+                konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="versionTitle">Stand</h2>
+            <p data-i18n="versionText">Stand dieser Vorlage: April 2026</p>
+        </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ url_for('static', filename='js/legal.js') }}" defer></script>
+</body>
+
+</html>

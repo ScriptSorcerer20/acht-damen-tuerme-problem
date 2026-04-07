@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="meta.title">8-Damen- und 8-Tuerme Solver</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
 
 <body>
@@ -183,6 +184,8 @@
             </div>
         </section>
     </main>
+
+    {% include "partials/footer.html" %}
 
     <script>
         window.LANDING_INITIAL_LANGUAGE = "{{ initial_language }}";

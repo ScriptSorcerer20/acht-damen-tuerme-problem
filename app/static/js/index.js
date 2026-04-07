@@ -55,7 +55,11 @@ const translations = {
         "cta.title": "Mach aus einem bekannten Problem ein sichtbares Lernerlebnis.",
         "cta.text": "Starte mit einem Account, speichere deine Zwischenstände und finde heraus, wie schnell du eine konfliktfreie Lösung erreichst.",
         "cta.primaryCta": "Create Account",
-        "cta.secondaryCta": "Login"
+        "cta.secondaryCta": "Login",
+        "footerText": "Schulprojekt rund um das Acht-Damen- und Acht-Türme-Problem.",
+        "footerPrivacy": "Datenschutzerklärung",
+        "footerImprint": "Impressum",
+        "footerNavAria": "Rechtliche Hinweise"
     },
     en: {
         "meta.title": "8 Queens and 8 Rooks Solver",
@@ -107,7 +111,11 @@ const translations = {
         "cta.title": "Turn a famous puzzle into a visible learning experience.",
         "cta.text": "Start with an account, save your checkpoints, and find out how quickly you can reach a conflict-free solution.",
         "cta.primaryCta": "Create Account",
-        "cta.secondaryCta": "Login"
+        "cta.secondaryCta": "Login",
+        "footerText": "School project about the Eight Queens and Eight Rooks problem.",
+        "footerPrivacy": "Privacy Policy",
+        "footerImprint": "Imprint",
+        "footerNavAria": "Legal information"
     }
 };
 
@@ -167,6 +175,17 @@ function setLanguage(language) {
         }
 
         element.textContent = translatedText;
+    });
+
+    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+        const key = element.dataset.i18nAriaLabel;
+        const translatedText = dictionary[key];
+
+        if (!translatedText) {
+            return;
+        }
+
+        element.setAttribute("aria-label", translatedText);
     });
 
     if (langSwitch) {

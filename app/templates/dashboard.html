@@ -7,6 +7,7 @@
     <title data-i18n="pageTitle">Dashboard</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
 
 <body>
@@ -225,6 +226,8 @@
             </div>
         </div>
     </div>
+
+    {% include "partials/footer.html" %}
 
     <aside class="sidebar settings-sidebar" id="settingsSidebar" aria-hidden="true">
         <div class="sidebar-header">

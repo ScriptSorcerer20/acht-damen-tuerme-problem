@@ -278,7 +278,11 @@ const translations = {
         filterRooks: "Türme",
         solverStepInfo: ({ currentStep, totalSteps }) => `Schritt ${currentStep} / ${totalSteps}`,
         speedValue: ({ speed }) => `${speed} ms`,
-        languageSwitchAria: "Sprache wechseln"
+        languageSwitchAria: "Sprache wechseln",
+        footerText: "Schulprojekt rund um das Acht-Damen- und Acht-Türme-Problem.",
+        footerPrivacy: "Datenschutzerklärung",
+        footerImprint: "Impressum",
+        footerNavAria: "Rechtliche Hinweise"
     },
     en: {
         pageTitle: "Dashboard",
@@ -425,7 +429,11 @@ const translations = {
         filterRooks: "Rooks",
         solverStepInfo: ({ currentStep, totalSteps }) => `Step ${currentStep} / ${totalSteps}`,
         speedValue: ({ speed }) => `${speed} ms`,
-        languageSwitchAria: "Switch language"
+        languageSwitchAria: "Switch language",
+        footerText: "School project about the Eight Queens and Eight Rooks problem.",
+        footerPrivacy: "Privacy Policy",
+        footerImprint: "Imprint",
+        footerNavAria: "Legal information"
     }
 };
 

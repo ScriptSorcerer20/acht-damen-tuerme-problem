@@ -43,7 +43,11 @@ const translations = {
         confirmPasswordLabel: "Neues Passwort bestätigen",
         updatePasswordButton: "Passwort aktualisieren",
         updatePasswordLoading: "Passwort wird aktualisiert...",
-        qrLoadError: "QR-Vorschau konnte nicht geladen werden."
+        qrLoadError: "QR-Vorschau konnte nicht geladen werden.",
+        footerText: "Schulprojekt rund um das Acht-Damen- und Acht-Türme-Problem.",
+        footerPrivacy: "Datenschutzerklärung",
+        footerImprint: "Impressum",
+        footerNavAria: "Rechtliche Hinweise"
     },
     en: {
         pageTitle: "Login Settings",
@@ -83,7 +87,11 @@ const translations = {
         confirmPasswordLabel: "Confirm new password",
         updatePasswordButton: "Update password",
         updatePasswordLoading: "Updating password...",
-        qrLoadError: "QR preview could not be loaded."
+        qrLoadError: "QR preview could not be loaded.",
+        footerText: "School project about the Eight Queens and Eight Rooks problem.",
+        footerPrivacy: "Privacy Policy",
+        footerImprint: "Imprint",
+        footerNavAria: "Legal information"
     }
 };
 

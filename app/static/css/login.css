@@ -191,8 +191,7 @@ a {
 #logoutButton {
     margin-top: 0;
     min-height: 40px;
-    padding: 8px 14px;
-    border-radius: 999px;
+    padding: 11px 16px;
     font-size: 14px;
     line-height: 1.1;
 }
@@ -200,7 +199,7 @@ a {
 .lang-switch {
     min-width: 58px;
     background: rgba(31, 49, 64, 0.08);
-    border: 1px solid rgba(31, 49, 64, 0.12);
+    border: 2px solid rgba(31, 49, 64, 0.18);
     color: var(--navy);
 }
 
