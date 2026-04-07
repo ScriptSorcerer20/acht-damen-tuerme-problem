@@ -9,8 +9,13 @@
 </head>
 
 <body>
-    <nav>
-        <ul>
+    <nav class="auth-nav">
+        <a class="brand" href="{{ url_for('main.home') }}">
+            <span class="brand-mark">♛</span>
+            <span>8-Damen- und 8-Tuerme Solver</span>
+        </a>
+
+        <ul class="nav-links">
             <li><a href="{{ url_for('login.login') }}">Login</a></li>
             <li><a href="{{ url_for('login.register') }}">Create account</a></li>
         </ul>
