@@ -236,7 +236,7 @@ const translations = {
         favoriteAddButton: "Als Favorit",
         favoriteRemoveButton: "Favorit entfernen",
         deleteButton: "Löschen",
-        celebrationTitle: "Richtig geloöst!",
+        celebrationTitle: "Richtig gelöst!",
         celebrationText: ({ modeLabel, duration }) => `Stark gemacht. Deine ${modeLabel.toLowerCase()}-Lösung ist konfliktfrei in ${duration}.`,
         settingsApplied: ({ size }) => `Brettgrösse auf ${size} x ${size} gesetzt.`,
         modeActivated: ({ piece }) => `${piece}-Modus aktiviert.`,

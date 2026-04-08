@@ -24,8 +24,8 @@
             <button class="nav-link-button lang-switch" id="langSwitch" type="button"
                 aria-label="Sprache wechseln">DE</button>
 
-            <a class="account-shortcut" href="{{ url_for('login.login_settings') }}" data-i18n-aria-label="accountShortcutAria"
-                aria-label="Konto und Login-Einstellungen öffnen">
+            <a class="account-shortcut" href="{{ url_for('login.login_settings') }}"
+                data-i18n-aria-label="accountShortcutAria" aria-label="Konto und Login-Einstellungen öffnen">
                 <span class="account-avatar" aria-hidden="true">{{ current_user.username[:1]|upper }}</span>
                 <span class="account-copy">
                     <span class="account-label" id="accountLabel" data-i18n="accountLabel">Account</span>
@@ -45,7 +45,7 @@
         <span class="settings-trigger-label" id="settingsTriggerLabel">Brett-Einstellungen</span>
     </button>
 
-        <div class="container">
+    <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="flash-stack">
@@ -121,13 +121,14 @@
             <div class="board" id="board"></div>
 
             <div class="controls">
-                <button class="btn secondary" onclick="resetBoard()" id="btnReset" type="button" data-i18n="btnReset">Brett
-                    zuruecksetzen</button>
+                <button class="btn secondary" onclick="resetBoard()" id="btnReset" type="button"
+                    data-i18n="btnReset">Brett
+                    zurücksetzen</button>
                 <div class="controls-save-row">
                     <button class="btn" onclick="openSavePanel()" id="btnSave" type="button"
                         data-i18n="btnSave">Speichern</button>
-                    <button class="btn secondary" onclick="openSavePointsPanel()" id="btnLoad"
-                        type="button" data-i18n="btnLoad">Save-Points</button>
+                    <button class="btn secondary" onclick="openSavePointsPanel()" id="btnLoad" type="button"
+                        data-i18n="btnLoad">Save-Points</button>
                 </div>
             </div>
 
@@ -151,17 +152,17 @@
                         </p>
 
                         <div class="solver-controls">
-                            <button class="btn" onclick="prepareSolutionTrace()" id="btnPrepareSolve"
-                                type="button" data-i18n="btnPrepareSolve">Animation vorbereiten</button>
-                            <button class="btn secondary" onclick="nextSolverStep()" id="btnNextStep"
-                                type="button" data-i18n="btnNextStep">Nächster Schritt</button>
+                            <button class="btn" onclick="prepareSolutionTrace()" id="btnPrepareSolve" type="button"
+                                data-i18n="btnPrepareSolve">Animation vorbereiten</button>
+                            <button class="btn secondary" onclick="nextSolverStep()" id="btnNextStep" type="button"
+                                data-i18n="btnNextStep">Nächster Schritt</button>
                             <button class="btn secondary" onclick="toggleSolverPlayback()" id="btnPlayPause"
                                 type="button" data-i18n="btnPlayPause">Animation abspielen</button>
                         </div>
 
                         <div class="solver-speed">
-                            <label class="solver-speed-label" id="solverSpeedLabel"
-                                for="solverSpeedInput" data-i18n="solverSpeedLabel">Animationsgeschwindigkeit</label>
+                            <label class="solver-speed-label" id="solverSpeedLabel" for="solverSpeedInput"
+                                data-i18n="solverSpeedLabel">Animationsgeschwindigkeit</label>
                             <input id="solverSpeedInput" type="range" min="80" max="900" step="20" value="320"
                                 oninput="updateSolverSpeed(this.value)">
                             <span class="solver-speed-value" id="solverSpeedValue">320 ms</span>
@@ -175,8 +176,8 @@
                         </p>
 
                         <div class="instant-solver-actions">
-                            <button class="btn accent" onclick="instantSolve()" id="btnInstantSolve"
-                                type="button" data-i18n="btnInstantSolve">Sofort lösen</button>
+                            <button class="btn accent" onclick="instantSolve()" id="btnInstantSolve" type="button"
+                                data-i18n="btnInstantSolve">Sofort lösen</button>
                         </div>
                     </section>
                 </div>
@@ -196,12 +197,13 @@
                 <div>
                     <p class="section-kicker" id="historyKicker" data-i18n="historyKicker">Save-Points</p>
                     <h3 id="historyTitle" data-i18n="historyTitle">Gespeicherte Zeiten und Fortschritte</h3>
-                    <p class="history-subtitle" id="historySubtitle" data-i18n="historySubtitle">Die Tabelle zeigt gespeicherte Save-Points mit
+                    <p class="history-subtitle" id="historySubtitle" data-i18n="historySubtitle">Die Tabelle zeigt
+                        gespeicherte Save-Points mit
                         Zeit, Schritten und
                         Status.</p>
                 </div>
-                <button class="btn secondary" onclick="refreshTimeHistory()" id="btnRefreshHistory"
-                    type="button" data-i18n="btnRefreshHistory">Aktualisieren</button>
+                <button class="btn secondary" onclick="refreshTimeHistory()" id="btnRefreshHistory" type="button"
+                    data-i18n="btnRefreshHistory">Aktualisieren</button>
             </div>
 
             <div class="history-table-wrapper">
@@ -219,7 +221,8 @@
                     </thead>
                     <tbody id="timeHistoryTableBody">
                         <tr>
-                            <td colspan="7" class="history-empty" data-i18n="historyEmpty">Noch keine gespeicherten Zeiten vorhanden.</td>
+                            <td colspan="7" class="history-empty" data-i18n="historyEmpty">Noch keine gespeicherten
+                                Zeiten vorhanden.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -238,14 +241,17 @@
 
         <p id="settingsSidebarText" data-i18n="settingsSidebarText">Passe die Brettgrösse zwischen 4 und 13 an.</p>
 
-        <label class="sidebar-label" id="boardSizeInputLabel" for="boardSizeInput" data-i18n="boardSizeInputLabel">Grösse</label>
+        <label class="sidebar-label" id="boardSizeInputLabel" for="boardSizeInput"
+            data-i18n="boardSizeInputLabel">Grösse</label>
         <input id="boardSizeInput" type="range" min="4" max="13" value="8" oninput="previewBoardSize(this.value)">
         <div class="sidebar-size-row">
             <strong><span id="sidebarBoardSizeValue">8</span> x <span id="sidebarBoardSizeValueMirror">8</span></strong>
         </div>
 
-        <button class="btn" onclick="applyBoardSize()" id="applyBoardSizeButton" type="button" data-i18n="applyBoardSizeButton">Grösse anwenden</button>
-        <p class="sidebar-hint" id="settingsSidebarHint" data-i18n="settingsSidebarHint">Beim Ändern wird das Brett zur Sicherheit zurückgesetzt. Auf
+        <button class="btn" onclick="applyBoardSize()" id="applyBoardSizeButton" type="button"
+            data-i18n="applyBoardSizeButton">Grösse anwenden</button>
+        <p class="sidebar-hint" id="settingsSidebarHint" data-i18n="settingsSidebarHint">Beim Ändern wird das Brett zur
+            Sicherheit zurückgesetzt. Auf
             dem Handy ist 8x8 eingeplant, grössere Bretter können abgeschnitten wirken.</p>
     </aside>
 
@@ -256,7 +262,8 @@
                 type="button" data-i18n="saveSidebarClose">Schliessen</button>
         </div>
 
-        <p id="saveSidebarText" data-i18n="saveSidebarText">Gib dem Spielstand einen klaren Namen und optional eine kurze Notiz.</p>
+        <p id="saveSidebarText" data-i18n="saveSidebarText">Gib dem Spielstand einen klaren Namen und optional eine
+            kurze Notiz.</p>
 
         <label class="sidebar-label" id="saveNameLabel" for="saveNameInput" data-i18n="saveNameLabel">Name</label>
         <input class="sidebar-input" id="saveNameInput" type="text" maxlength="80"
@@ -271,7 +278,8 @@
             <span id="saveFavoriteLabel" data-i18n="saveFavoriteLabel">Als Favorit markieren</span>
         </label>
 
-        <button class="btn" onclick="saveGame()" id="saveNowButton" type="button" data-i18n="saveNowButton">Jetzt speichern</button>
+        <button class="btn" onclick="saveGame()" id="saveNowButton" type="button" data-i18n="saveNowButton">Jetzt
+            speichern</button>
     </aside>
 
     <aside class="sidebar save-points-sidebar" id="savePointsSidebar" aria-hidden="true">
@@ -284,14 +292,16 @@
         <p id="savePointsSidebarText" data-i18n="savePointsSidebarText">Wähle einen Speicherstand aus der Liste.</p>
 
         <div class="save-point-filters">
-            <label class="sidebar-label" id="savePointModeFilterLabel" for="savePointModeFilter" data-i18n="savePointModeFilterLabel">Modus</label>
+            <label class="sidebar-label" id="savePointModeFilterLabel" for="savePointModeFilter"
+                data-i18n="savePointModeFilterLabel">Modus</label>
             <select class="sidebar-input" id="savePointModeFilter" onchange="refreshSavePoints()">
                 <option value="all" data-i18n="filterAll">Alle</option>
                 <option value="queens" data-i18n="filterQueens">Damen</option>
                 <option value="rooks" data-i18n="filterRooks">Türme</option>
             </select>
 
-            <label class="sidebar-label" id="savePointSizeFilterLabel" for="savePointSizeFilter" data-i18n="savePointSizeFilterLabel">Brettgrösse</label>
+            <label class="sidebar-label" id="savePointSizeFilterLabel" for="savePointSizeFilter"
+                data-i18n="savePointSizeFilterLabel">Brettgrösse</label>
             <select class="sidebar-input" id="savePointSizeFilter" onchange="refreshSavePoints()">
                 <option value="all" data-i18n="filterAll">Alle</option>
                 {% for board_size in range(4, 14) %}
@@ -299,7 +309,8 @@
                 {% endfor %}
             </select>
 
-            <label class="sidebar-label" id="savePointSortFilterLabel" for="savePointSortFilter" data-i18n="savePointSortFilterLabel">Sortierung</label>
+            <label class="sidebar-label" id="savePointSortFilterLabel" for="savePointSortFilter"
+                data-i18n="savePointSortFilterLabel">Sortierung</label>
             <select class="sidebar-input" id="savePointSortFilter" onchange="refreshSavePoints()">
                 <option value="newest" data-i18n="filterNewest">Neueste zuerst</option>
                 <option value="oldest" data-i18n="filterOldest">älteste zuerst</option>
@@ -309,12 +320,14 @@
 
             <label class="sidebar-checkbox">
                 <input id="savePointFavoritesOnly" type="checkbox" onchange="refreshSavePoints()">
-                <span id="savePointFavoritesOnlyLabel" data-i18n="savePointFavoritesOnlyLabel">Nur Favoriten anzeigen</span>
+                <span id="savePointFavoritesOnlyLabel" data-i18n="savePointFavoritesOnlyLabel">Nur Favoriten
+                    anzeigen</span>
             </label>
         </div>
 
         <div class="save-points-list" id="savePointsList">
-            <p class="sidebar-hint" id="savePointsEmptyState" data-i18n="savePointsEmptyState">Noch keine Speicherstände gefunden.</p>
+            <p class="sidebar-hint" id="savePointsEmptyState" data-i18n="savePointsEmptyState">Noch keine Speicherstände
+                gefunden.</p>
         </div>
     </aside>
 
@@ -326,12 +339,13 @@
     <section class="modal" id="infoModal" aria-hidden="true" aria-labelledby="infoModalTitle">
         <div class="modal-header">
             <h3 id="infoModalTitle">Spielregeln und Acht-Damen-Problem</h3>
-            <button class="btn secondary sidebar-close" onclick="toggleInfoModal(false)"
-                type="button" data-i18n="infoModalClose">Schliessen</button>
+            <button class="btn secondary sidebar-close" onclick="toggleInfoModal(false)" type="button"
+                data-i18n="infoModalClose">Schliessen</button>
         </div>
 
         <div class="modal-content">
-            <p data-i18n="infoModalIntro">Setze pro Reihe genau eine Figur auf das Brett. Eine gültige Lösung hat keine Konflikte.</p>
+            <p data-i18n="infoModalIntro">Setze pro Reihe genau eine Figur auf das Brett. Eine gültige Lösung hat keine
+                Konflikte.</p>
 
             <h4 data-i18n="infoModalModeHeading">So funktioniert der aktuelle Modus</h4>
             <p id="infoModeRuleText">Im Damen-Modus dürfen sich Damen weder in derselben Spalte noch diagonal
@@ -343,7 +357,8 @@
                 kombinatorische Suche und Backtracking.</p>
 
             <h4 data-i18n="infoModalTimeHeading">Was zeigen Zeit und Schritte?</h4>
-            <p data-i18n="infoModalTimeText">Der Schrittzähler erfasst deine Züge auf dem Brett. Die Zeit läuft für das aktuelle Spiel weiter,
+            <p data-i18n="infoModalTimeText">Der Schrittzähler erfasst deine Züge auf dem Brett. Die Zeit läuft für das
+                aktuelle Spiel weiter,
                 auch wenn du die Seite neu lädst. Beim Speichern werden Zeit und Schritte zusammen mit dem
                 Save-Point abgelegt.</p>
         </div>

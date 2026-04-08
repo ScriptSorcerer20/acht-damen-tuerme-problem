@@ -1,3 +1,10 @@
+"""Main application routes for pages, puzzle solving, and save points.
+
+This module contains the public pages, the dashboard, the board validation
+logic for queens and rooks, solver endpoints, and the CRUD-style endpoints
+used to store and restore saved games for a logged-in user.
+"""
+
 import json
 import random
 from datetime import datetime
@@ -12,10 +19,12 @@ DEFAULT_BOARD_SIZE = 8
 MIN_BOARD_SIZE = 4
 MAX_BOARD_SIZE = 13
 
+# Blueprint that groups the main site and game-related routes.
 main_bp = Blueprint("main", __name__)
 
 
 def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
+    """Convert a user-supplied board size into a safe integer range."""
     try:
         board_size = int(raw_size)
     except (TypeError, ValueError):
@@ -25,10 +34,12 @@ def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
 
 
 def parse_favorite_flag(raw_value):
+    """Interpret common truthy values from query parameters or JSON payloads."""
     return str(raw_value).lower() in {"1", "true", "yes", "on"}
 
 
 def parse_non_negative_int(raw_value, default=0):
+    """Parse an integer and clamp negative values to zero."""
     try:
         value = int(raw_value)
     except (TypeError, ValueError):
@@ -38,14 +49,17 @@ def parse_non_negative_int(raw_value, default=0):
 
 
 def get_position_label(row, col, board_size):
+    """Return a chess-style board label such as A8 or C5."""
     return f"{chr(65 + col)}{board_size - row}"
 
 
 def solve_queens(board_size):
+    """Return every valid N-Queens solution for the requested board size."""
     queen_positions = [-1] * board_size
     queen_solutions = []
 
     def is_queen_position_safe(row, col):
+        """Check whether the new queen conflicts with any earlier queen."""
         for previous_row in range(row):
             previous_col = queen_positions[previous_row]
 
@@ -58,6 +72,7 @@ def solve_queens(board_size):
         return True
 
     def place_queen(row):
+        """Backtracking search that fills the board row by row."""
         if row == board_size:
             queen_solutions.append(queen_positions[:])
             return
@@ -73,16 +88,19 @@ def solve_queens(board_size):
 
 
 def solve_rooks(board_size):
+    """Return one valid rook arrangement with exactly one rook per row/column."""
     rook_positions = list(range(board_size))
     random.shuffle(rook_positions)
     return rook_positions
 
 
 def build_queens_trace(board_size):
+    """Build a step-by-step trace that explains the queens backtracking search."""
     queen_positions = [-1] * board_size
     steps = []
 
     def is_queen_position_safe(row, col):
+        """Reuse the same safety rules used by the queens solver."""
         for previous_row in range(row):
             previous_col = queen_positions[previous_row]
 
@@ -95,13 +113,14 @@ def build_queens_trace(board_size):
         return True
 
     def place_queen(row):
+        """Record every placement and backtracking step until a solution is found."""
         if row == board_size:
             steps.append({
                 "type": "solution",
                 "row": None,
                 "col": None,
                 "board": queen_positions[:],
-                "message": f"Loesung gefunden. Alle {board_size} Damen stehen ohne Konflikte."
+                "message": f"Lösung gefunden. Alle {board_size} Damen stehen ohne Konflikte."
             })
             return True
 
@@ -111,6 +130,8 @@ def build_queens_trace(board_size):
 
             queen_positions[row] = col
             position = get_position_label(row, col, board_size)
+            # Store a snapshot of the current board so the frontend can replay
+            # the solving process visually.
             steps.append({
                 "type": "place",
                 "row": row,
@@ -145,6 +166,7 @@ def build_queens_trace(board_size):
 
 
 def build_rooks_trace(board_size):
+    """Build a simple placement trace for the rook mode."""
     rook_positions = solve_rooks(board_size)
     board = [-1] * board_size
     steps = []
@@ -152,6 +174,8 @@ def build_rooks_trace(board_size):
     for row, col in enumerate(rook_positions):
         board[row] = col
         position = get_position_label(row, col, board_size)
+        # As with the queens trace, each step includes a full board snapshot for
+        # straightforward frontend rendering.
         steps.append({
             "type": "place",
             "row": row,
@@ -178,6 +202,7 @@ def build_rooks_trace(board_size):
 
 
 def serialize_game_state(game_state):
+    """Convert a database model into JSON-friendly data for the frontend."""
     board = json.loads(game_state.board)
 
     return {
@@ -198,6 +223,7 @@ def serialize_game_state(game_state):
 
 
 def build_save_point_query():
+    """Create a filtered and sorted query for the current user's save points."""
     query = GameState.query.filter_by(user_id=current_user.id)
 
     selected_mode = request.args.get("mode")
@@ -205,6 +231,7 @@ def build_save_point_query():
     favorites_only = request.args.get("favorites_only")
     sort_by = request.args.get("sort", "newest")
 
+    # Apply optional filters only when the request contains a supported value.
     if selected_mode in {"queens", "rooks"}:
         query = query.filter_by(mode=selected_mode)
 
@@ -226,6 +253,7 @@ def build_save_point_query():
 
 @main_bp.route("/")
 def home():
+    """Render the public landing page and choose a matching default language."""
     initial_language = request.accept_languages.best_match(["de", "en"]) or "de"
     return render_template("index.html", initial_language=initial_language)
 
@@ -233,27 +261,33 @@ def home():
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
+    """Render the logged-in dashboard."""
     return render_template("dashboard.html", user=current_user)
 
 
 @main_bp.route("/privacy_policy")
 def privacy_policy():
+    """Render the privacy policy page."""
     return render_template("privacy.html")
 
 
 @main_bp.route("/imprint")
 def imprint():
+    """Render the imprint/legal notice page."""
     return render_template("impressum.html")
 
 
 @main_bp.route("/check", methods=["POST"])
 def check():
+    """Validate whether a piece can be placed on the requested square."""
     data = request.json
     board = data["board"]
     row = data["row"]
     col = data["col"]
     piece_mode = data.get("mode", "queens")
 
+    # The board is stored as a list where the index is the row and the value is
+    # the column of the placed piece. -1 means the row is still empty.
     for current_row, current_col in enumerate(board):
         if current_col == -1 or current_row == row:
             continue
@@ -264,6 +298,7 @@ def check():
         if same_column:
             return jsonify({"valid": False})
 
+        # Diagonal conflicts only matter for queens, not for rooks.
         if piece_mode == "queens" and same_diagonal:
             return jsonify({"valid": False})
 
@@ -272,24 +307,28 @@ def check():
 
 @main_bp.route("/solve")
 def solve_queens_route():
+    """Return all queens solutions for the requested board size."""
     board_size = parse_board_size(request.args.get("size"))
     return jsonify(solve_queens(board_size))
 
 
 @main_bp.route("/solve_trace")
 def solve_queens_trace_route():
+    """Return a step-by-step queens solving trace."""
     board_size = parse_board_size(request.args.get("size"))
     return jsonify(build_queens_trace(board_size))
 
 
 @main_bp.route("/solve_rooks")
 def solve_rooks_route():
+    """Return one rook solution for the requested board size."""
     board_size = parse_board_size(request.args.get("size"))
     return jsonify(solve_rooks(board_size))
 
 
 @main_bp.route("/solve_rooks_trace")
 def solve_rooks_trace_route():
+    """Return a step-by-step rook placement trace."""
     board_size = parse_board_size(request.args.get("size"))
     return jsonify(build_rooks_trace(board_size))
 
@@ -297,6 +336,7 @@ def solve_rooks_trace_route():
 @main_bp.route("/save", methods=["POST"])
 @login_required
 def save_game():
+    """Store the current board state as a new save point for the user."""
     data = request.json
 
     board = data["board"]
@@ -310,6 +350,7 @@ def save_game():
     is_solved = bool(data.get("isSolved"))
     timestamp = datetime.utcnow()
 
+    # Save the board as JSON text so it can be restored exactly as the user left it.
     game_state = GameState(
         user_id=current_user.id,
         board=json.dumps(board),
@@ -337,6 +378,7 @@ def save_game():
 @main_bp.route("/save_points")
 @login_required
 def list_save_points():
+    """Return all save points for the current user after filtering and sorting."""
     save_points = build_save_point_query().all()
     return jsonify([serialize_game_state(game_state) for game_state in save_points])
 
@@ -344,6 +386,7 @@ def list_save_points():
 @main_bp.route("/save_points/<int:game_id>/favorite", methods=["POST"])
 @login_required
 def toggle_save_point_favorite(game_id):
+    """Toggle the favorite flag for one saved game."""
     game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
 
     if not game_state:
@@ -358,6 +401,7 @@ def toggle_save_point_favorite(game_id):
 @main_bp.route("/save_points/<int:game_id>", methods=["DELETE"])
 @login_required
 def delete_save_point(game_id):
+    """Delete one save point owned by the current user."""
     game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
 
     if not game_state:
@@ -372,12 +416,14 @@ def delete_save_point(game_id):
 @main_bp.route("/load")
 @login_required
 def load_game():
+    """Load the newest save point for the current user."""
     latest_game = (
         GameState.query.filter_by(user_id=current_user.id)
         .order_by(GameState.created_at.desc(), GameState.id.desc())
         .first()
     )
 
+    # If the user has never saved a game, return a clean default board.
     if not latest_game:
         return jsonify({"board": [-1] * DEFAULT_BOARD_SIZE, "mode": "queens"})
 
@@ -387,6 +433,7 @@ def load_game():
 @main_bp.route("/load/<int:game_id>")
 @login_required
 def load_specific_game(game_id):
+    """Load a specific save point owned by the current user."""
     game_state = GameState.query.filter_by(id=game_id, user_id=current_user.id).first()
 
     if not game_state:
