@@ -1,51 +1,370 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title data-i18n="pageTitle">Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
 
 <body>
+    <nav class="dashboard-nav">
+        <a class="brand" href="{{ url_for('main.home') }}">
+            <span class="brand-mark">♛</span>
+            <span data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
+        </a>
 
-    <nav>
-        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('login.logout') }}">Logout</a>
-    </nav>
+        <div class="nav-actions">
+            <a class="nav-link" href="{{ url_for('main.dashboard') }}" id="navDashboardLink"
+                data-i18n="navDashboard">Dashboard</a>
 
-    <div class="container">
+            <button class="nav-link-button lang-switch" id="langSwitch" type="button"
+                aria-label="Sprache wechseln">DE</button>
 
-        ```
-        <h1>Dashboard</h1>
+            <a class="account-shortcut" href="{{ url_for('login.login_settings') }}"
+                data-i18n-aria-label="accountShortcutAria" aria-label="Konto und Login-Einstellungen öffnen">
+                <span class="account-avatar" aria-hidden="true">{{ current_user.username[:1]|upper }}</span>
+                <span class="account-copy">
+                    <span class="account-label" id="accountLabel" data-i18n="accountLabel">Account</span>
+                    <span class="account-name">{{ current_user.username }}</span>
+                </span>
+            </a>
 
-        <p>Welcome back <strong>{{ current_user.username }}</strong> 👋</p>
-
-        <div class="user-info">
-            <h3>Your Account</h3>
-
-            <p><strong>User ID:</strong> {{ current_user.id }}</p>
-            <p><strong>Username:</strong> {{ current_user.username }}</p>
-
-            {% if current_user.email %}
-            <p><strong>Email:</strong> {{ current_user.email }}</p>
-            {% else %}
-            <p><strong>Email:</strong> Not set</p>
-            {% endif %}
-
-            <p><strong>Account created:</strong> {{ current_user.created_at }}</p>
-        </div>
-
-        <div class="logout">
-            <form action="{{ url_for('login.logout') }}" method="post">
-                <button type="submit">Logout</button>
+            <form action="{{ url_for('login.logout') }}" method="post" class="nav-logout-form">
+                <button class="nav-link-button" type="submit" data-i18n="navLogout">Logout</button>
             </form>
         </div>
-        ```
+    </nav>
 
+    <button class="settings-trigger" id="settingsTrigger" onclick="toggleSidebar()" type="button"
+        aria-controls="settingsSidebar" aria-expanded="false">
+        <span class="settings-trigger-arrow" id="settingsTriggerArrow">→</span>
+        <span class="settings-trigger-label" id="settingsTriggerLabel">Brett-Einstellungen</span>
+    </button>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+            {% for category, message in messages %}
+            <p class="flash-message {{ category }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <section class="dashboard-intro card">
+            <p class="section-kicker" id="introKicker" data-i18n="introKicker">Puzzle-Modus</p>
+            <h1 id="introTitle" data-i18n="introTitle">Wähl deinen Modus und löse das Brett auf deine Art.</h1>
+            <p class="dashboard-intro-text" id="introText" data-i18n="introText">
+                Wechsle zwischen Damen und Türmen, nutze Animation oder Sofort-Lösung und öffne die
+                Brett-Einstellungen jederzeit über den linken Seiten-Tab.
+            </p>
+
+            <div class="mode-switch" data-i18n-aria-label="modeSwitchAria" aria-label="Spielmodus">
+                <button class="btn active" onclick="setMode('queens')" id="btnQueens" type="button">
+                    <span aria-hidden="true">♛</span>
+                    <span data-i18n="btnQueens">Damen</span>
+                </button>
+                <button class="btn secondary" onclick="setMode('rooks')" id="btnRooks" type="button">
+                    <span aria-hidden="true">♜</span>
+                    <span data-i18n="btnRooks">Türme</span>
+                </button>
+            </div>
+        </section>
+
+        <div class="card game-card">
+            <div class="game-card-header">
+                <div class="game-card-copy">
+                    <p class="section-kicker" id="gameModeEyebrow">Damen-Modus</p>
+                    <h2 id="gameTitle">Damen-Spielbrett</h2>
+                    <p class="board-mode-text" id="boardModeText">
+                        Platziere Damen so, dass keine zwei dieselbe Spalte oder Diagonale teilen.
+                    </p>
+                </div>
+
+                <button class="info-button" id="infoButton" onclick="toggleInfoModal(true)" type="button"
+                    data-i18n="infoButton" data-i18n-aria-label="infoButton"
+                    aria-label="Spielregeln und Hilfe anzeigen">Regeln & Hilfe</button>
+            </div>
+
+            <p class="board-size-info" id="boardSizeInfo"><span id="boardSizeInfoPrefix">Aktuelle Brettgrösse im
+                    Damen-Modus:</span>
+                <span id="boardSizeValue">8</span> x <span id="boardSizeValueMirror">8</span>
+            </p>
+
+            <div class="game-stats" data-i18n-aria-label="gameStatsAria" aria-label="Spielstatus">
+                <article class="game-stat-card">
+                    <p class="game-stat-label" id="stepsLabel" data-i18n="stepsLabel">Schritte</p>
+                    <p class="game-stat-value" id="stepCounterValue">0</p>
+                </article>
+                <article class="game-stat-card">
+                    <p class="game-stat-label" id="timeLabel" data-i18n="timeLabel">Zeit</p>
+                    <p class="game-stat-value" id="timerValue">00:00:00</p>
+                </article>
+                <article class="game-stat-card">
+                    <p class="game-stat-label" id="statusLabel" data-i18n="statusLabel">Status</p>
+                    <p class="game-stat-value game-stat-status" id="gameProgressState">Läuft</p>
+                </article>
+            </div>
+
+            <p id="statusMessage"></p>
+            <div class="solved-celebration" id="solvedCelebration" aria-live="polite" hidden>
+                <p class="solved-celebration-title" id="solvedCelebrationTitle">Richtig gelöst!</p>
+                <p class="solved-celebration-text" id="solvedCelebrationText">Stark gemacht. Das Brett ist konfliktfrei.
+                </p>
+            </div>
+
+            <div class="board" id="board"></div>
+
+            <div class="controls">
+                <button class="btn secondary" onclick="resetBoard()" id="btnReset" type="button"
+                    data-i18n="btnReset">Brett
+                    zurücksetzen</button>
+                <div class="controls-save-row">
+                    <button class="btn" onclick="openSavePanel()" id="btnSave" type="button"
+                        data-i18n="btnSave">Speichern</button>
+                    <button class="btn secondary" onclick="openSavePointsPanel()" id="btnLoad" type="button"
+                        data-i18n="btnLoad">Save-Points</button>
+                </div>
+            </div>
+
+            <div class="solver-panel">
+                <div class="solver-panel-header">
+                    <div>
+                        <p class="section-kicker" id="solverKicker" data-i18n="solverKicker">Solver</p>
+                        <h3 id="solverTitle" data-i18n="solverTitle">Lösungswerkzeuge</h3>
+                        <p class="solver-message" id="solverMessage">Bereite einen Ablauf vor und spiele ihn Schritt
+                            für Schritt ab.</p>
+                    </div>
+                    <p class="solver-step-info" id="solverStepInfo">Schritt 0 / 0</p>
+                </div>
+
+                <div class="solver-groups">
+                    <section class="solver-group">
+                        <h4 id="animationSolverTitle" data-i18n="animationSolverTitle">Animations-Solver</h4>
+                        <p class="solver-group-text" id="animationSolverText" data-i18n="animationSolverText">
+                            Bereite den Lösungsweg vor, gehe ihn manüll Schritt für Schritt durch oder spiele die
+                            Animation automatisch ab.
+                        </p>
+
+                        <div class="solver-controls">
+                            <button class="btn" onclick="prepareSolutionTrace()" id="btnPrepareSolve" type="button"
+                                data-i18n="btnPrepareSolve">Animation vorbereiten</button>
+                            <button class="btn secondary" onclick="nextSolverStep()" id="btnNextStep" type="button"
+                                data-i18n="btnNextStep">Nächster Schritt</button>
+                            <button class="btn secondary" onclick="toggleSolverPlayback()" id="btnPlayPause"
+                                type="button" data-i18n="btnPlayPause">Animation abspielen</button>
+                        </div>
+
+                        <div class="solver-speed">
+                            <label class="solver-speed-label" id="solverSpeedLabel" for="solverSpeedInput"
+                                data-i18n="solverSpeedLabel">Animationsgeschwindigkeit</label>
+                            <input id="solverSpeedInput" type="range" min="80" max="900" step="20" value="320"
+                                oninput="updateSolverSpeed(this.value)">
+                            <span class="solver-speed-value" id="solverSpeedValue">320 ms</span>
+                        </div>
+                    </section>
+
+                    <section class="solver-group instant-solver-group">
+                        <h4 id="instantSolverTitle" data-i18n="instantSolverTitle">Sofort-Lösung</h4>
+                        <p class="solver-group-text" id="instantSolverText" data-i18n="instantSolverText">
+                            Lade direkt eine gültige Lösung, ohne Zwischenschritte oder Animation.
+                        </p>
+
+                        <div class="instant-solver-actions">
+                            <button class="btn accent" onclick="instantSolve()" id="btnInstantSolve" type="button"
+                                data-i18n="btnInstantSolve">Sofort lösen</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <div class="card piece-card">
+            <div class="section-header">
+                <h3 id="pieceListTitle">Positionen der Damen</h3>
+                <span class="section-badge" id="pieceCountBadge">0 gesetzt</span>
+            </div>
+            <ul id="queenList"></ul>
+        </div>
+
+        <div class="card">
+            <div class="history-header">
+                <div>
+                    <p class="section-kicker" id="historyKicker" data-i18n="historyKicker">Save-Points</p>
+                    <h3 id="historyTitle" data-i18n="historyTitle">Gespeicherte Zeiten und Fortschritte</h3>
+                    <p class="history-subtitle" id="historySubtitle" data-i18n="historySubtitle">Die Tabelle zeigt
+                        gespeicherte Save-Points mit
+                        Zeit, Schritten und
+                        Status.</p>
+                </div>
+                <button class="btn secondary" onclick="refreshTimeHistory()" id="btnRefreshHistory" type="button"
+                    data-i18n="btnRefreshHistory">Aktualisieren</button>
+            </div>
+
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th id="historyHeadSave" data-i18n="historyHeadSave">Save-Point</th>
+                            <th id="historyHeadMode" data-i18n="historyHeadMode">Modus</th>
+                            <th id="historyHeadBoard" data-i18n="historyHeadBoard">Brett</th>
+                            <th id="historyHeadSteps" data-i18n="historyHeadSteps">Schritte</th>
+                            <th id="historyHeadTime" data-i18n="historyHeadTime">Zeit</th>
+                            <th id="historyHeadStatus" data-i18n="historyHeadStatus">Status</th>
+                            <th id="historyHeadSaved" data-i18n="historyHeadSaved">Gespeichert</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeHistoryTableBody">
+                        <tr>
+                            <td colspan="7" class="history-empty" data-i18n="historyEmpty">Noch keine gespeicherten
+                                Zeiten vorhanden.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
+    {% include "partials/footer.html" %}
+
+    <aside class="sidebar settings-sidebar" id="settingsSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3 id="settingsSidebarTitle" data-i18n="settingsSidebarTitle">Brett-Einstellungen</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSidebar(false)" id="settingsSidebarClose"
+                type="button" data-i18n="settingsSidebarClose">Schliessen</button>
+        </div>
+
+        <p id="settingsSidebarText" data-i18n="settingsSidebarText">Passe die Brettgrösse zwischen 4 und 13 an.</p>
+
+        <label class="sidebar-label" id="boardSizeInputLabel" for="boardSizeInput"
+            data-i18n="boardSizeInputLabel">Grösse</label>
+        <input id="boardSizeInput" type="range" min="4" max="13" value="8" oninput="previewBoardSize(this.value)">
+        <div class="sidebar-size-row">
+            <strong><span id="sidebarBoardSizeValue">8</span> x <span id="sidebarBoardSizeValueMirror">8</span></strong>
+        </div>
+
+        <button class="btn" onclick="applyBoardSize()" id="applyBoardSizeButton" type="button"
+            data-i18n="applyBoardSizeButton">Grösse anwenden</button>
+        <p class="sidebar-hint" id="settingsSidebarHint" data-i18n="settingsSidebarHint">Beim Ändern wird das Brett zur
+            Sicherheit zurückgesetzt. Auf
+            dem Handy ist 8x8 eingeplant, grössere Bretter können abgeschnitten wirken.</p>
+    </aside>
+
+    <aside class="sidebar save-sidebar" id="saveSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3 id="saveSidebarTitle" data-i18n="saveSidebarTitle">Speicherpunkt</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSavePanel(false)" id="saveSidebarClose"
+                type="button" data-i18n="saveSidebarClose">Schliessen</button>
+        </div>
+
+        <p id="saveSidebarText" data-i18n="saveSidebarText">Gib dem Spielstand einen klaren Namen und optional eine
+            kurze Notiz.</p>
+
+        <label class="sidebar-label" id="saveNameLabel" for="saveNameInput" data-i18n="saveNameLabel">Name</label>
+        <input class="sidebar-input" id="saveNameInput" type="text" maxlength="80"
+            placeholder="z. B. Fast gelöste Dame 8x8" data-i18n-placeholder="saveNamePlaceholder">
+
+        <label class="sidebar-label" id="saveNoteLabel" for="saveNoteInput" data-i18n="saveNoteLabel">Notiz</label>
+        <textarea class="sidebar-input sidebar-textarea" id="saveNoteInput" rows="4" maxlength="240"
+            placeholder="z. B. Gute Startposition für Türmetest" data-i18n-placeholder="saveNotePlaceholder"></textarea>
+
+        <label class="sidebar-checkbox">
+            <input id="saveFavoriteInput" type="checkbox">
+            <span id="saveFavoriteLabel" data-i18n="saveFavoriteLabel">Als Favorit markieren</span>
+        </label>
+
+        <button class="btn" onclick="saveGame()" id="saveNowButton" type="button" data-i18n="saveNowButton">Jetzt
+            speichern</button>
+    </aside>
+
+    <aside class="sidebar save-points-sidebar" id="savePointsSidebar" aria-hidden="true">
+        <div class="sidebar-header">
+            <h3 id="savePointsSidebarTitle" data-i18n="savePointsSidebarTitle">Save-Points</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleSavePointsPanel(false)"
+                id="savePointsSidebarClose" type="button" data-i18n="savePointsSidebarClose">Schliessen</button>
+        </div>
+
+        <p id="savePointsSidebarText" data-i18n="savePointsSidebarText">Wähle einen Speicherstand aus der Liste.</p>
+
+        <div class="save-point-filters">
+            <label class="sidebar-label" id="savePointModeFilterLabel" for="savePointModeFilter"
+                data-i18n="savePointModeFilterLabel">Modus</label>
+            <select class="sidebar-input" id="savePointModeFilter" onchange="refreshSavePoints()">
+                <option value="all" data-i18n="filterAll">Alle</option>
+                <option value="queens" data-i18n="filterQueens">Damen</option>
+                <option value="rooks" data-i18n="filterRooks">Türme</option>
+            </select>
+
+            <label class="sidebar-label" id="savePointSizeFilterLabel" for="savePointSizeFilter"
+                data-i18n="savePointSizeFilterLabel">Brettgrösse</label>
+            <select class="sidebar-input" id="savePointSizeFilter" onchange="refreshSavePoints()">
+                <option value="all" data-i18n="filterAll">Alle</option>
+                {% for board_size in range(4, 14) %}
+                <option value="{{ board_size }}">{{ board_size }} x {{ board_size }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="sidebar-label" id="savePointSortFilterLabel" for="savePointSortFilter"
+                data-i18n="savePointSortFilterLabel">Sortierung</label>
+            <select class="sidebar-input" id="savePointSortFilter" onchange="refreshSavePoints()">
+                <option value="newest" data-i18n="filterNewest">Neueste zuerst</option>
+                <option value="oldest" data-i18n="filterOldest">älteste zuerst</option>
+                <option value="updated" data-i18n="filterUpdated">Zuletzt bearbeitet</option>
+                <option value="favorites" data-i18n="filterFavorites">Favoriten zuerst</option>
+            </select>
+
+            <label class="sidebar-checkbox">
+                <input id="savePointFavoritesOnly" type="checkbox" onchange="refreshSavePoints()">
+                <span id="savePointFavoritesOnlyLabel" data-i18n="savePointFavoritesOnlyLabel">Nur Favoriten
+                    anzeigen</span>
+            </label>
+        </div>
+
+        <div class="save-points-list" id="savePointsList">
+            <p class="sidebar-hint" id="savePointsEmptyState" data-i18n="savePointsEmptyState">Noch keine Speicherstände
+                gefunden.</p>
+        </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+    <div class="sidebar-backdrop" id="saveBackdrop" onclick="toggleSavePanel(false)"></div>
+    <div class="sidebar-backdrop" id="savePointsBackdrop" onclick="toggleSavePointsPanel(false)"></div>
+
+    <div class="modal-backdrop" id="infoModalBackdrop" onclick="toggleInfoModal(false)"></div>
+    <section class="modal" id="infoModal" aria-hidden="true" aria-labelledby="infoModalTitle">
+        <div class="modal-header">
+            <h3 id="infoModalTitle">Spielregeln und Acht-Damen-Problem</h3>
+            <button class="btn secondary sidebar-close" onclick="toggleInfoModal(false)" type="button"
+                data-i18n="infoModalClose">Schliessen</button>
+        </div>
+
+        <div class="modal-content">
+            <p data-i18n="infoModalIntro">Setze pro Reihe genau eine Figur auf das Brett. Eine gültige Lösung hat keine
+                Konflikte.</p>
+
+            <h4 data-i18n="infoModalModeHeading">So funktioniert der aktuelle Modus</h4>
+            <p id="infoModeRuleText">Im Damen-Modus dürfen sich Damen weder in derselben Spalte noch diagonal
+                angreifen. Mit einem Klick setzt oder entfernst du eine Figur.</p>
+
+            <h4 id="infoModalProblemHeading">Was ist das Acht-Damen-Problem?</h4>
+            <p id="infoModalProblemText">Das klassische Acht-Damen-Problem fragt nach einer Anordnung von acht Damen
+                auf einem 8x8-Brett, bei der sich keine zwei Damen schlagen. Es ist ein bekanntes Beispiel für
+                kombinatorische Suche und Backtracking.</p>
+
+            <h4 data-i18n="infoModalTimeHeading">Was zeigen Zeit und Schritte?</h4>
+            <p data-i18n="infoModalTimeText">Der Schrittzähler erfasst deine Züge auf dem Brett. Die Zeit läuft für das
+                aktuelle Spiel weiter,
+                auch wenn du die Seite neu lädst. Beim Speichern werden Zeit und Schritte zusammen mit dem
+                Save-Point abgelegt.</p>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 
 </html>

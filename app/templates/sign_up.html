@@ -5,31 +5,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <link rel="stylesheet" href="../static/css/login.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
 
 <body>
-    <nav>
-        <ul>
+    <nav class="auth-nav">
+        <a class="brand" href="{{ url_for('main.home') }}">
+            <span class="brand-mark">♛</span>
+            <span>8-Damen- und 8-Tuerme Solver</span>
+        </a>
+
+        <ul class="nav-links">
             <li><a href="{{ url_for('login.login') }}">Login</a></li>
             <li><a href="{{ url_for('login.register') }}">Create account</a></li>
         </ul>
     </nav>
-    <main>
-        <h1>Create an account</h1>
 
-        {% if error %}
-        <p class="error">{{ error }}</p>
-        {% endif %}
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <h1>Create an account</h1>
+            <p class="muted">Create your account here and enable authenticator app 2FA later in your login settings.</p>
 
-        <form action="{{ url_for('login.register') }}" method="post">
-            <label for="username">Username:</label>
-            <input type="text" name="username" required />
-            <label for="password">Password:</label>
-            <input type="password" name="password" required />
-            <button type="submit">Sign Up</button>
-        </form>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <p class="message {{ category }}">{{ message }}</p>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            {% if error %}
+            <p class="message error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('login.register') }}" method="post">
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" maxlength="20" required value="{{ username or '' }}">
+
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" minlength="8" maxlength="128" required>
+                <p class="field-hint">Use at least 8 characters.</p>
+
+                <button class="magnetic" type="submit" data-loading-label="Creating account...">Sign Up</button>
+            </form>
+        </section>
     </main>
+
+    {% include "partials/footer.html" %}
+
+    <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 </body>
 
 </html>

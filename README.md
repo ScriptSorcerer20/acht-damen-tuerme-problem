@@ -6,7 +6,6 @@ project-root/
 │
 ├── app/
 │   ├── __init__.py          # Flask App Factory
-│   ├── config.py            # Konfiguration (DB, Secrets, etc.)
 │   │
 │   ├── models/              # Datenbankmodelle
 │   │   ├── __init__.py
@@ -22,7 +21,7 @@ project-root/
 │   │   ├── solver_routes.py
 │   │   └── job_routes.py
 │   │
-│   ├── templates/           # HTML (Jinja Templates)
+│   ├── templates/           # HTML
 │   │   ├── base.html
 │   │   ├── login.html
 │   │   ├── dashboard.html
@@ -37,6 +36,5 @@ project-root/
 │
 ├── run.py                   # Startpunkt der Anwendung
 ├── requirements.txt
-├── .env                     # DB-Zugangsdaten, Secrets
 └── README.md
 ```

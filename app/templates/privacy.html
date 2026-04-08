@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pageTitle">Datenschutzerklärung</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+
+<body data-legal-page="privacy">
+    <header class="legal-header">
+        <nav class="legal-nav">
+            <a class="brand" href="{{ url_for('main.home') }}">
+                <span class="brand-mark">♛</span>
+                <span data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
+            </a>
+
+            <div class="legal-nav-links">
+                <button class="lang-switch" id="langSwitch" type="button" aria-label="Sprache wechseln">DE</button>
+                <a href="{{ url_for('main.home') }}" data-i18n="navHome">Startseite</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" data-i18n="navDashboard">Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('login.login') }}" data-i18n="navLogin">Login</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="legal-main">
+        <section class="legal-hero">
+            <p class="legal-eyebrow" data-i18n="heroEyebrow">Rechtliche Hinweise</p>
+            <h1 data-i18n="heroTitle">Datenschutzerklärung</h1>
+            <p class="legal-lead" data-i18n="heroLead">
+                Diese Seite beschreibt, welche personenbezogenen Daten im Rahmen dieses Schulprojekts verarbeitet
+                werden.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="dataProcessedTitle">1. Welche Daten verarbeitet werden</h2>
+            <p data-i18n="dataProcessedText">Im Rahmen der Nutzung dieser Webanwendung können insbesondere folgende
+                Daten verarbeitet werden:</p>
+            <ul class="legal-list">
+                <li data-i18n="dataProcessedItem1">Benutzername und verschlüsseltes Passwort bei der Registrierung und
+                    beim Login</li>
+                <li data-i18n="dataProcessedItem2">Daten zur Zwei-Faktor-Authentifizierung, falls diese freiwillig
+                    aktiviert wird</li>
+                <li data-i18n="dataProcessedItem3">gespeicherte Spielstände, Notizen, Schrittzahlen, Zeiten und
+                    Favoriten</li>
+                <li data-i18n="dataProcessedItem4">technische Verbindungsdaten, die durch den Server oder das Hosting
+                    entstehen koennen</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="processingPurposeTitle">2. Zweck der Verarbeitung</h2>
+            <p data-i18n="processingPurposeText">Die Verarbeitung erfolgt, um die Funktionen dieser Anwendung
+                bereitzustellen. Dazu gehoeren insbesondere:
+            </p>
+            <ul class="legal-list">
+                <li data-i18n="processingPurposeItem1">Erstellung und Verwaltung von Benutzerkonten</li>
+                <li data-i18n="processingPurposeItem2">sicherer Login in das persönliche Dashboard</li>
+                <li data-i18n="processingPurposeItem3">optionale Absicherung des Kontos per Authenticator-App</li>
+                <li data-i18n="processingPurposeItem4">Speichern und Laden von Spielständen</li>
+                <li data-i18n="processingPurposeItem5">technischer Betrieb, Fehleranalyse und Missbrauchsschutz</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="legalBasisTitle">3. Rechtsgrundlage</h2>
+            <p data-i18n="legalBasisText">
+                Soweit personenbezogene Daten verarbeitet werden, erfolgt dies in der Regel zur Bereitstellung der
+                Anwendung und ihrer Funktionen sowie aufgrund des berechtigten Interesses an einem sicheren und
+                funktionsfaehigen Webangebot. Falls eine ausdrückliche Einwilligung erforderlich ist, wird diese
+                gesondert eingeholt.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="storageTitle">4. Speicherung und Löschung</h2>
+            <p data-i18n="storageText">
+                Personenbezogene Daten werden nur so lange gespeichert, wie sie für den jeweiligen Zweck benötigt
+                werden. Benutzerkonten und zugehörige Spielstände bleiben grundsätzlich gespeichert, bis sie
+                gelöscht oder für das Projekt nicht mehr benötigt werden.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="thirdPartyTitle">5. Weitergabe an Dritte</h2>
+            <p data-i18n="thirdPartyText">
+                Eine Weitergabe personenbezogener Daten erfolgt nur, wenn dies für den Betrieb der Anwendung
+                erforderlich ist, etwa durch einen Hosting-Anbieter oder technische Dienstleister. Ansonsten werden
+                keine Daten weitergegeben.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="rightsTitle">6. Rechte betroffener Personen</h2>
+            <p data-i18n="rightsText">Betroffene Personen haben im Rahmen des anwendbaren Datenschutzrechts insbesondere
+                das Recht auf:</p>
+            <ul class="legal-list">
+                <li data-i18n="rightsItem1">Auskunft über die verarbeiteten personenbezogenen Daten</li>
+                <li data-i18n="rightsItem2">Berichtigung unrichtiger Daten</li>
+                <li data-i18n="rightsItem3">Löschung oder Einschraenkung der Verarbeitung</li>
+                <li data-i18n="rightsItem4">Widerspruch gegen die Verarbeitung</li>
+                <li data-i18n="rightsItem5">Herausgabe der bereitgestellten Daten, soweit anwendbar</li>
+            </ul>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="securityTitle">7. Datensicherheit</h2>
+            <p data-i18n="securityText">
+                Es werden technische und organisatorische Massnahmen getroffen, um gespeicherte Daten vor Verlust,
+                Missbrauch oder unberechtigtem Zugriff zu schuetzen. Dazu gehoeren insbesondere passwortgeschuetzte
+                Konten und die Möglichkeit, Zwei-Faktor-Authentifizierung zu aktivieren.
+            </p>
+        </section>
+
+        <section class="legal-card">
+            <h2 data-i18n="versionTitle">8. Stand</h2>
+            <p data-i18n="versionText">Stand dieser Vorlage: April 2026</p>
+        </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ url_for('static', filename='js/legal.js') }}" defer></script>
+</body>
+
+</html>
