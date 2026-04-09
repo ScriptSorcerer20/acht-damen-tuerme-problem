@@ -23,6 +23,52 @@ MAX_BOARD_SIZE = 13
 main_bp = Blueprint("main", __name__)
 
 
+def create_empty_board(board_size):
+    """Create a square board matrix with no placed pieces."""
+    return [[0 for _ in range(board_size)] for _ in range(board_size)]
+
+
+def build_board_from_positions(piece_positions, board_size):
+    """Convert the legacy one-piece-per-row format into a board matrix."""
+    board = create_empty_board(board_size)
+
+    for row, col in enumerate(piece_positions):
+        if isinstance(col, int) and 0 <= col < board_size:
+            board[row][col] = 1
+
+    return board
+
+
+def normalize_board(candidate_board, board_size):
+    """Normalize stored boards so legacy and matrix formats can both be used."""
+    if not isinstance(candidate_board, list) or len(candidate_board) != board_size:
+        return create_empty_board(board_size)
+
+    if all(isinstance(row, list) and len(row) == board_size for row in candidate_board):
+        normalized_board = create_empty_board(board_size)
+
+        for row_index, row in enumerate(candidate_board):
+            for col_index, value in enumerate(row):
+                normalized_board[row_index][col_index] = 1 if value else 0
+
+        return normalized_board
+
+    return build_board_from_positions(candidate_board, board_size)
+
+
+def iter_piece_positions(board):
+    """Yield every occupied square from the normalized board matrix."""
+    for row_index, row in enumerate(board):
+        for col_index, value in enumerate(row):
+            if value:
+                yield row_index, col_index
+
+
+def count_placed_pieces(board):
+    """Count how many pieces are currently placed on the board."""
+    return sum(1 for _ in iter_piece_positions(board))
+
+
 def parse_board_size(raw_size, default=DEFAULT_BOARD_SIZE):
     """Convert a user-supplied board size into a safe integer range."""
     try:
@@ -119,7 +165,7 @@ def build_queens_trace(board_size):
                 "type": "solution",
                 "row": None,
                 "col": None,
-                "board": queen_positions[:],
+                "board": build_board_from_positions(queen_positions, board_size),
                 "message": f"Lösung gefunden. Alle {board_size} Damen stehen ohne Konflikte."
             })
             return True
@@ -136,7 +182,7 @@ def build_queens_trace(board_size):
                 "type": "place",
                 "row": row,
                 "col": col,
-                "board": queen_positions[:],
+                "board": build_board_from_positions(queen_positions, board_size),
                 "message": f"Dame auf {position} gesetzt."
             })
 
@@ -148,7 +194,7 @@ def build_queens_trace(board_size):
                 "type": "remove",
                 "row": row,
                 "col": col,
-                "board": queen_positions[:],
+                "board": build_board_from_positions(queen_positions, board_size),
                 "message": f"Backtracking: Dame von {position} entfernt."
             })
 
@@ -159,7 +205,7 @@ def build_queens_trace(board_size):
     return {
         "mode": "queens",
         "board_size": board_size,
-        "initial_board": [-1] * board_size,
+        "initial_board": create_empty_board(board_size),
         "steps": steps,
         "solved": solved
     }
@@ -168,11 +214,11 @@ def build_queens_trace(board_size):
 def build_rooks_trace(board_size):
     """Build a simple placement trace for the rook mode."""
     rook_positions = solve_rooks(board_size)
-    board = [-1] * board_size
+    board = create_empty_board(board_size)
     steps = []
 
     for row, col in enumerate(rook_positions):
-        board[row] = col
+        board[row][col] = 1
         position = get_position_label(row, col, board_size)
         # As with the queens trace, each step includes a full board snapshot for
         # straightforward frontend rendering.
@@ -180,7 +226,7 @@ def build_rooks_trace(board_size):
             "type": "place",
             "row": row,
             "col": col,
-            "board": board[:],
+            "board": [board_row[:] for board_row in board],
             "message": f"Turm auf {position} gesetzt."
         })
 
@@ -188,14 +234,14 @@ def build_rooks_trace(board_size):
         "type": "solution",
         "row": None,
         "col": None,
-        "board": board[:],
+        "board": [board_row[:] for board_row in board],
         "message": f"Loesung gefunden. Alle {board_size} Tuerme stehen ohne Konflikte."
     })
 
     return {
         "mode": "rooks",
         "board_size": board_size,
-        "initial_board": [-1] * board_size,
+        "initial_board": create_empty_board(board_size),
         "steps": steps,
         "solved": True
     }
@@ -203,7 +249,7 @@ def build_rooks_trace(board_size):
 
 def serialize_game_state(game_state):
     """Convert a database model into JSON-friendly data for the frontend."""
-    board = json.loads(game_state.board)
+    board = normalize_board(json.loads(game_state.board), game_state.board_size)
 
     return {
         "id": game_state.id,
@@ -213,7 +259,7 @@ def serialize_game_state(game_state):
         "save_name": game_state.save_name,
         "save_note": game_state.save_note,
         "is_favorite": game_state.is_favorite,
-        "pieces_placed": sum(1 for column in board if column != -1),
+        "pieces_placed": count_placed_pieces(board),
         "step_count": game_state.step_count,
         "elapsed_seconds": game_state.elapsed_seconds,
         "is_solved": game_state.is_solved,
@@ -285,17 +331,17 @@ def check():
     row = data["row"]
     col = data["col"]
     piece_mode = data.get("mode", "queens")
+    normalized_board = normalize_board(board, len(board))
 
-    # The board is stored as a list where the index is the row and the value is
-    # the column of the placed piece. -1 means the row is still empty.
-    for current_row, current_col in enumerate(board):
-        if current_col == -1 or current_row == row:
+    for current_row, current_col in iter_piece_positions(normalized_board):
+        if current_row == row and current_col == col:
             continue
 
+        same_row = current_row == row
         same_column = current_col == col
         same_diagonal = abs(current_col - col) == abs(current_row - row)
 
-        if same_column:
+        if same_row or same_column:
             return jsonify({"valid": False})
 
         # Diagonal conflicts only matter for queens, not for rooks.
@@ -425,7 +471,7 @@ def load_game():
 
     # If the user has never saved a game, return a clean default board.
     if not latest_game:
-        return jsonify({"board": [-1] * DEFAULT_BOARD_SIZE, "mode": "queens"})
+        return jsonify({"board": create_empty_board(DEFAULT_BOARD_SIZE), "mode": "queens"})
 
     return jsonify(serialize_game_state(latest_game))
 

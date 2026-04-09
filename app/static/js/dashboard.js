@@ -2,7 +2,8 @@
 const DEFAULT_BOARD_SIZE = 8;
 const MIN_BOARD_SIZE = 4;
 const MAX_BOARD_SIZE = 13;
-const EMPTY_CELL = -1;
+const EMPTY_CELL = 0;
+const OCCUPIED_CELL = 1;
 const GAME_STORAGE_KEY = "eight-queens-dashboard-session-v1";
 
 const AppLanguage = window.AppLanguage;
@@ -25,6 +26,7 @@ let solverSpeedMs = 320;
 let solverLoading = false;
 let solverRequestId = 0;
 let currentSolverHighlight = null;
+let solverInitialBoard = createEmptyBoard(boardSize);
 
 // Cached DOM references
 const boardDiv = document.getElementById("board");
@@ -51,8 +53,10 @@ const btnQueens = document.getElementById("btnQueens");
 const btnRooks = document.getElementById("btnRooks");
 const btnPrepareSolve = document.getElementById("btnPrepareSolve");
 const btnInstantSolve = document.getElementById("btnInstantSolve");
+const btnPrevStep = document.getElementById("btnPrevStep");
 const btnNextStep = document.getElementById("btnNextStep");
 const btnPlayPause = document.getElementById("btnPlayPause");
+const boardNavigator = document.getElementById("boardNavigator");
 const solverMessage = document.getElementById("solverMessage");
 const solverStepInfo = document.getElementById("solverStepInfo");
 const solverSpeedInput = document.getElementById("solverSpeedInput");
@@ -95,22 +99,22 @@ const MODE_COPY = {
             plural: "Damen",
             eyebrow: "Damen-Modus",
             gameTitle: "Damen-Spielbrett",
-            boardText: "Platziere Damen so, dass keine zwei dieselbe Spalte oder Diagonale teilen.",
-            infoTitle: "Spielregeln und Acht-Damen-Problem",
-            infoRuleText: "Im Damen-Modus dürfen sich Damen weder in derselben Spalte noch diagonal angreifen. Mit einem Klick setzt oder entfernst du eine Figur.",
-            infoProblemHeading: "Was ist das Acht-Damen-Problem?",
-            infoProblemText: "Das klassische Acht-Damen-Problem fragt nach einer Anordnung von acht Damen auf einem 8x8-Brett, bei der sich keine zwei Damen schlagen. Es ist ein bekanntes Beispiel für kombinatorische Suche und Backtracking."
+            boardText: "Platziere Damen frei auf dem Brett. Konflikte entstehen in derselben Reihe, Spalte oder Diagonale.",
+            infoTitle: "Spielanleitung",
+            infoRuleText: "In diesem Modus spielst du mit Damen. Eine Dame ist die Figur mit dem Symbol ♛. Sie darf keine andere Dame in derselben waagerechten Reihe, senkrechten Spalte oder schrägen Diagonale treffen. Mit einem Klick setzt du eine Dame auf ein freies Feld oder entfernst sie wieder.",
+            infoProblemHeading: "Was ist eine Dame?",
+            infoProblemText: "Eine Dame ist eine Schachfigur. In diesem Spiel musst du keine Schachregeln lernen, sondern nur wissen: Eine Dame kann gerade und schräg über das Brett wirken. Darum müssen Damen genug Abstand haben, damit sie sich nicht gegenseitig erreichen."
         },
         rooks: {
             singular: "Turm",
             plural: "Türme",
             eyebrow: "Türme-Modus",
             gameTitle: "Türme-Spielbrett",
-            boardText: "Platziere Türme so, dass keine zwei dieselbe Spalte teilen.",
-            infoTitle: "Spielregeln und Acht-Türme-Problem",
-            infoRuleText: "Im Türme-Modus dürfen sich Türme nicht in derselben Spalte stehen. Diagonalen spielen hier keine Rolle. Mit einem Klick setzt oder entfernst du eine Figur.",
-            infoProblemHeading: "Was ist das Acht-Türme-Problem?",
-            infoProblemText: "Beim Acht-Türme-Problem suchst du eine Anordnung von acht Türmen auf einem 8x8-Brett, bei der sich keine zwei Türme angreifen. Es ist eine einfachere Variante, um systematische Suche und Konfliktprüfung sichtbar zu machen."
+            boardText: "Platziere Türme frei auf dem Brett. Konflikte entstehen in derselben Reihe oder Spalte.",
+            infoTitle: "Spielanleitung",
+            infoRuleText: "In diesem Modus spielst du mit Türmen. Ein Turm ist die Figur mit dem Symbol ♜. Er darf keinen anderen Turm in derselben waagerechten Reihe oder senkrechten Spalte treffen. Schräge Diagonalen sind hier egal. Mit einem Klick setzt du einen Turm auf ein freies Feld oder entfernst ihn wieder.",
+            infoProblemHeading: "Was ist ein Turm?",
+            infoProblemText: "Ein Turm ist eine Schachfigur. Für dieses Spiel reicht eine einfache Regel: Ein Turm wirkt nur gerade nach oben, unten, links und rechts. Darum dürfen zwei Türme nicht in derselben Reihe oder Spalte stehen."
         }
     },
     en: {
@@ -119,22 +123,22 @@ const MODE_COPY = {
             plural: "Queens",
             eyebrow: "Queens Mode",
             gameTitle: "Queens Board",
-            boardText: "Place queens so that no two share the same column or diagonal.",
-            infoTitle: "Rules and the Eight Queens Puzzle",
-            infoRuleText: "In queens mode, queens may not attack each other in the same column or on diagonals. Click once to place or remove a piece.",
-            infoProblemHeading: "What is the Eight Queens puzzle?",
-            infoProblemText: "The classic Eight Queens puzzle asks for eight queens on an 8x8 board so that no two queens attack each other. It is a well-known example of combinatorial search and backtracking."
+            boardText: "Place queens freely on the board. Conflicts happen in the same row, column, or diagonal.",
+            infoTitle: "How To Play",
+            infoRuleText: "In this mode you play with queens. A queen is the piece shown with the symbol ♛. It must not reach another queen in the same horizontal row, vertical column, or diagonal line. Click once to place a queen on an empty square or remove it again.",
+            infoProblemHeading: "What is a queen?",
+            infoProblemText: "A queen is a chess piece. You do not need full chess knowledge here. You only need to know that a queen can affect the board in straight and diagonal lines. That is why queens need enough distance so they cannot reach each other."
         },
         rooks: {
             singular: "Rook",
             plural: "Rooks",
             eyebrow: "Rooks Mode",
             gameTitle: "Rooks Board",
-            boardText: "Place rooks so that no two share the same column.",
-            infoTitle: "Rules and the Eight Rooks Puzzle",
-            infoRuleText: "In rooks mode, rooks may not stand in the same column. Diagonals do not matter here. Click once to place or remove a piece.",
-            infoProblemHeading: "What is the Eight Rooks puzzle?",
-            infoProblemText: "In the Eight Rooks puzzle, you arrange eight rooks on an 8x8 board so that no two rooks attack each other. It is a simpler variant that helps visualize systematic search and conflict checking."
+            boardText: "Place rooks freely on the board. Conflicts happen in the same row or column.",
+            infoTitle: "How To Play",
+            infoRuleText: "In this mode you play with rooks. A rook is the piece shown with the symbol ♜. It must not reach another rook in the same horizontal row or vertical column. Diagonal lines do not matter here. Click once to place a rook on an empty square or remove it again.",
+            infoProblemHeading: "What is a rook?",
+            infoProblemText: "A rook is a chess piece. For this game you only need one simple idea: a rook affects the board only in straight lines up, down, left, and right. That is why two rooks must not stand in the same row or column."
         }
     }
 };
@@ -149,11 +153,11 @@ const translations = {
         accountShortcutAria: "Konto und Login-Einstellungen öffnen",
         introKicker: "Puzzle-Modus",
         introTitle: "Wähl deinen Modus und löse das Brett auf deine Art.",
-        introText: "Wechsle zwischen Damen und Türmen, nutze Animation oder Sofort-Lösung und öffne die Brett-Einstellungen jederzeit ueber den linken Seiten-Tab.",
+        introText: "Wechsle zwischen Damen und Türmen, nutze Animation oder Sofort-Lösung und öffne die Spiel-Einstellungen jederzeit ueber den linken Seiten-Tab.",
         modeSwitchAria: "Spielmodus",
         btnQueens: "Damen",
         btnRooks: "Türme",
-        infoButton: "Regeln & Hilfe",
+        infoButton: "Spielanleitung",
         gameStatsAria: "Spielstatus",
         stepsLabel: "Schritte",
         timeLabel: "Zeit",
@@ -167,26 +171,35 @@ const translations = {
         animationSolverText: "Bereite den Lösungsweg vor, gehe ihn manuell Schritt für Schritt durch oder spiele die Animation automatisch ab.",
         instantSolverTitle: "Sofort-Lösung",
         instantSolverText: "Lade direkt eine gültige Lösung, ohne Zwischenschritte oder Animation.",
-        defaultSolverMessage: "Bereite einen Ablauf vor und spiele ihn Schritt für Schritt ab.",
+        defaultSolverMessage: "Lade eine Animation und steuere sie am Brett oder spiele sie automatisch ab.",
         solverReady: ({ modeLabel }) => `Solver für ${modeLabel} bereit. ${t("defaultSolverMessage")}`,
         solverSpeedLabel: "Animationsgeschwindigkeit",
-        btnPrepareSolve: "Animation vorbereiten",
-        btnPrepareSolveLoading: "Animation wird vorbereitet...",
-        btnNextStep: "Nächster Schritt",
+        btnPrepareSolve: "Animation laden",
+        btnPrepareSolveLoading: "Animation wird geladen...",
+        btnPrevStep: "Zurück",
+        btnNextStep: "Vorwärts",
         btnPlayPause: "Animation abspielen",
         btnPlayReplay: "Animation erneut abspielen",
         btnPlayPauseRunning: "Animation pausieren",
         btnInstantSolve: "Sofort lösen",
         btnReset: "Brett zurücksetzen",
-        settingsTrigger: "Brett-Einstellungen",
-        settingsSidebarTitle: "Brett-Einstellungen",
+        settingsTrigger: "Spiel-Einstellungen",
+        settingsSidebarTitle: "Spiel-Einstellungen",
         settingsSidebarClose: "Schliessen",
+        boardSettingsKicker: "Brett",
+        boardSettingsTitle: "Brettgrösse",
         settingsSidebarText: "Passe die Brettgroesse zwischen 4 und 13 an.",
         boardSizeInputLabel: "Grösse",
         applyBoardSizeButton: "Grösse anwenden",
         settingsSidebarHint: "Beim ändern wird das Brett zur Sicherheit zurückgesetzt. Auf dem Handy ist 8x8 eingeplant, grössere Bretter können abgeschnitten wirken.",
+        saveSettingsKicker: "Speichern",
+        saveSettingsTitle: "Fortschritt speichern",
+        saveSettingsText: "Öffne hier die Optionen zum Speichern oder Laden deiner Save-Points.",
+        solutionSettingsKicker: "Lösung",
+        solutionSettingsTitle: "Lösungswerkzeuge",
+        solutionSettingsText: "Lade eine Animation, steuere sie am Brett mit Vorwärts und Zurück oder spiele sie automatisch ab.",
         btnSave: "Speichern",
-        btnLoad: "Save-Points",
+        btnLoad: "Laden",
         saveSidebarTitle: "Speicherpunkt",
         saveSidebarClose: "Schliessen",
         saveSidebarText: "Gib dem Spielstand einen klaren Namen und optional eine kurze Notiz.",
@@ -221,8 +234,8 @@ const translations = {
         historyHeadStatus: "Status",
         historyHeadSaved: "Gespeichert",
         infoModalClose: "Schliessen",
-        infoModalIntro: "Setze pro Reihe genau eine Figur auf das Brett. Eine gültige Lösung hat keine Konflikte.",
-        infoModalModeHeading: "So funktioniert der aktuelle Modus",
+        infoModalIntro: "Das Schachbrett besteht aus vielen quadratischen Feldern. Jedes Feld kann leer sein oder genau eine Figur enthalten. Deine Aufgabe ist es, Figuren auf das Brett zu setzen, ohne dass sie sich gegenseitig angreifen. Das Puzzle ist erst gelöst, wenn genau so viele Figuren auf dem Brett stehen wie das Brett Felder pro Seite hat, also zum Beispiel 8 Figuren auf einem 8x8-Brett.",
+        infoModalModeHeading: "Grundregeln",
         infoModalTimeHeading: "Was zeigen Zeit und Schritte?",
         infoModalTimeText: "Der Schrittzähler erfasst deine Züge auf dem Brett. Die Zeit läuft für das aktuelle Spiel weiter, auch wenn du die Seite neu lädst. Beim Speichern werden Zeit und Schritte zusammen mit dem Save-Point abgelegt.",
         pieceListTitle: ({ modeLabel }) => `Positionen der ${modeLabel}`,
@@ -250,15 +263,16 @@ const translations = {
         solverDiscardedManual: "Solver-Ablauf verworfen, weil das Brett manuell geändert wurde.",
         solverDiscardedStatus: "Solver-Ablauf verworfen. Bereite ihn bei Bedarf neu vor.",
         solvedPerfect: ({ duration }) => `Perfekt gelöst in ${duration}.`,
-        animationReset: "Animations-Ablauf zurückgesetzt. Starte die Animation erneut oder gehe weiter mit Nächster Schritt.",
-        animationPreparing: ({ modeLabel, size }) => `Berechne den Animations-Ablauf für ${modeLabel.toLowerCase()} auf ${size} x ${size}...`,
+        animationReset: "Animations-Ablauf zurückgesetzt. Nutze die Schritt-Buttons am Brett oder starte die Animation erneut.",
+        animationAtStart: "Anfang des Animations-Ablaufs erreicht.",
+        animationPreparing: ({ modeLabel, size }) => `Lade den Animations-Ablauf für ${modeLabel.toLowerCase()} auf ${size} x ${size}...`,
         animationPreparingStatus: ({ size }) => `Animations-Solver berechnet die Schritte fuer ${size} x ${size}.`,
         noSolution: "Keine Lösung gefunden.",
         noSolutionStatus: "Keine Lösung fuer dieses Brett gefunden.",
         animationReady: ({ steps, queensMode }) => queensMode
-            ? `Animations-Ablauf bereit mit ${steps} Schritten. Nutze Nächster Schritt oder Animation abspielen, um das Backtracking zu verfolgen.`
-            : `Animations-Ablauf bereit mit ${steps} Schritten. Nutze Nächster Schritt oder Animation abspielen.`,
-        animationReadyStatus: "Animations-Solver bereit. Nutze Nächster Schritt oder Animation abspielen.",
+            ? `Animations-Ablauf bereit mit ${steps} Schritten. Nutze die Vor- und Zurück-Buttons am Brett oder spiele die Animation ab, um das Backtracking zu verfolgen.`
+            : `Animations-Ablauf bereit mit ${steps} Schritten. Nutze die Vor- und Zurück-Buttons am Brett oder spiele die Animation ab.`,
+        animationReadyStatus: "Animations-Solver bereit. Nutze die Schritt-Buttons am Brett oder spiele die Animation ab.",
         animationLoadError: "Der Solver-Ablauf konnte nicht geladen werden.",
         animationFinishedStatus: ({ size }) => `Loesung für ${size} x ${size} Schritt fuer Schritt aufgebaut.`,
         animationAlreadyFinished: "Der Animations-Ablauf ist bereits abgeschlossen.",
@@ -300,11 +314,11 @@ const translations = {
         accountShortcutAria: "Open account and login settings",
         introKicker: "Puzzle Mode",
         introTitle: "Choose your mode and solve the board your way.",
-        introText: "Switch between queens and rooks, use animation or instant solve, and open board settings anytime from the left side tab.",
+        introText: "Switch between queens and rooks, use animation or instant solve, and open game settings anytime from the left side tab.",
         modeSwitchAria: "Game mode",
         btnQueens: "Queens",
         btnRooks: "Rooks",
-        infoButton: "Rules & Help",
+        infoButton: "How to play?",
         gameStatsAria: "Game status",
         stepsLabel: "Steps",
         timeLabel: "Time",
@@ -318,24 +332,33 @@ const translations = {
         animationSolverText: "Prepare the solving path, step through it manually, or play the animation automatically.",
         instantSolverTitle: "Instant Solve",
         instantSolverText: "Load a valid solution directly, without intermediate steps or animation.",
-        defaultSolverMessage: "Prepare a solving trace and play it back step by step.",
+        defaultSolverMessage: "Load an animation and control it from the board or play it automatically.",
         solverReady: ({ modeLabel }) => `Solver for ${modeLabel} is ready. ${t("defaultSolverMessage")}`,
         solverSpeedLabel: "Animation speed",
-        btnPrepareSolve: "Prepare animation",
-        btnPrepareSolveLoading: "Preparing animation...",
-        btnNextStep: "Next step",
+        btnPrepareSolve: "Load animation",
+        btnPrepareSolveLoading: "Loading animation...",
+        btnPrevStep: "Back",
+        btnNextStep: "Forward",
         btnPlayPause: "Play animation",
         btnPlayReplay: "Replay animation",
         btnPlayPauseRunning: "Pause animation",
         btnInstantSolve: "Solve instantly",
         btnReset: "Reset board",
-        settingsTrigger: "Board settings",
-        settingsSidebarTitle: "Board Settings",
+        settingsTrigger: "Game settings",
+        settingsSidebarTitle: "Game settings",
         settingsSidebarClose: "Close",
+        boardSettingsKicker: "Board",
+        boardSettingsTitle: "Board size",
         settingsSidebarText: "Adjust the board size between 4 and 13.",
         boardSizeInputLabel: "Size",
         applyBoardSizeButton: "Apply size",
         settingsSidebarHint: "Changing the size resets the board for safety. On phones, 8x8 is the intended maximum for a reliable fit and larger boards may appear cropped.",
+        saveSettingsKicker: "Saving",
+        saveSettingsTitle: "Save progress",
+        saveSettingsText: "Open the options for saving your progress or loading save points here.",
+        solutionSettingsKicker: "Solution",
+        solutionSettingsTitle: "Solving tools",
+        solutionSettingsText: "Load an animation, control it from the board with back and forward, or play it automatically.",
         btnSave: "Save",
         btnLoad: "Save points",
         saveSidebarTitle: "Save Point",
@@ -372,8 +395,8 @@ const translations = {
         historyHeadStatus: "Status",
         historyHeadSaved: "Saved",
         infoModalClose: "Close",
-        infoModalIntro: "Place exactly one piece in each row. A valid solution has no conflicts.",
-        infoModalModeHeading: "How the current mode works",
+        infoModalIntro: "The chessboard is made of many square fields. Each field can either stay empty or hold exactly one piece. Your task is to place pieces on the board without letting them attack each other. The puzzle is only solved when the board contains exactly as many pieces as it has squares on one side, for example 8 pieces on an 8x8 board.",
+        infoModalModeHeading: "Basic rules",
         infoModalTimeHeading: "What do time and steps show?",
         infoModalTimeText: "The step counter records your moves on the board. Time keeps running for the current game even if you reload the page. When saving, time and steps are stored together with the save point.",
         pieceListTitle: ({ modeLabel }) => `${modeLabel} positions`,
@@ -401,15 +424,16 @@ const translations = {
         solverDiscardedManual: "Solver trace discarded because the board was changed manually.",
         solverDiscardedStatus: "Solver trace discarded. Prepare it again if needed.",
         solvedPerfect: ({ duration }) => `Perfectly solved in ${duration}.`,
-        animationReset: "Animation trace reset. Start the animation again or continue with Next step.",
-        animationPreparing: ({ modeLabel, size }) => `Preparing the animation trace for ${modeLabel.toLowerCase()} on ${size} x ${size}...`,
+        animationReset: "Animation trace reset. Use the step buttons on the board or start the animation again.",
+        animationAtStart: "Reached the start of the animation trace.",
+        animationPreparing: ({ modeLabel, size }) => `Loading the animation trace for ${modeLabel.toLowerCase()} on ${size} x ${size}...`,
         animationPreparingStatus: ({ size }) => `Animation solver is preparing the steps for ${size} x ${size}.`,
         noSolution: "No solution found.",
         noSolutionStatus: "No solution found for this board.",
         animationReady: ({ steps, queensMode }) => queensMode
-            ? `Animation trace ready with ${steps} steps. Use Next step or Play animation to follow the backtracking process.`
-            : `Animation trace ready with ${steps} steps. Use Next step or Play animation.`,
-        animationReadyStatus: "Animation solver ready. Use Next step or Play animation.",
+            ? `Animation trace ready with ${steps} steps. Use the back and forward buttons on the board or play the animation to follow the backtracking process.`
+            : `Animation trace ready with ${steps} steps. Use the back and forward buttons on the board or play the animation.`,
+        animationReadyStatus: "Animation solver ready. Use the step buttons on the board or play the animation.",
         animationLoadError: "The solver trace could not be loaded.",
         animationFinishedStatus: ({ size }) => `Solution for ${size} x ${size} was built step by step.`,
         animationAlreadyFinished: "The animation trace is already complete.",
@@ -525,7 +549,7 @@ const languageController = AppLanguage.createController({
 // Core data and formatting helpers
 
 function createEmptyBoard(size) {
-    return Array(size).fill(EMPTY_CELL);
+    return Array.from({ length: size }, () => Array(size).fill(EMPTY_CELL));
 }
 
 function clampBoardSize(size) {
@@ -536,20 +560,71 @@ function getColumnLabel(index) {
     return String.fromCharCode(65 + index);
 }
 
+function cloneBoard(selectedBoard) {
+    return selectedBoard.map((row) => row.slice());
+}
+
+function getCellKey(row, col) {
+    return `${row}:${col}`;
+}
+
 function sanitizeBoard(candidateBoard, size) {
     if (!Array.isArray(candidateBoard) || candidateBoard.length !== size) {
         return createEmptyBoard(size);
     }
 
-    return candidateBoard.map((value) => {
+    if (candidateBoard.every((row) => Array.isArray(row) && row.length === size)) {
+        return candidateBoard.map((row) => row.map((value) => {
+            if (value === true) {
+                return OCCUPIED_CELL;
+            }
+
+            const numericValue = Number(value);
+            return numericValue === OCCUPIED_CELL ? OCCUPIED_CELL : EMPTY_CELL;
+        }));
+    }
+
+    const normalizedBoard = createEmptyBoard(size);
+
+    candidateBoard.forEach((value, row) => {
         const numericValue = Number(value);
 
-        if (!Number.isInteger(numericValue)) {
-            return EMPTY_CELL;
+        if (Number.isInteger(numericValue) && numericValue >= 0 && numericValue < size) {
+            normalizedBoard[row][numericValue] = OCCUPIED_CELL;
         }
-
-        return numericValue >= 0 && numericValue < size ? numericValue : EMPTY_CELL;
     });
+
+    return normalizedBoard;
+}
+
+function getOccupiedPositions(selectedBoard = board) {
+    const positions = [];
+
+    for (let row = 0; row < selectedBoard.length; row++) {
+        for (let col = 0; col < selectedBoard[row].length; col++) {
+            if (selectedBoard[row][col] === OCCUPIED_CELL) {
+                positions.push({ row, col });
+            }
+        }
+    }
+
+    return positions;
+}
+
+function extractSolverBoard(payload, size) {
+    if (!Array.isArray(payload)) {
+        return createEmptyBoard(size);
+    }
+
+    if (payload.length === size) {
+        return sanitizeBoard(payload, size);
+    }
+
+    if (payload.length > 0) {
+        return sanitizeBoard(payload[0], size);
+    }
+
+    return createEmptyBoard(size);
 }
 
 function formatDuration(totalSeconds) {
@@ -745,23 +820,17 @@ function updateBoardLayout() {
 
 function updateQueenList() {
     queenList.innerHTML = "";
-    let count = 1;
+    const positions = getOccupiedPositions();
 
-    for (let row = 0; row < boardSize; row++) {
-        if (board[row] === EMPTY_CELL) {
-            continue;
-        }
-
-        const col = board[row];
+    positions.forEach(({ row, col }, index) => {
         const position = `${getColumnLabel(col)}${boardSize - row}`;
         const li = document.createElement("li");
 
-        li.textContent = `${getPieceLabel(mode)} ${count}: ${position}`;
+        li.textContent = `${getPieceLabel(mode)} ${index + 1}: ${position}`;
         queenList.appendChild(li);
-        count += 1;
-    }
+    });
 
-    const placedPieces = count - 1;
+    const placedPieces = positions.length;
     pieceCountBadge.textContent = t("pieceCount", { count: placedPieces });
 
     if (placedPieces === 0) {
@@ -797,11 +866,14 @@ function stopSolverPlayback(refreshControls = true) {
 
 function updateSolverControls() {
     const currentStep = Math.max(0, solverStepIndex + 1);
+    const hasTrace = hasPreparedSolverTrace();
 
     btnPrepareSolve.disabled = solverLoading;
     btnInstantSolve.disabled = solverLoading;
-    btnNextStep.disabled = solverLoading || hasCompletedSolverTrace();
+    btnPrevStep.disabled = solverLoading || !hasTrace || solverStepIndex < 0;
+    btnNextStep.disabled = solverLoading || !hasTrace || hasCompletedSolverTrace();
     btnPlayPause.disabled = solverLoading;
+    boardNavigator.hidden = !hasTrace;
 
     btnPrepareSolve.textContent = solverLoading ? t("btnPrepareSolveLoading") : t("btnPrepareSolve");
 
@@ -827,18 +899,39 @@ function discardSolverTrace(message = getDefaultSolverMessage()) {
     solverSteps = [];
     solverStepIndex = -1;
     currentSolverHighlight = null;
+    solverInitialBoard = createEmptyBoard(boardSize);
 
     setSolverMessage(message);
     updateSolverControls();
+}
+
+function syncProgressAfterBoardStateChange() {
+    if (isBoardSolved()) {
+        finishSolvedRun();
+        return;
+    }
+
+    if (isSolved) {
+        resetProgress({
+            stepCountValue: stepCount,
+            elapsedMs: getElapsedMilliseconds(),
+            solved: false
+        });
+        return;
+    }
+
+    updateProgressDisplay();
+    persistCurrentSession();
 }
 
 function rewindSolverTrace() {
     stopSolverPlayback(false);
     solverStepIndex = -1;
     currentSolverHighlight = null;
-    board = createEmptyBoard(boardSize);
+    board = sanitizeBoard(solverInitialBoard, boardSize);
     setSolverMessage(t("animationReset"));
     drawBoard();
+    syncProgressAfterBoardStateChange();
     updateSolverControls();
 }
 
@@ -861,26 +954,24 @@ function setMode(newMode) {
 }
 
 function getConflicts(selectedBoard = board, selectedMode = mode) {
-    const conflicts = [];
+    const conflicts = new Set();
+    const positions = getOccupiedPositions(selectedBoard);
 
-    for (let rowA = 0; rowA < boardSize; rowA++) {
-        if (selectedBoard[rowA] === EMPTY_CELL) {
-            continue;
-        }
+    for (let indexA = 0; indexA < positions.length; indexA++) {
+        const positionA = positions[indexA];
 
-        for (let rowB = rowA + 1; rowB < boardSize; rowB++) {
-            if (selectedBoard[rowB] === EMPTY_CELL) {
-                continue;
-            }
-
-            const colA = selectedBoard[rowA];
-            const colB = selectedBoard[rowB];
-            const sameColumn = colA === colB;
-            const sameDiagonal = Math.abs(colA - colB) === Math.abs(rowA - rowB);
-            const hasConflict = selectedMode === "rooks" ? sameColumn : sameColumn || sameDiagonal;
+        for (let indexB = indexA + 1; indexB < positions.length; indexB++) {
+            const positionB = positions[indexB];
+            const sameRow = positionA.row === positionB.row;
+            const sameColumn = positionA.col === positionB.col;
+            const sameDiagonal = Math.abs(positionA.col - positionB.col) === Math.abs(positionA.row - positionB.row);
+            const hasConflict = selectedMode === "rooks"
+                ? sameRow || sameColumn
+                : sameRow || sameColumn || sameDiagonal;
 
             if (hasConflict) {
-                conflicts.push([rowA, colA], [rowB, colB]);
+                conflicts.add(getCellKey(positionA.row, positionA.col));
+                conflicts.add(getCellKey(positionB.row, positionB.col));
             }
         }
     }
@@ -889,8 +980,7 @@ function getConflicts(selectedBoard = board, selectedMode = mode) {
 }
 
 function isBoardSolved(selectedBoard = board, selectedMode = mode) {
-    const allPlaced = selectedBoard.every((col) => col !== EMPTY_CELL);
-    return allPlaced && getConflicts(selectedBoard, selectedMode).length === 0;
+    return getPlacedPieceCount(selectedBoard) === boardSize && getConflicts(selectedBoard, selectedMode).size === 0;
 }
 
 function finishSolvedRun() {
@@ -940,10 +1030,10 @@ function drawBoard() {
                     );
                 }
 
-                if (board[row] === col) {
+                if (board[row][col] === OCCUPIED_CELL) {
                     cell.textContent = mode === "queens" ? "♛" : "♜";
 
-                    if (conflicts.some(([conflictRow, conflictCol]) => conflictRow === row && conflictCol === col)) {
+                    if (conflicts.has(getCellKey(row, col))) {
                         cell.classList.add("invalid");
                     }
                 }
@@ -973,7 +1063,7 @@ function placeQueen(row, col) {
     }
 
     currentSolverHighlight = null;
-    board[row] = board[row] === col ? EMPTY_CELL : col;
+    board[row][col] = board[row][col] === OCCUPIED_CELL ? EMPTY_CELL : OCCUPIED_CELL;
     stepCount += 1;
     drawBoard();
     updateProgressDisplay();
@@ -1076,8 +1166,8 @@ function toggleInfoModal(forceOpen) {
     infoModal.setAttribute("aria-hidden", String(!shouldOpen));
 }
 
-function getPlacedPieceCount() {
-    return board.filter((col) => col !== EMPTY_CELL).length;
+function getPlacedPieceCount(selectedBoard = board) {
+    return getOccupiedPositions(selectedBoard).length;
 }
 
 function resetSaveForm() {
@@ -1106,16 +1196,14 @@ function closeAllPanels() {
 // Save point and history helpers
 
 function getBoardPreview(savedBoard, limit = 4) {
+    const boardSizeForPreview = Array.isArray(savedBoard) ? savedBoard.length : DEFAULT_BOARD_SIZE;
+    const normalizedBoard = sanitizeBoard(savedBoard, boardSizeForPreview);
     const preview = [];
 
-    for (let row = 0; row < savedBoard.length; row++) {
-        if (savedBoard[row] === EMPTY_CELL) {
-            continue;
-        }
+    for (const { row, col } of getOccupiedPositions(normalizedBoard)) {
+        preview.push(`${getColumnLabel(col)}${boardSizeForPreview - row}`);
 
-        preview.push(`${getColumnLabel(savedBoard[row])}${savedBoard.length - row}`);
-
-        if (preview.length === limit) {
+        if (preview.length >= limit) {
             break;
         }
     }
@@ -1314,7 +1402,7 @@ function applySolverStep(step) {
 
     setSolverMessage(step.message || getDefaultSolverMessage());
     drawBoard();
-    persistCurrentSession();
+    syncProgressAfterBoardStateChange();
     updateSolverControls();
 }
 
@@ -1381,6 +1469,7 @@ async function prepareSolutionTrace() {
     const endpoint = mode === "rooks" ? "/solve_rooks_trace" : "/solve_trace";
     const requestId = ++solverRequestId;
 
+    toggleSidebar(false);
     solverLoading = true;
     stopSolverPlayback(false);
     solverSteps = [];
@@ -1405,20 +1494,24 @@ async function prepareSolutionTrace() {
 
         solverSteps = Array.isArray(trace.steps) ? trace.steps : [];
         solverStepIndex = -1;
-        board = Array.isArray(trace.initial_board) ? trace.initial_board.slice() : createEmptyBoard(boardSize);
+        solverInitialBoard = Array.isArray(trace.initial_board)
+            ? sanitizeBoard(trace.initial_board, boardSize)
+            : createEmptyBoard(boardSize);
+        board = cloneBoard(solverInitialBoard);
         currentSolverHighlight = null;
 
         if (!trace.solved || solverSteps.length === 0) {
             setSolverMessage(t("noSolution"));
             setStatus(t("noSolutionStatus"), "red");
             drawBoard();
-            persistCurrentSession();
+            syncProgressAfterBoardStateChange();
             return false;
         }
 
         setSolverMessage(t("animationReady", { steps: solverSteps.length, queensMode: mode === "queens" }));
         setStatus(t("animationReadyStatus"), "#2563eb");
         drawBoard();
+        syncProgressAfterBoardStateChange();
         return true;
     } catch (error) {
         if (requestId !== solverRequestId) {
@@ -1442,11 +1535,7 @@ async function nextSolverStep() {
     }
 
     if (!hasPreparedSolverTrace()) {
-        const prepared = await prepareSolutionTrace();
-
-        if (!prepared) {
-            return;
-        }
+        return;
     }
 
     if (isSolverPlaying()) {
@@ -1456,6 +1545,35 @@ async function nextSolverStep() {
     if (!advanceSolverStep()) {
         setStatus(t("animationAlreadyFinished"), "#2563eb");
     }
+}
+
+function previousSolverStep() {
+    if (solverLoading || !hasPreparedSolverTrace()) {
+        return;
+    }
+
+    if (isSolverPlaying()) {
+        stopSolverPlayback(false);
+    }
+
+    if (solverStepIndex < 0) {
+        setStatus(t("animationAtStart"), "#2563eb");
+        return;
+    }
+
+    solverStepIndex -= 1;
+
+    if (solverStepIndex >= 0) {
+        applySolverStep(solverSteps[solverStepIndex]);
+        return;
+    }
+
+    currentSolverHighlight = null;
+    board = sanitizeBoard(solverInitialBoard, boardSize);
+    setSolverMessage(t("animationAtStart"));
+    drawBoard();
+    syncProgressAfterBoardStateChange();
+    updateSolverControls();
 }
 
 async function toggleSolverPlayback() {
@@ -1497,11 +1615,13 @@ async function instantSolve() {
     const endpoint = mode === "rooks" ? "/solve_rooks" : "/solve";
     const requestId = ++solverRequestId;
 
+    toggleSidebar(false);
     solverLoading = true;
     stopSolverPlayback(false);
     solverSteps = [];
     solverStepIndex = -1;
     currentSolverHighlight = null;
+    solverInitialBoard = createEmptyBoard(boardSize);
     setSolverMessage(t("instantLoading", { modeLabel: getModeLabel(mode), size: boardSize }));
     setStatus(t("instantLoadingStatus"), "#2563eb");
     updateSolverControls();
@@ -1519,7 +1639,7 @@ async function instantSolve() {
             return;
         }
 
-        board = mode === "queens" && Array.isArray(solution[0]) ? solution[0].slice() : solution.slice();
+        board = extractSolverBoard(solution, boardSize);
         currentSolverHighlight = null;
         finishSolvedRun();
         setSolverMessage(t("instantLoaded"));

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="meta.title">8-Damen- und 8-Tuerme Solver</title>
+    <title data-i18n="meta.title">8-Damen- und 8-Türme Solver</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
@@ -13,16 +13,16 @@
     <header class="landing-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
-            <span data-i18n="nav.brand">8-Damen- und 8-Tuerme Solver</span>
+            <span data-i18n="nav.brand">8-Damen- und 8-Türme-Löser</span>
         </a>
 
         <nav class="landing-links">
             <a href="#problem" data-i18n="nav.problem">Problem</a>
-            <a href="#features" data-i18n="nav.features">Features</a>
+            <a href="#features" data-i18n="nav.features">Funktionen</a>
             <a href="#journey" data-i18n="nav.journey">Ablauf</a>
             <button class="lang-switch" id="langSwitch" type="button" aria-label="Sprache wechseln">DE</button>
-            <a class="nav-cta secondary" href="{{ url_for('login.login') }}" data-i18n="nav.login">Login</a>
-            <a class="nav-cta" href="{{ url_for('login.register') }}" data-i18n="nav.signup">Create Account</a>
+            <a class="nav-cta secondary" href="{{ url_for('login.login') }}" data-i18n="nav.login">Anmelden</a>
+            <a class="nav-cta" href="{{ url_for('login.register') }}" data-i18n="nav.signup">Account erstellen</a>
         </nav>
     </header>
 
@@ -33,42 +33,28 @@
                 </p>
                 <h1 data-i18n="hero.title">Entdecke das Acht-Damen- und Acht-Türme-Problem.</h1>
                 <p class="hero-text" data-i18n="hero.text">
-                    Diese App macht aus einem klassischen Informatik- und Mathematikproblem ein interaktives Erlebnis:
+                    Diese Webanwendung macht aus einem klassischen Informatik- und Mathematikproblem ein interaktives
+                    Erlebnis:
                     Setze Damen oder Türme, verfolge den Solver Schritt für Schritt, miss deine Zeit und speichere
-                    clevere Zwischenstände.
+                    Zwischenstände.
                 </p>
 
                 <div class="hero-actions">
                     <a class="hero-button primary" href="{{ url_for('login.register') }}"
                         data-i18n="hero.primaryCta">Jetzt starten</a>
                     <a class="hero-button secondary" href="{{ url_for('login.login') }}"
-                        data-i18n="hero.secondaryCta">Bereits Account? Login</a>
-                </div>
-
-                <div class="hero-facts">
-                    <article>
-                        <strong data-i18n="hero.fact1Title">Skalierbar</strong>
-                        <span data-i18n="hero.fact1Text">Brettgrösse flexibel anpassen</span>
-                    </article>
-                    <article>
-                        <strong data-i18n="hero.fact2Title">Schritt für Schritt</strong>
-                        <span data-i18n="hero.fact2Text">Solver mit Animation</span>
-                    </article>
-                    <article>
-                        <strong data-i18n="hero.fact3Title">Save-Points</strong>
-                        <span data-i18n="hero.fact3Text">Zeit und Fortschritt behalten</span>
-                    </article>
+                        data-i18n="hero.secondaryCta">Bereits ein Account? Anmelden</a>
                 </div>
             </div>
 
             <div class="hero-visual">
                 <div class="board-showcase" id="heroBoard" aria-hidden="true"></div>
                 <div class="floating-card solver-card">
-                    <p class="floating-label" data-i18n="hero.solverLabel">Solver</p>
-                    <p class="floating-value" data-i18n="hero.solverValue">Backtracking live</p>
+                    <p class="floating-label" data-i18n="hero.solverLabel">Lösungshelfer</p>
+                    <p class="floating-value" data-i18n="hero.solverValue">Backtracking in Echtzeit</p>
                 </div>
                 <div class="floating-card timer-card">
-                    <p class="floating-label" data-i18n="hero.challengeLabel">Challenge</p>
+                    <p class="floating-label" data-i18n="hero.challengeLabel">Herausforderung</p>
                     <p class="floating-value" data-i18n="hero.challengeValue">Zeit und Schritte messen</p>
                 </div>
             </div>
@@ -76,17 +62,20 @@
 
         <section class="info-band" id="problem">
             <div class="info-band-inner">
-                <p class="eyebrow" data-i18n="problem.eyebrow">Warum dieses Problem spannend ist</p>
-                <h2 data-i18n="problem.title">Die Acht-Damen- und Acht-Tuerme-Probleme sind mehr als Schachrätsel.</h2>
+                <p class="eyebrow" data-i18n="problem.eyebrow">Was ist das Acht-Damen-Problem?</p>
+                <h2 data-i18n="problem.title">Eine klassische schachmathematische Aufgabe mit überraschend vielen
+                    Lösungen.</h2>
                 <p data-i18n="problem.text">
-                    Beim Acht-Damen-Problem suchst du eine Anordnung von acht Damen auf einem Schachbrett, sodass sich
-                    keine zwei Damen schlagen. Beim Acht-Türme-Problem gilt dieselbe Idee für Türme, nur mit
-                    einfacheren Konfliktregeln. Beide Aufgaben zeigen, wie Mustererkennung, systematische Suche und
-                    Backtracking funktionieren.
+                    Das Acht-Damen-Problem ist eine schachmathematische Aufgabe: Acht Damen sollen auf einem
+                    Schachbrett so aufgestellt werden, dass keine zwei Damen dieselbe Reihe, Spalte oder Diagonale
+                    teilen. Das Problem lässt sich auf beliebige Brettgrössen verallgemeinern, indem n Damen auf einem
+                    n x n-Brett platziert werden.
                     <br><br>
-                    Gerade beim Damenproblem wird schnell sichtbar, warum Strategie wichtig ist: Es gibt unzählige
-                    mögliche Platzierungen, aber nur sehr wenige wirklich gültige Lösungen. Genau das macht diese
-                    App spannend, weil man nicht nur das Ergebnis sieht, sondern auch den Weg dorthin.
+                    Für das klassische 8x8-Brett gibt es 92 Lösungen. Zählt man Stellungen, die nur durch Spiegelung
+                    oder Drehung entstehen, als gleich, bleiben 12 eindeutige Lösungen übrig.
+                    <br><br>
+                    <a href="https://de-academic.com/dic.nsf/dewiki/13248" target="_blank" rel="noopener noreferrer">Quelle:
+                        de-academic.com</a>
                 </p>
             </div>
         </section>
@@ -101,7 +90,7 @@
                 <article class="feature-card">
                     <span class="feature-icon">♟</span>
                     <h3 data-i18n="features.card1Title">Interaktives Brett</h3>
-                    <p data-i18n="features.card1Text">Setze Damen oder Tuerme direkt auf dem Brett und prüfe, ob deine
+                    <p data-i18n="features.card1Text">Setze Damen oder Türme direkt auf dem Brett und prüfe, ob deine
                         Anordnung konfliktfrei ist.</p>
                 </article>
 
@@ -109,7 +98,8 @@
                     <span class="feature-icon">⚙</span>
                     <h3 data-i18n="features.card2Title">Solver mit Animation</h3>
                     <p data-i18n="features.card2Text">Beobachte den Lösungsweg Schritt für Schritt und verstehe, wie
-                        Backtracking arbeitet.</p>
+                        Backtracking arbeitet.
+                    </p>
                 </article>
 
                 <article class="feature-card">
@@ -121,8 +111,8 @@
 
                 <article class="feature-card">
                     <span class="feature-icon">💾</span>
-                    <h3 data-i18n="features.card4Title">Save-Points</h3>
-                    <p data-i18n="features.card4Text">Speichere Zwischenstaende mit Notizen, Zeiten und Schrittzahl für
+                    <h3 data-i18n="features.card4Title">Speicherstände</h3>
+                    <p data-i18n="features.card4Text">Speichere Zwischenstände mit Notizen, Zeiten und Schrittzahl für
                         späteres Weiterarbeiten.</p>
                 </article>
 
@@ -145,8 +135,8 @@
                 <article class="journey-step">
                     <span class="step-number">01</span>
                     <h3 data-i18n="journey.step1Title">Account erstellen</h3>
-                    <p data-i18n="journey.step1Text">Registriere dich und erhalte Zugang zu Dashboard, Save-Points und
-                        deinem Fortschritt.</p>
+                    <p data-i18n="journey.step1Text">Registriere dich und erhalte Zugang zum Dashboard, zu
+                        Speicherständen und zu deinem Fortschritt.</p>
                 </article>
 
                 <article class="journey-step">
@@ -160,8 +150,7 @@
                     <span class="step-number">03</span>
                     <h3 data-i18n="journey.step3Title">Lösen oder analysieren</h3>
                     <p data-i18n="journey.step3Text">Teste eigene Ideen oder lass dir die Lösung visuell vom Solver
-                        lösen lassen, dabei wird 1:1
-                        gezeigt wie der Solver vorgeht.</p>
+                        zeigen, damit du den Lösungsweg besser nachvollziehen kannst.</p>
                 </article>
             </div>
         </section>
@@ -177,9 +166,9 @@
 
                 <div class="hero-actions">
                     <a class="hero-button primary" href="{{ url_for('login.register') }}"
-                        data-i18n="cta.primaryCta">Create Account</a>
+                        data-i18n="cta.primaryCta">Account erstellen</a>
                     <a class="hero-button secondary" href="{{ url_for('login.login') }}"
-                        data-i18n="cta.secondaryCta">Login</a>
+                        data-i18n="cta.secondaryCta">Anmelden</a>
                 </div>
             </div>
         </section>
