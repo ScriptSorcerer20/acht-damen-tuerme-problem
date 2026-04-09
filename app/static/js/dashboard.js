@@ -1,9 +1,13 @@
+// Board configuration
 const DEFAULT_BOARD_SIZE = 8;
 const MIN_BOARD_SIZE = 4;
 const MAX_BOARD_SIZE = 13;
 const EMPTY_CELL = -1;
 const GAME_STORAGE_KEY = "eight-queens-dashboard-session-v1";
 
+const AppLanguage = window.AppLanguage;
+
+// Mutable game and solver state
 let mode = "queens";
 let boardSize = DEFAULT_BOARD_SIZE;
 let pendingBoardSize = DEFAULT_BOARD_SIZE;
@@ -22,6 +26,7 @@ let solverLoading = false;
 let solverRequestId = 0;
 let currentSolverHighlight = null;
 
+// Cached DOM references
 const boardDiv = document.getElementById("board");
 const statusMessage = document.getElementById("statusMessage");
 const queenList = document.getElementById("queenList");
@@ -78,7 +83,9 @@ const timeHistoryTableBody = document.getElementById("timeHistoryTableBody");
 const infoModal = document.getElementById("infoModal");
 const infoModalBackdrop = document.getElementById("infoModalBackdrop");
 
-const SUPPORTED_LANGUAGES = ["de", "en"];
+// -----------------------------------------------------------------------------
+// Translation dictionaries and language-specific copy
+
 let currentLanguage = "de";
 
 const MODE_COPY = {
@@ -437,42 +444,8 @@ const translations = {
     }
 };
 
-function createEmptyBoard(size) {
-    return Array(size).fill(EMPTY_CELL);
-}
-
-function clampBoardSize(size) {
-    return Math.min(MAX_BOARD_SIZE, Math.max(MIN_BOARD_SIZE, Number(size)));
-}
-
-function getColumnLabel(index) {
-    return String.fromCharCode(65 + index);
-}
-
-function normalizeLanguage(language) {
-    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
-    return SUPPORTED_LANGUAGES.includes(shortLanguage) ? shortLanguage : "de";
-}
-
-function getStoredLanguage() {
-    try {
-        return window.localStorage.getItem("preferredLanguage");
-    } catch (error) {
-        return null;
-    }
-}
-
-function storeLanguage(language) {
-    try {
-        window.localStorage.setItem("preferredLanguage", language);
-    } catch (error) {
-        return;
-    }
-}
-
-function detectBrowserLanguage() {
-    return normalizeLanguage(navigator.language || navigator.userLanguage || "de");
-}
+// -----------------------------------------------------------------------------
+// Translation helpers
 
 function t(key, params = {}) {
     const value = translations[currentLanguage][key];
@@ -483,71 +456,84 @@ function getDefaultSolverMessage() {
     return t("defaultSolverMessage");
 }
 
-function applyTextTranslations() {
-    document.documentElement.lang = currentLanguage;
-    document.body.dataset.language = currentLanguage;
-
-    document.querySelectorAll("[data-i18n]").forEach((element) => {
-        const key = element.dataset.i18n;
-        const translatedText = t(key);
-
-        if (translatedText === undefined) {
-            return;
-        }
-
-        if (element.tagName === "TITLE" || String(translatedText).includes("<br")) {
-            element.innerHTML = translatedText;
-            return;
-        }
-
-        element.textContent = translatedText;
-    });
-
-    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
-        const translatedText = t(element.dataset.i18nPlaceholder);
-
-        if (translatedText === undefined) {
-            return;
-        }
-
-        element.setAttribute("placeholder", translatedText);
-    });
-
-    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
-        const translatedText = t(element.dataset.i18nAriaLabel);
-
-        if (translatedText === undefined) {
-            return;
-        }
-
-        element.setAttribute("aria-label", translatedText);
-    });
-}
-
-function setLanguage(language) {
-    currentLanguage = normalizeLanguage(language);
-    applyTextTranslations();
-
-    langSwitch.textContent = currentLanguage.toUpperCase();
-    langSwitch.setAttribute("aria-label", t("languageSwitchAria"));
-    langSwitch.title = currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
-
-    updateSettingsTrigger();
-    updateModeContent();
-    updateQueenList();
-    updateProgressDisplay();
-    updateSolverSpeed(solverSpeedMs);
-    updateSolverControls();
-
-    if (!solverLoading && !hasPreparedSolverTrace()) {
-        setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
-    }
-
-    storeLanguage(currentLanguage);
-}
-
 function getModeCopy(selectedMode = mode, language = currentLanguage) {
     return MODE_COPY[language][selectedMode === "rooks" ? "rooks" : "queens"];
+}
+
+function getPieceLabel(selectedMode) {
+    return getModeCopy(selectedMode).singular;
+}
+
+function getModeLabel(selectedMode) {
+    return getModeCopy(selectedMode).plural;
+}
+
+function applyTextTranslations() {
+    AppLanguage.applyTranslations({
+        translate: (key) => t(key),
+        allowHtml: (element, translatedText) => element.tagName === "TITLE" || String(translatedText).includes("<br"),
+        attributeMappings: [
+            {
+                selector: "[data-i18n-placeholder]",
+                datasetKey: "i18nPlaceholder",
+                attribute: "placeholder"
+            },
+            {
+                selector: "[data-i18n-aria-label]",
+                datasetKey: "i18nAriaLabel",
+                attribute: "aria-label"
+            }
+        ]
+    });
+}
+
+// A language change also refreshes dynamic dashboard content,
+// not just static text nodes in the template.
+const languageController = AppLanguage.createController({
+    button: langSwitch,
+    onApply(language, helpers) {
+        currentLanguage = language;
+        applyTextTranslations();
+        helpers.updateLanguageSwitch({
+            ariaLabel: t("languageSwitchAria"),
+            title: currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln"
+        });
+
+        updateSettingsTrigger();
+        updateModeContent();
+        updateQueenList();
+        updateProgressDisplay();
+        updateSolverSpeed(solverSpeedMs);
+        updateSolverControls();
+
+        if (!solverLoading && !hasPreparedSolverTrace()) {
+            setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
+        }
+
+        if (helpers.source === "toggle") {
+            resetSaveForm();
+            void refreshTimeHistory();
+
+            if (savePointsSidebar.classList.contains("open")) {
+                void refreshSavePoints();
+            }
+        }
+    }
+});
+
+// -----------------------------------------------------------------------------
+// Core data and formatting helpers
+
+function createEmptyBoard(size) {
+    return Array(size).fill(EMPTY_CELL);
+}
+
+function clampBoardSize(size) {
+    return Math.min(MAX_BOARD_SIZE, Math.max(MIN_BOARD_SIZE, Number(size)));
+}
+
+function getColumnLabel(index) {
+    return String.fromCharCode(65 + index);
 }
 
 function sanitizeBoard(candidateBoard, size) {
@@ -585,6 +571,7 @@ function getElapsedMilliseconds() {
     return elapsedBeforeTimerStartMs + Math.max(0, Date.now() - timerStartedAtMs);
 }
 
+// Keep a minimal local snapshot so a refresh can restore the current run.
 function persistCurrentSession() {
     try {
         window.localStorage.setItem(
@@ -602,6 +589,9 @@ function persistCurrentSession() {
         // Ignore unavailable storage so the game keeps working normally.
     }
 }
+
+// -----------------------------------------------------------------------------
+// Timer and UI synchronization
 
 function updateProgressDisplay() {
     stepCounterValue.textContent = String(stepCount);
@@ -661,6 +651,8 @@ function ensureFreshRunAfterSolvedBoard() {
     resetProgress();
 }
 
+// These helpers keep the static labels and the dynamic dashboard widgets aligned
+// with the currently selected mode, language, and board size.
 function updateModeButtons() {
     btnQueens.classList.toggle("active", mode === "queens");
     btnRooks.classList.toggle("active", mode === "rooks");
@@ -719,6 +711,9 @@ function setSolverMessage(message = getDefaultSolverMessage()) {
     solverMessage.textContent = message;
 }
 
+// -----------------------------------------------------------------------------
+// Rendering and solver state helpers
+
 function updateSolverSpeed(rawValue) {
     solverSpeedMs = Number(rawValue);
     solverSpeedInput.value = String(solverSpeedMs);
@@ -730,6 +725,8 @@ function updateSolverSpeed(rawValue) {
     }
 }
 
+// These render helpers are reused by manual play, solver playback,
+// save-point loading, and session restore.
 function updateBoardLayout() {
     let cellSize = Math.max(32, Math.min(60, Math.floor(480 / boardSize)));
     let labelSize = cellSize;
@@ -744,6 +741,35 @@ function updateBoardLayout() {
     boardDiv.style.setProperty("--board-size", boardSize);
     boardDiv.style.setProperty("--cell-size", `${cellSize}px`);
     boardDiv.style.setProperty("--label-size", `${labelSize}px`);
+}
+
+function updateQueenList() {
+    queenList.innerHTML = "";
+    let count = 1;
+
+    for (let row = 0; row < boardSize; row++) {
+        if (board[row] === EMPTY_CELL) {
+            continue;
+        }
+
+        const col = board[row];
+        const position = `${getColumnLabel(col)}${boardSize - row}`;
+        const li = document.createElement("li");
+
+        li.textContent = `${getPieceLabel(mode)} ${count}: ${position}`;
+        queenList.appendChild(li);
+        count += 1;
+    }
+
+    const placedPieces = count - 1;
+    pieceCountBadge.textContent = t("pieceCount", { count: placedPieces });
+
+    if (placedPieces === 0) {
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "empty";
+        emptyItem.textContent = t("pieceEmpty", { modeLabel: getModeLabel(mode) });
+        queenList.appendChild(emptyItem);
+    }
 }
 
 function isSolverPlaying() {
@@ -816,6 +842,9 @@ function rewindSolverTrace() {
     updateSolverControls();
 }
 
+// -----------------------------------------------------------------------------
+// Board rules, rendering, and player interaction
+
 function setMode(newMode) {
     if (mode === newMode) {
         return;
@@ -829,13 +858,6 @@ function setMode(newMode) {
         statusColor: "#2563eb",
         solverMessageText: t("solverReady", { modeLabel: getModeLabel(mode) })
     });
-}
-
-function closeAllPanels() {
-    toggleSidebar(false);
-    toggleSavePanel(false);
-    toggleSavePointsPanel(false);
-    toggleInfoModal(false);
 }
 
 function getConflicts(selectedBoard = board, selectedMode = mode) {
@@ -883,6 +905,8 @@ function finishSolvedRun() {
     persistCurrentSession();
 }
 
+// The board is always rendered from state so manual moves, restored sessions,
+// and solver playback all share the same visual path.
 function drawBoard() {
     boardDiv.innerHTML = "";
     boardDiv.className = "board-grid";
@@ -962,6 +986,30 @@ function placeQueen(row, col) {
     }
 }
 
+function resetBoard(options = {}) {
+    const {
+        statusMessageText = "",
+        statusColor = "",
+        solverMessageText = t("solverReady", { modeLabel: getModeLabel(mode) })
+    } = options;
+
+    discardSolverTrace(solverMessageText);
+    board = createEmptyBoard(boardSize);
+    currentSolverHighlight = null;
+    resetProgress();
+
+    if (statusMessageText) {
+        setStatus(statusMessageText, statusColor);
+    } else {
+        setStatus();
+    }
+
+    drawBoard();
+}
+
+// -----------------------------------------------------------------------------
+// Panels and board settings
+
 function previewBoardSize(size) {
     pendingBoardSize = clampBoardSize(size);
     sidebarBoardSizeValue.textContent = pendingBoardSize;
@@ -1028,10 +1076,6 @@ function toggleInfoModal(forceOpen) {
     infoModal.setAttribute("aria-hidden", String(!shouldOpen));
 }
 
-function getPieceLabel(selectedMode) {
-    return getModeCopy(selectedMode).singular;
-}
-
 function getPlacedPieceCount() {
     return board.filter((col) => col !== EMPTY_CELL).length;
 }
@@ -1050,6 +1094,16 @@ function openSavePanel() {
     resetSaveForm();
     toggleSavePanel(true);
 }
+
+function closeAllPanels() {
+    toggleSidebar(false);
+    toggleSavePanel(false);
+    toggleSavePointsPanel(false);
+    toggleInfoModal(false);
+}
+
+// -----------------------------------------------------------------------------
+// Save point and history helpers
 
 function getBoardPreview(savedBoard, limit = 4) {
     const preview = [];
@@ -1096,10 +1150,6 @@ function createSavePointActionButton(label, className, onClick) {
     button.textContent = label;
     button.onclick = onClick;
     return button;
-}
-
-function getModeLabel(selectedMode) {
-    return getModeCopy(selectedMode).plural;
 }
 
 function renderSavePoints(savePoints) {
@@ -1211,6 +1261,8 @@ async function openSavePointsPanel() {
     toggleSavePointsPanel(true);
 }
 
+// Server-loaded save points and locally restored sessions both flow through
+// this helper so the dashboard only has one "hydrate state into UI" path.
 function applyLoadedGame(data) {
     discardSolverTrace(t("solverReady", { modeLabel: getModeLabel(data.mode || "queens") }));
 
@@ -1234,6 +1286,9 @@ function applyLoadedGame(data) {
     updateProgressDisplay();
     persistCurrentSession();
 }
+
+// -----------------------------------------------------------------------------
+// Solver execution
 
 function applySolverStep(step) {
     board = sanitizeBoard(step.board, boardSize);
@@ -1320,6 +1375,8 @@ function startSolverPlayback(stepImmediately = true) {
     scheduleNextSolverPlaybackStep();
 }
 
+// requestId prevents older async responses from overwriting a newer solver run
+// when the user changes size, mode, or solver action quickly.
 async function prepareSolutionTrace() {
     const endpoint = mode === "rooks" ? "/solve_rooks_trace" : "/solve_trace";
     const requestId = ++solverRequestId;
@@ -1484,55 +1541,8 @@ async function instantSolve() {
     }
 }
 
-function resetBoard(options = {}) {
-    const {
-        statusMessageText = "",
-        statusColor = "",
-        solverMessageText = t("solverReady", { modeLabel: getModeLabel(mode) })
-    } = options;
-
-    discardSolverTrace(solverMessageText);
-    board = createEmptyBoard(boardSize);
-    currentSolverHighlight = null;
-    resetProgress();
-
-    if (statusMessageText) {
-        setStatus(statusMessageText, statusColor);
-    } else {
-        setStatus();
-    }
-
-    drawBoard();
-}
-
-function updateQueenList() {
-    queenList.innerHTML = "";
-    let count = 1;
-
-    for (let row = 0; row < boardSize; row++) {
-        if (board[row] === EMPTY_CELL) {
-            continue;
-        }
-
-        const col = board[row];
-        const position = `${getColumnLabel(col)}${boardSize - row}`;
-        const li = document.createElement("li");
-
-        li.textContent = `${getPieceLabel(mode)} ${count}: ${position}`;
-        queenList.appendChild(li);
-        count += 1;
-    }
-
-    const placedPieces = count - 1;
-    pieceCountBadge.textContent = t("pieceCount", { count: placedPieces });
-
-    if (placedPieces === 0) {
-        const emptyItem = document.createElement("li");
-        emptyItem.className = "empty";
-        emptyItem.textContent = t("pieceEmpty", { modeLabel: getModeLabel(mode) });
-        queenList.appendChild(emptyItem);
-    }
-}
+// -----------------------------------------------------------------------------
+// Save point persistence actions
 
 async function saveGame() {
     const response = await fetch("/save", {
@@ -1623,6 +1633,9 @@ async function deleteSavePoint(savePointId) {
     setStatus(t("deleteSuccess"), "#2563eb");
 }
 
+// -----------------------------------------------------------------------------
+// Persistence and startup
+
 function restoreSessionFromStorage() {
     try {
         const rawSession = window.localStorage.getItem(GAME_STORAGE_KEY);
@@ -1657,11 +1670,12 @@ function restoreSessionFromStorage() {
     }
 }
 
+// Boot order: translate UI, restore any local session, then load history data.
 async function initializeDashboard() {
     pendingBoardSize = boardSize;
     updateModeButtons();
     updateBoardSizeDisplays(boardSize);
-    setLanguage(getStoredLanguage() || detectBrowserLanguage());
+    languageController.init();
     updateSettingsTrigger(false);
     setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
 
@@ -1672,18 +1686,6 @@ async function initializeDashboard() {
 
     updateProgressDisplay();
     await refreshTimeHistory();
-}
-
-if (langSwitch) {
-    langSwitch.addEventListener("click", async () => {
-        setLanguage(currentLanguage === "de" ? "en" : "de");
-        resetSaveForm();
-        await refreshTimeHistory();
-
-        if (savePointsSidebar.classList.contains("open")) {
-            await refreshSavePoints();
-        }
-    });
 }
 
 window.addEventListener("keydown", (event) => {

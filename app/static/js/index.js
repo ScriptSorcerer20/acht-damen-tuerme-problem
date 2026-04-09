@@ -1,8 +1,12 @@
+// settings for preview board
 const HERO_BOARD_SIZE = 8;
 const heroBoard = document.getElementById("heroBoard");
+
+//translation for English and German
+const AppLanguage = window.AppLanguage;
 const langSwitch = document.getElementById("langSwitch");
-const supportedLanguages = ["de", "en"];
 const initialLanguage = window.LANDING_INITIAL_LANGUAGE || "de";
+let currentLanguage = initialLanguage;
 
 const translations = {
     de: {
@@ -119,6 +123,43 @@ const translations = {
     }
 };
 
+function t(key) {
+    return translations[currentLanguage]?.[key] ?? null;
+}
+
+function applyTranslations(language) {
+    currentLanguage = language;
+
+    AppLanguage.applyTranslations({
+        translate: (key) => t(key),
+        allowHtml: (element, translatedText) => element.tagName === "TITLE" || String(translatedText).includes("<br"),
+        attributeMappings: [
+            {
+                selector: "[data-i18n-aria-label]",
+                datasetKey: "i18nAriaLabel",
+                attribute: "aria-label"
+            }
+        ]
+    });
+}
+
+const languageController = AppLanguage.createController({
+    button: langSwitch,
+    defaultLanguage: initialLanguage,
+    onApply(language, helpers) {
+        applyTranslations(language);
+        helpers.updateLanguageSwitch({
+            ariaLabel: language === "de" ? "Switch language to English" : "Sprache auf Deutsch wechseln",
+            title: language === "de" ? "Switch to English" : "Zu Deutsch wechseln"
+        });
+    }
+});
+
+languageController.init();
+
+// ----------------------------------------------------------------------------------------
+
+// simple pattern for preview board
 const queenPatterns = [
     [0, 4, 7, 5, 2, 6, 1, 3],
     [1, 3, 5, 7, 2, 0, 6, 4],
@@ -126,80 +167,6 @@ const queenPatterns = [
 ];
 
 let currentPatternIndex = 0;
-
-function normalizeLanguage(language) {
-    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
-    return supportedLanguages.includes(shortLanguage) ? shortLanguage : "de";
-}
-
-function getStoredLanguage() {
-    try {
-        return window.localStorage.getItem("preferredLanguage");
-    } catch (error) {
-        return null;
-    }
-}
-
-function storeLanguage(language) {
-    try {
-        window.localStorage.setItem("preferredLanguage", language);
-    } catch (error) {
-        return;
-    }
-}
-
-function detectBrowserLanguage() {
-    const browserLanguage = navigator.language || navigator.userLanguage || initialLanguage;
-    return normalizeLanguage(browserLanguage);
-}
-
-function setLanguage(language) {
-    const resolvedLanguage = normalizeLanguage(language);
-    const dictionary = translations[resolvedLanguage];
-    const i18nElements = document.querySelectorAll("[data-i18n]");
-
-    document.documentElement.lang = resolvedLanguage;
-    document.body.dataset.language = resolvedLanguage;
-
-    i18nElements.forEach((element) => {
-        const key = element.dataset.i18n;
-        const translatedText = dictionary[key];
-
-        if (!translatedText) {
-            return;
-        }
-
-        if (element.tagName === "TITLE" || translatedText.includes("<br")) {
-            element.innerHTML = translatedText;
-            return;
-        }
-
-        element.textContent = translatedText;
-    });
-
-    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
-        const key = element.dataset.i18nAriaLabel;
-        const translatedText = dictionary[key];
-
-        if (!translatedText) {
-            return;
-        }
-
-        element.setAttribute("aria-label", translatedText);
-    });
-
-    if (langSwitch) {
-        langSwitch.textContent = resolvedLanguage.toUpperCase();
-        langSwitch.setAttribute("aria-label", resolvedLanguage === "de" ? "Switch language to English" : "Sprache auf Deutsch wechseln");
-        langSwitch.title = resolvedLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
-    }
-
-    storeLanguage(resolvedLanguage);
-}
-
-function getPreferredLanguage() {
-    return normalizeLanguage(getStoredLanguage() || detectBrowserLanguage() || initialLanguage);
-}
 
 function createHeroBoard() {
     if (!heroBoard) {
@@ -241,16 +208,9 @@ function rotatePattern() {
     applyPattern(queenPatterns[currentPatternIndex]);
 }
 
-if (langSwitch) {
-    langSwitch.addEventListener("click", () => {
-        const nextLanguage = document.documentElement.lang === "de" ? "en" : "de";
-        setLanguage(nextLanguage);
-    });
-}
-
 createHeroBoard();
 applyPattern(queenPatterns[currentPatternIndex]);
-setLanguage(getPreferredLanguage());
+languageController.init();
 
 if (heroBoard) {
     window.setInterval(rotatePattern, 2200);

@@ -190,7 +190,8 @@
     <script>
         window.LANDING_INITIAL_LANGUAGE = "{{ initial_language }}";
     </script>
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
 </body>
 
 </html>
