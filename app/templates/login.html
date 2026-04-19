@@ -13,12 +13,12 @@
     <nav class="auth-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
-            <span class="nav-brand">8-Damen- und 8-Türme Solver</span>
+            <span class="nav-brand" data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
         </a>
 
         <ul class="nav-links">
-            <li><a href="{{ url_for('login.login') }}">Login</a></li>
-            <li><a href="{{ url_for('login.register') }}">Create account</a></li>
+            <li><a href="{{ url_for('login.login') }}" data-i18n="navLogin">Login</a></li>
+            <li><a href="{{ url_for('login.register') }}" data-i18n="navRegister">Create account</a></li>
         </ul>
     </nav>
 

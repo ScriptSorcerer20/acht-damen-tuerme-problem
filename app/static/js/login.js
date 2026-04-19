@@ -7,6 +7,8 @@ const translations = {
     de: {
         pageTitle: "Login-Einstellungen",
         navBrand: "8-Damen- und 8-Türme Solver",
+        navLogin: "Anmelden",
+        navRegister: "Account erstellen",
         navDashboard: "Dashboard",
         navSettings: "Login-Einstellungen",
         navLogout: "Logout",
@@ -50,7 +52,9 @@ const translations = {
     },
     en: {
         pageTitle: "Login Settings",
-        navBrand: "8-Damen- und 8-Türme Solver",
+        navBrand: "8 Queens and 8 Rooks Solver",
+        navLogin: "Login",
+        navRegister: "Create account",
         navDashboard: "Dashboard",
         navSettings: "Login settings",
         navLogout: "Logout",

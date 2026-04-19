@@ -11,7 +11,7 @@ let currentLanguage = initialLanguage;
 const translations = {
     de: {
         "meta.title": "8-Damen- und 8-Türme Solver",
-        "nav.brand": "8-Damen- und 8-Türme-Löser",
+        "nav.brand": "8-Damen- und 8-Türme Solver",
         "nav.problem": "Problem",
         "nav.features": "Funktionen",
         "nav.journey": "Ablauf",
