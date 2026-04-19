@@ -13,19 +13,20 @@
     <nav class="auth-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
-            <span>8-Damen- und 8-Tuerme Solver</span>
+            <span class="nav-brand" data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
         </a>
 
         <ul class="nav-links">
-            <li><a href="{{ url_for('login.login') }}">Login</a></li>
-            <li><a href="{{ url_for('login.register') }}">Create account</a></li>
+            <li><a href="{{ url_for('login.login') }}" data-i18n="navLogin">Login</a></li>
+            <li><a href="{{ url_for('login.register') }}" data-i18n="navRegister">Create account</a></li>
         </ul>
     </nav>
 
     <main class="auth-shell">
         <section class="auth-panel">
             <h1>Login to your account</h1>
-            <p class="muted">If two-factor authentication is enabled, enter the current 6-digit code from your authenticator app after the password check.</p>
+            <p class="muted">If two-factor authentication is enabled, enter the current 6-digit code from your
+                authenticator app after the password check.</p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -53,6 +54,7 @@
 
     {% include "partials/footer.html" %}
 
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 </body>
 

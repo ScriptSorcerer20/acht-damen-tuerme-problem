@@ -1,13 +1,14 @@
-const SUPPORTED_LANGUAGES = ["de", "en"];
-const DEFAULT_LANGUAGE = "de";
-const LANGUAGE_STORAGE_KEY = "preferredLanguage";
+//translation for English and German
 
+const AppLanguage = window.AppLanguage;
 const langSwitch = document.getElementById("langSwitch");
 
 const translations = {
     de: {
         pageTitle: "Login-Einstellungen",
         navBrand: "8-Damen- und 8-Türme Solver",
+        navLogin: "Anmelden",
+        navRegister: "Account erstellen",
         navDashboard: "Dashboard",
         navSettings: "Login-Einstellungen",
         navLogout: "Logout",
@@ -51,7 +52,9 @@ const translations = {
     },
     en: {
         pageTitle: "Login Settings",
-        navBrand: "8-Damen- und 8-Türme Solver",
+        navBrand: "8 Queens and 8 Rooks Solver",
+        navLogin: "Login",
+        navRegister: "Create account",
         navDashboard: "Dashboard",
         navSettings: "Login settings",
         navLogout: "Logout",
@@ -112,32 +115,7 @@ const serverMessageTranslations = {
     en: {}
 };
 
-let currentLanguage = DEFAULT_LANGUAGE;
-
-function normalizeLanguage(language) {
-    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
-    return SUPPORTED_LANGUAGES.includes(shortLanguage) ? shortLanguage : DEFAULT_LANGUAGE;
-}
-
-function getStoredLanguage() {
-    try {
-        return window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    } catch (error) {
-        return null;
-    }
-}
-
-function storeLanguage(language) {
-    try {
-        window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-    } catch (error) {
-        return;
-    }
-}
-
-function detectBrowserLanguage() {
-    return normalizeLanguage(navigator.language || navigator.userLanguage || DEFAULT_LANGUAGE);
-}
+let currentLanguage = AppLanguage.DEFAULT_LANGUAGE;
 
 function t(key) {
     return translations[currentLanguage]?.[key] ?? translations.en[key] ?? key;
@@ -172,29 +150,25 @@ function translateServerMessage(message) {
 }
 
 function applyTextTranslations() {
-    document.documentElement.lang = currentLanguage;
-
-    document.querySelectorAll("[data-i18n]").forEach((element) => {
-        const translatedText = t(element.dataset.i18n);
-
-        if (element.tagName === "TITLE") {
-            element.textContent = translatedText;
-            return;
-        }
-
-        element.textContent = translatedText;
-    });
-
-    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
-        element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+    AppLanguage.applyTranslations({
+        translate: (key) => t(key),
+        attributeMappings: [
+            {
+                selector: "[data-i18n-aria-label]",
+                datasetKey: "i18nAriaLabel",
+                attribute: "aria-label"
+            },
+            {
+                selector: "[data-i18n-loading-label]",
+                datasetKey: "i18nLoadingLabel",
+                attribute: "data-loading-label"
+            }
+        ]
     });
 
     document.querySelectorAll("[data-i18n-loading-label]").forEach((element) => {
-        const translatedLoadingLabel = t(element.dataset.i18nLoadingLabel);
-        element.dataset.loadingLabel = translatedLoadingLabel;
-
         if (element.dataset.loadingLabelApplied === "true") {
-            element.textContent = translatedLoadingLabel;
+            element.textContent = element.dataset.loadingLabel;
         }
     });
 
@@ -205,30 +179,27 @@ function applyTextTranslations() {
 
         element.textContent = translateServerMessage(element.dataset.originalText);
     });
+}
 
-    if (langSwitch) {
-        langSwitch.textContent = currentLanguage.toUpperCase();
-        langSwitch.setAttribute("aria-label", t("languageSwitchAria"));
-        langSwitch.title = currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
+const languageController = AppLanguage.createController({
+    button: langSwitch,
+    onApply(language, helpers) {
+        currentLanguage = language;
+        applyTextTranslations();
+        helpers.updateLanguageSwitch({
+            ariaLabel: t("languageSwitchAria"),
+            title: currentLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln"
+        });
     }
-}
+});
 
-function setLanguage(language) {
-    currentLanguage = normalizeLanguage(language);
-    applyTextTranslations();
-    storeLanguage(currentLanguage);
-}
+languageController.init();
 
-setLanguage(getStoredLanguage() || detectBrowserLanguage());
-
-if (langSwitch) {
-    langSwitch.addEventListener("click", () => {
-        setLanguage(currentLanguage === "de" ? "en" : "de");
-    });
-}
+// -----------------------------------------------------------------------------------------------
 
 const magneticButtons = document.querySelectorAll(".magnetic");
 
+// magnetic button effect for desktop user
 magneticButtons.forEach((button) => {
     button.addEventListener("mousemove", (event) => {
         const rect = button.getBoundingClientRect();

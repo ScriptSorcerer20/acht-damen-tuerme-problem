@@ -483,9 +483,17 @@ textarea {
     line-height: 1.55;
 }
 
-.board {
+.board-stage {
+    display: grid;
+    gap: 14px;
+    justify-items: center;
+    margin-top: 10px;
+}
+
+.board-shell {
     overflow-x: auto;
     padding-bottom: 8px;
+    width: 100%;
 }
 
 .board-grid {
@@ -544,28 +552,28 @@ textarea {
     background: #d65555 !important;
 }
 
-.solver-panel {
-    margin-top: 18px;
-    padding: 18px;
-    border-radius: 12px;
-    border: 1px solid rgba(31, 49, 64, 0.1);
-    background: rgba(255, 250, 242, 0.74);
-    text-align: left;
-}
-
-.solver-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-}
-
-.solver-panel h3 {
-    margin-bottom: 8px;
-}
-
 .solver-message {
     margin: 0;
+}
+
+.board-navigator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: min(100%, 620px);
+}
+
+.board-nav-button {
+    min-width: 150px;
+}
+
+.solver-message-inline {
+    margin: 0 auto;
+    max-width: 760px;
+    text-align: center;
+    font-size: 15px;
 }
 
 .solver-step-info {
@@ -579,63 +587,31 @@ textarea {
     white-space: nowrap;
 }
 
-.solver-groups {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
-    gap: 16px;
-    margin-top: 18px;
-}
-
-.solver-group {
-    padding: 18px;
-    border: 1px solid rgba(31, 49, 64, 0.1);
-    background: rgba(255, 255, 255, 0.58);
-}
-
-.solver-group h4 {
-    margin: 0 0 8px;
-    color: #182029;
-    font-size: 1.15rem;
-}
-
-.solver-group-text {
-    margin: 0;
-    font-size: 15px;
-}
-
-.solver-controls {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.instant-solver-actions {
-    margin-top: 16px;
-}
-
-.instant-solver-actions .btn {
-    width: 100%;
-}
-
 .solver-speed {
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "label label"
+        "input value";
+    align-items: end;
     gap: 12px;
     margin-top: 16px;
 }
 
 .solver-speed input[type="range"] {
+    grid-area: input;
     width: 100%;
+    min-width: 0;
 }
 
 .solver-speed-label {
+    grid-area: label;
     font-weight: 700;
     color: var(--navy);
 }
 
 .solver-speed-value {
+    grid-area: value;
     min-width: 62px;
     text-align: right;
     color: var(--muted);
@@ -647,19 +623,6 @@ textarea {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 10px;
-}
-
-.controls-save-row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    width: min(420px, 100%);
-}
-
-.settings-sidebar-actions {
-    margin-top: 18px;
-    display: grid;
     gap: 10px;
 }
 
@@ -784,6 +747,34 @@ textarea {
 
 .save-points-sidebar {
     width: min(400px, 94vw);
+}
+
+.settings-section {
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(31, 49, 64, 0.1);
+}
+
+.settings-section:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.settings-section h4 {
+    margin: 0;
+    color: #182029;
+    font-size: 1.15rem;
+}
+
+.settings-section .section-kicker {
+    margin-bottom: 10px;
+}
+
+.settings-action-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .sidebar-label {
@@ -980,14 +971,6 @@ textarea {
 }
 
 @media (max-width: 980px) {
-    .solver-groups {
-        grid-template-columns: 1fr;
-    }
-
-    .solver-controls {
-        grid-template-columns: 1fr;
-    }
-
     .game-card-header,
     .history-header,
     .section-header {
@@ -1040,7 +1023,7 @@ textarea {
         padding-right: 8px;
     }
 
-    .board {
+    .board-shell {
         margin-left: -4px;
         margin-right: -4px;
         padding-bottom: 4px;
@@ -1061,6 +1044,10 @@ textarea {
         grid-template-columns: 1fr;
     }
 
+    .board-navigator {
+        width: 100%;
+    }
+
     .mode-switch .btn {
         min-width: min(100%, 280px);
     }
@@ -1070,11 +1057,8 @@ textarea {
     }
 
     .controls>.btn,
+    .board-nav-button,
     .save-point-actions .btn {
-        width: 100%;
-    }
-
-    .controls-save-row {
         width: 100%;
     }
 

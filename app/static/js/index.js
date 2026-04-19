@@ -1,61 +1,65 @@
+// settings for preview board
 const HERO_BOARD_SIZE = 8;
 const heroBoard = document.getElementById("heroBoard");
+
+//translation for English and German
+const AppLanguage = window.AppLanguage;
 const langSwitch = document.getElementById("langSwitch");
-const supportedLanguages = ["de", "en"];
 const initialLanguage = window.LANDING_INITIAL_LANGUAGE || "de";
+let currentLanguage = initialLanguage;
 
 const translations = {
     de: {
         "meta.title": "8-Damen- und 8-Türme Solver",
         "nav.brand": "8-Damen- und 8-Türme Solver",
         "nav.problem": "Problem",
-        "nav.features": "Features",
+        "nav.features": "Funktionen",
         "nav.journey": "Ablauf",
-        "nav.login": "Login",
-        "nav.signup": "Create Account",
+        "nav.login": "Anmelden",
+        "nav.signup": "Account erstellen",
         "hero.eyebrow": "Interaktives Lernen mit Strategie, Logik und Backtracking",
         "hero.title": "Entdecke das Acht-Damen- und Acht-Türme-Problem.",
-        "hero.text": "Diese App macht aus einem klassischen Informatik- und Mathematikproblem ein interaktives Erlebnis: Setze Damen oder Türme, verfolge den Solver Schritt fuer Schritt, miss deine Zeit und speichere clevere Zwischenstände.",
+        "hero.text": "Diese App macht aus einem klassischen Informatik- und Mathematikproblem ein interaktives Erlebnis: Setze Damen oder Türme, verfolge den Solver Schritt für Schritt, miss deine Zeit und speichere clevere Zwischenstände.",
         "hero.primaryCta": "Jetzt starten",
-        "hero.secondaryCta": "Bereits Account? Login",
+        "hero.secondaryCta": "Bereits ein Account? Anmelden",
         "hero.fact1Title": "Skalierbar",
         "hero.fact1Text": "Brettgrösse flexibel anpassen",
         "hero.fact2Title": "Schritt für Schritt",
         "hero.fact2Text": "Solver mit Animation",
-        "hero.fact3Title": "Save-Points",
+        "hero.fact3Title": "Speicherstände",
         "hero.fact3Text": "Zeit und Fortschritt behalten",
-        "hero.solverLabel": "Solver",
-        "hero.solverValue": "Backtracking live",
-        "hero.challengeLabel": "Challenge",
+        "hero.solverLabel": "Lösungshelfer",
+        "hero.solverValue": "Backtracking in Echtzeit",
+        "hero.challengeLabel": "Herausforderung",
         "hero.challengeValue": "Zeit und Schritte messen",
-        "problem.eyebrow": "Warum dieses Problem spannend ist",
-        "problem.title": "Die Acht-Damen- und Acht-Türme-Probleme sind mehr als Schachrätsel.",
-        "problem.text": "Beim Acht-Damen-Problem suchst du eine Anordnung von acht Damen auf einem Schachbrett, sodass sich keine zwei Damen schlagen. Beim Acht-Tuerme-Problem gilt dieselbe Idee für Türme, nur mit einfacheren Konfliktregeln. Beide Aufgaben zeigen, wie Mustererkennung, systematische Suche und Backtracking funktionieren.<br><br>Gerade beim Damenproblem wird schnell sichtbar, warum Strategie wichtig ist: Es gibt unzählige moegliche Platzierungen, aber nur sehr wenige wirklich gültige Lösungen. Genau das macht diese App spannend, weil man nicht nur das Ergebnis sieht, sondern auch den Weg dorthin.",
+        "problem.eyebrow": "Was ist das Acht-Damen-Problem?",
+        "problem.title": "Eine klassische schachmathematische Aufgabe mit überraschend vielen Lösungen.",
+        "problem.text": "Das Acht-Damen-Problem ist eine schachmathematische Aufgabe: Acht Damen sollen auf einem Schachbrett so aufgestellt werden, dass keine zwei Damen dieselbe Reihe, Spalte oder Diagonale teilen. Das Problem lässt sich auf beliebige Brettgrössen verallgemeinern, indem n Damen auf einem n x n-Brett platziert werden.<br><br>Für das klassische 8x8-Brett gibt es 92 Lösungen. Zählt man Stellungen, die nur durch Spiegelung oder Drehung entstehen, als gleich, bleiben 12 eindeutige Lösungen übrig.<br><br><a href=\"https://de-academic.com/dic.nsf/dewiki/13248\" target=\"_blank\" rel=\"noopener noreferrer\">Quelle: de-academic.com</a>",
         "features.eyebrow": "Was die Applikation bietet",
         "features.title": "Von der Idee bis zur gelösten Stellung.",
         "features.card1Title": "Interaktives Brett",
         "features.card1Text": "Setze Damen oder Türme direkt auf dem Brett und prüfe, ob deine Anordnung konfliktfrei ist.",
         "features.card2Title": "Solver mit Animation",
-        "features.card2Text": "Beobachte den Lösungsweg Schritt fuer Schritt und verstehe, wie Backtracking arbeitet.",
+        "features.card2Text": "Beobachte den Lösungsweg Schritt für Schritt und verstehe, wie Backtracking arbeitet.",
         "features.card3Title": "Zeit und Schritte",
         "features.card3Text": "Miss deinen Fortschritt während des Spiels und vergleiche unterschiedliche Versuche.",
-        "features.card4Title": "Save-Points",
-        "features.card4Text": "Speichere Zwischenstände mit Notizen, Zeiten und Schrittzahl fuer späteres Weiterarbeiten.",
+        "features.card4Title": "Speicherstände",
+        "features.card4Text": "Speichere Zwischenstände mit Notizen, Zeiten und Schrittzahl für späteres Weiterarbeiten.",
         "features.card5Title": "Skalierbare Bretter",
         "features.card5Text": "Passe die Brettgrösse an und erkunde die Probleme nicht nur auf dem klassischen 8x8-Brett.",
         "journey.eyebrow": "So funktioniert dein Einstieg",
         "journey.title": "In wenigen Schritten vom ersten Besuch zur eigenen Lösung.",
         "journey.step1Title": "Account erstellen",
-        "journey.step1Text": "Registriere dich und erhalte Zugang zu Dashboard, Save-Points und deinem Fortschritt.",
+        "journey.step1Text": "Registriere dich und erhalte Zugang zum Dashboard, zu Speicherständen und zu deinem Fortschritt.",
         "journey.step2Title": "Spielmodus wählen",
         "journey.step2Text": "Arbeite mit Damen oder Türmen und passe die Brettgrösse deinem Ziel an.",
         "journey.step3Title": "Lösen oder analysieren",
-        "journey.step3Text": "Teste eigene Ideen oder lass dir die Lösung visuell vom Solver lösen lassen, dabei wird 1:1 gezeigt wie der Solver vorgeht.",
+        "journey.step3Text": "Teste eigene Ideen oder lass dir die Lösung visuell vom Solver zeigen, damit du den Lösungsweg besser nachvollziehen kannst.",
         "cta.eyebrow": "Bereit für den ersten Versuch?",
         "cta.title": "Mach aus einem bekannten Problem ein sichtbares Lernerlebnis.",
         "cta.text": "Starte mit einem Account, speichere deine Zwischenstände und finde heraus, wie schnell du eine konfliktfreie Lösung erreichst.",
-        "cta.primaryCta": "Create Account",
-        "cta.secondaryCta": "Login",
+        "cta.primaryCta": "Account erstellen",
+        "cta.secondaryCta": "Anmelden",
         "footerText": "Schulprojekt rund um das Acht-Damen- und Acht-Türme-Problem.",
         "footerPrivacy": "Datenschutzerklärung",
         "footerImprint": "Impressum",
@@ -67,13 +71,13 @@ const translations = {
         "nav.problem": "Problem",
         "nav.features": "Features",
         "nav.journey": "Journey",
-        "nav.login": "Login",
+        "nav.login": "Sign in",
         "nav.signup": "Create Account",
         "hero.eyebrow": "Interactive learning with strategy, logic, and backtracking",
         "hero.title": "Discover the Eight Queens and Eight Rooks puzzle.",
         "hero.text": "This app turns a classic computer science and mathematics problem into an interactive experience: place queens or rooks, follow the solver step by step, track your time, and save clever checkpoints.",
         "hero.primaryCta": "Get Started",
-        "hero.secondaryCta": "Already have an account? Login",
+        "hero.secondaryCta": "Already have an account? Sign in",
         "hero.fact1Title": "Scalable",
         "hero.fact1Text": "Adjust the board size freely",
         "hero.fact2Title": "Step by step",
@@ -84,9 +88,9 @@ const translations = {
         "hero.solverValue": "Backtracking in motion",
         "hero.challengeLabel": "Challenge",
         "hero.challengeValue": "Measure time and steps",
-        "problem.eyebrow": "Why this puzzle matters",
-        "problem.title": "The Eight Queens and Eight Rooks problems are more than chess puzzles.",
-        "problem.text": "In the Eight Queens problem, you search for a way to place eight queens on a chessboard so that no two queens can attack each other. The Eight Rooks problem follows the same idea for rooks, but with simpler conflict rules. Both tasks show how pattern recognition, systematic search, and backtracking work.<br><br>The queens puzzle quickly makes it obvious why strategy matters: there are countless possible placements, but only a few truly valid solutions. That is what makes this app interesting, because you do not just see the result, you also see the path to it.",
+        "problem.eyebrow": "What is the Eight Queens problem?",
+        "problem.title": "A classic chess-related math puzzle with surprisingly many solutions.",
+        "problem.text": "The Eight Queens problem is a chess-related mathematical puzzle: eight queens must be placed on a chessboard so that no two queens share the same row, column, or diagonal. The idea can be generalized to boards of any size by placing n queens on an n x n board.<br><br>On the classic 8x8 board there are 92 solutions. If positions that only differ by reflection or rotation are counted as the same, 12 unique solutions remain.<br><br><a href=\"https://de-academic.com/dic.nsf/dewiki/13248\" target=\"_blank\" rel=\"noopener noreferrer\">Source: de-academic.com</a>",
         "features.eyebrow": "What the application offers",
         "features.title": "From the first idea to a solved position.",
         "features.card1Title": "Interactive board",
@@ -111,7 +115,7 @@ const translations = {
         "cta.title": "Turn a famous puzzle into a visible learning experience.",
         "cta.text": "Start with an account, save your checkpoints, and find out how quickly you can reach a conflict-free solution.",
         "cta.primaryCta": "Create Account",
-        "cta.secondaryCta": "Login",
+        "cta.secondaryCta": "Sign in",
         "footerText": "School project about the Eight Queens and Eight Rooks problem.",
         "footerPrivacy": "Privacy Policy",
         "footerImprint": "Imprint",
@@ -119,6 +123,43 @@ const translations = {
     }
 };
 
+function t(key) {
+    return translations[currentLanguage]?.[key] ?? null;
+}
+
+function applyTranslations(language) {
+    currentLanguage = language;
+
+    AppLanguage.applyTranslations({
+        translate: (key) => t(key),
+        allowHtml: (element, translatedText) => element.tagName === "TITLE" || String(translatedText).includes("<br"),
+        attributeMappings: [
+            {
+                selector: "[data-i18n-aria-label]",
+                datasetKey: "i18nAriaLabel",
+                attribute: "aria-label"
+            }
+        ]
+    });
+}
+
+const languageController = AppLanguage.createController({
+    button: langSwitch,
+    defaultLanguage: initialLanguage,
+    onApply(language, helpers) {
+        applyTranslations(language);
+        helpers.updateLanguageSwitch({
+            ariaLabel: language === "de" ? "Switch language to English" : "Sprache auf Deutsch wechseln",
+            title: language === "de" ? "Switch to English" : "Zu Deutsch wechseln"
+        });
+    }
+});
+
+languageController.init();
+
+// ----------------------------------------------------------------------------------------
+
+// simple pattern for preview board
 const queenPatterns = [
     [0, 4, 7, 5, 2, 6, 1, 3],
     [1, 3, 5, 7, 2, 0, 6, 4],
@@ -126,80 +167,6 @@ const queenPatterns = [
 ];
 
 let currentPatternIndex = 0;
-
-function normalizeLanguage(language) {
-    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
-    return supportedLanguages.includes(shortLanguage) ? shortLanguage : "de";
-}
-
-function getStoredLanguage() {
-    try {
-        return window.localStorage.getItem("preferredLanguage");
-    } catch (error) {
-        return null;
-    }
-}
-
-function storeLanguage(language) {
-    try {
-        window.localStorage.setItem("preferredLanguage", language);
-    } catch (error) {
-        return;
-    }
-}
-
-function detectBrowserLanguage() {
-    const browserLanguage = navigator.language || navigator.userLanguage || initialLanguage;
-    return normalizeLanguage(browserLanguage);
-}
-
-function setLanguage(language) {
-    const resolvedLanguage = normalizeLanguage(language);
-    const dictionary = translations[resolvedLanguage];
-    const i18nElements = document.querySelectorAll("[data-i18n]");
-
-    document.documentElement.lang = resolvedLanguage;
-    document.body.dataset.language = resolvedLanguage;
-
-    i18nElements.forEach((element) => {
-        const key = element.dataset.i18n;
-        const translatedText = dictionary[key];
-
-        if (!translatedText) {
-            return;
-        }
-
-        if (element.tagName === "TITLE" || translatedText.includes("<br")) {
-            element.innerHTML = translatedText;
-            return;
-        }
-
-        element.textContent = translatedText;
-    });
-
-    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
-        const key = element.dataset.i18nAriaLabel;
-        const translatedText = dictionary[key];
-
-        if (!translatedText) {
-            return;
-        }
-
-        element.setAttribute("aria-label", translatedText);
-    });
-
-    if (langSwitch) {
-        langSwitch.textContent = resolvedLanguage.toUpperCase();
-        langSwitch.setAttribute("aria-label", resolvedLanguage === "de" ? "Switch language to English" : "Sprache auf Deutsch wechseln");
-        langSwitch.title = resolvedLanguage === "de" ? "Switch to English" : "Zu Deutsch wechseln";
-    }
-
-    storeLanguage(resolvedLanguage);
-}
-
-function getPreferredLanguage() {
-    return normalizeLanguage(getStoredLanguage() || detectBrowserLanguage() || initialLanguage);
-}
 
 function createHeroBoard() {
     if (!heroBoard) {
@@ -241,16 +208,8 @@ function rotatePattern() {
     applyPattern(queenPatterns[currentPatternIndex]);
 }
 
-if (langSwitch) {
-    langSwitch.addEventListener("click", () => {
-        const nextLanguage = document.documentElement.lang === "de" ? "en" : "de";
-        setLanguage(nextLanguage);
-    });
-}
-
 createHeroBoard();
 applyPattern(queenPatterns[currentPatternIndex]);
-setLanguage(getPreferredLanguage());
 
 if (heroBoard) {
     window.setInterval(rotatePattern, 2200);

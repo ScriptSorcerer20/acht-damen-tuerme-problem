@@ -13,12 +13,12 @@
     <nav class="auth-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
-            <span>8-Damen- und 8-Tuerme Solver</span>
+            <span data-i18n="navBrand">8-Damen- und 8-Türme Solver</span>
         </a>
 
         <ul class="nav-links">
-            <li><a href="{{ url_for('login.login') }}">Login</a></li>
-            <li><a href="{{ url_for('login.register') }}">Create account</a></li>
+            <li><a href="{{ url_for('login.login') }}" data-i18n="navLogin">Login</a></li>
+            <li><a href="{{ url_for('login.register') }}" data-i18n="navRegister">Create account</a></li>
         </ul>
     </nav>
 
@@ -54,6 +54,7 @@
 
     {% include "partials/footer.html" %}
 
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
 </body>
 

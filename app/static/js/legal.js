@@ -1,9 +1,9 @@
-const SUPPORTED_LANGUAGES = ["de", "en"];
-const DEFAULT_LANGUAGE = "de";
-const LANGUAGE_STORAGE_KEY = "preferredLanguage";
+//translation for English and German
 
+const AppLanguage = window.AppLanguage;
 const langSwitch = document.getElementById("langSwitch");
 const legalPage = document.body.dataset.legalPage;
+let currentLanguage = AppLanguage.DEFAULT_LANGUAGE;
 
 const translations = {
     de: {
@@ -27,10 +27,10 @@ const translations = {
             contactEmailLabel: "E-Mail:",
             projectResponsibilityTitle: "Projektverantwortung",
             projectResponsibilityText: "Dieses Webprojekt wurde im Rahmen eines Schulprojekts zum Acht-Damen- und Acht-Türme-Problem erstellt. Inhaltlich verantwortlich ist die jeweils oben genannte verantwortliche Stelle.",
-            contentLiabilityTitle: "Haftung fuer Inhalte",
-            contentLiabilityText: "Die Inhalte dieser Website wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollstaendigkeit und Aktualitaet der Inhalte kann jedoch keine Gewaehr übernommen werden. Bei Bekanntwerden von Rechtsverletzungen werden entsprechende Inhalte umgehend überarbeitet oder entfernt.",
-            linksLiabilityTitle: "Haftung fuer Links",
-            linksLiabilityText: "Diese Website kann Links zu externen Angeboten enthalten. Fuer deren Inhalte sind ausschliesslich die jeweiligen Betreiber verantwortlich. Eine permanente inhaltliche Kontrolle verlinkter Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.",
+            contentLiabilityTitle: "Haftung für Inhalte",
+            contentLiabilityText: "Die Inhalte dieser Website wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Bei Bekanntwerden von Rechtsverletzungen werden entsprechende Inhalte umgehend überarbeitet oder entfernt.",
+            linksLiabilityTitle: "Haftung für Links",
+            linksLiabilityText: "Diese Website kann Links zu externen Angeboten enthalten. Für deren Inhalte sind ausschliesslich die jeweiligen Betreiber verantwortlich. Eine permanente inhaltliche Kontrolle verlinkter Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.",
             versionTitle: "Stand",
             versionText: "Stand dieser Vorlage: April 2026"
         },
@@ -52,7 +52,7 @@ const translations = {
             processingPurposeItem4: "Speichern und Laden von Spielständen",
             processingPurposeItem5: "technischer Betrieb, Fehleranalyse und Missbrauchsschutz",
             legalBasisTitle: "4. Rechtsgrundlage",
-            legalBasisText: "Soweit personenbezogene Daten verarbeitet werden, erfolgt dies in der Regel zur Bereitstellung der Anwendung und ihrer Funktionen sowie aufgrund des berechtigten Interesses an einem sicheren und funktionsfaehigen Webangebot. Falls eine ausdrückliche Einwilligung erforderlich ist, wird diese gesondert eingeholt.",
+            legalBasisText: "Soweit personenbezogene Daten verarbeitet werden, erfolgt dies in der Regel zur Bereitstellung der Anwendung und ihrer Funktionen sowie aufgrund des berechtigten Interesses an einem sicheren und funktionsfähigen Webangebot. Falls eine ausdrückliche Einwilligung erforderlich ist, wird diese gesondert eingeholt.",
             storageTitle: "5. Speicherung und Löschung",
             storageText: "Personenbezogene Daten werden nur so lange gespeichert, wie sie für den jeweiligen Zweck benötigt werden. Benutzerkonten und zugehörige Spielstände bleiben grundsätzlich gespeichert, bis sie gelöscht oder für das Projekt nicht mehr benötigt werden.",
             thirdPartyTitle: "6. Weitergabe an Dritte",
@@ -61,11 +61,11 @@ const translations = {
             rightsText: "Betroffene Personen haben im Rahmen des anwendbaren Datenschutzrechts insbesondere das Recht auf:",
             rightsItem1: "Auskunft über die verarbeiteten personenbezogenen Daten",
             rightsItem2: "Berichtigung unrichtiger Daten",
-            rightsItem3: "Löschung oder Einschraenkung der Verarbeitung",
+            rightsItem3: "Löschung oder Einschränkung der Verarbeitung",
             rightsItem4: "Widerspruch gegen die Verarbeitung",
             rightsItem5: "Herausgabe der bereitgestellten Daten, soweit anwendbar",
             securityTitle: "8. Datensicherheit",
-            securityText: "Es werden technische und organisatorische Massnahmen getroffen, um gespeicherte Daten vor Verlust, Missbrauch oder unberechtigtem Zugriff zu schuetzen. Dazu gehoeren insbesondere passwortgeschuetzte Konten und die Möglichkeit, Zwei-Faktor-Authentifizierung zu aktivieren.",
+            securityText: "Es werden technische und organisatorische Massnahmen getroffen, um gespeicherte Daten vor Verlust, Missbrauch oder unberechtigtem Zugriff zu schützen. Dazu gehoeren insbesondere passwortgeschützte Konten und die Möglichkeit, Zwei-Faktor-Authentifizierung zu aktivieren.",
             versionTitle: "9. Stand",
             versionText: "Stand dieser Vorlage: April 2026"
         }
@@ -136,107 +136,39 @@ const translations = {
     }
 };
 
-function normalizeLanguage(language) {
-    const shortLanguage = String(language || "").trim().slice(0, 2).toLowerCase();
-    return SUPPORTED_LANGUAGES.includes(shortLanguage) ? shortLanguage : DEFAULT_LANGUAGE;
-}
-
-function getStoredLanguage() {
-    try {
-        return window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    } catch (error) {
-        return null;
-    }
-}
-
-function storeLanguage(language) {
-    try {
-        window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-    } catch (error) {
-        return;
-    }
-}
-
-function detectBrowserLanguage() {
-    return normalizeLanguage(navigator.language || navigator.userLanguage || DEFAULT_LANGUAGE);
-}
-
-function t(language, key) {
-    const commonTranslation = translations[language]?.common?.[key];
+function t(key) {
+    const commonTranslation = translations[currentLanguage]?.common?.[key];
 
     if (commonTranslation) {
         return commonTranslation;
     }
 
-    return translations[language]?.[legalPage]?.[key] ?? null;
+    return translations[currentLanguage]?.[legalPage]?.[key] ?? null;
 }
 
-function translateFooter(language) {
-    const footerText = document.querySelector(".page-footer-text");
-    const footerNav = document.querySelector(".page-footer-links");
-    const privacyLink = document.querySelector('.page-footer-links a[href$="/privacy-policy"]');
-    const imprintLink = document.querySelector('.page-footer-links a[href$="/impressum"]');
-
-    if (footerText) {
-        footerText.textContent = t(language, "footerText") || footerText.textContent;
-    }
-
-    if (footerNav) {
-        footerNav.setAttribute("aria-label", t(language, "footerNavAria") || footerNav.getAttribute("aria-label") || "");
-    }
-
-    if (privacyLink) {
-        privacyLink.textContent = t(language, "footerPrivacy") || privacyLink.textContent;
-    }
-
-    if (imprintLink) {
-        imprintLink.textContent = t(language, "footerImprint") || imprintLink.textContent;
-    }
-}
-
-function applyTranslations(language) {
-    document.documentElement.lang = language;
-    document.body.dataset.language = language;
-
-    document.querySelectorAll("[data-i18n]").forEach((element) => {
-        const translatedText = t(language, element.dataset.i18n);
-
-        if (!translatedText) {
-            return;
-        }
-
-        element.textContent = translatedText;
-    });
-
-    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
-        const translatedText = t(language, element.dataset.i18nAriaLabel);
-
-        if (!translatedText) {
-            return;
-        }
-
-        element.setAttribute("aria-label", translatedText);
-    });
-
-    translateFooter(language);
-
-    if (langSwitch) {
-        langSwitch.textContent = language.toUpperCase();
-        langSwitch.setAttribute("aria-label", t(language, "languageSwitchAria") || "Sprache wechseln");
-        langSwitch.title = language === "de" ? "Switch to English" : "Zu Deutsch wechseln";
-    }
-
-    storeLanguage(language);
-}
-
-function setLanguage(language) {
-    applyTranslations(normalizeLanguage(language));
-}
-
-setLanguage(getStoredLanguage() || detectBrowserLanguage());
-
-if (langSwitch) {
-    langSwitch.addEventListener("click", () => {
-        setLanguage(document.documentElement.lang === "de" ? "en" : "de");
+function applyTranslations() {
+    AppLanguage.applyTranslations({
+        translate: (key) => t(key),
+        attributeMappings: [
+            {
+                selector: "[data-i18n-aria-label]",
+                datasetKey: "i18nAriaLabel",
+                attribute: "aria-label"
+            }
+        ]
     });
 }
+
+const languageController = AppLanguage.createController({
+    button: langSwitch,
+    onApply(language, helpers) {
+        currentLanguage = language;
+        applyTranslations();
+        helpers.updateLanguageSwitch({
+            ariaLabel: t("languageSwitchAria") || "Sprache wechseln",
+            title: language === "de" ? "Switch to English" : "Zu Deutsch wechseln"
+        });
+    }
+});
+
+languageController.init();
