@@ -9,7 +9,7 @@ import json
 import random
 from datetime import datetime
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request, session
 from flask_login import current_user, login_required
 
 from .. import db
@@ -308,7 +308,12 @@ def home():
 @login_required
 def dashboard():
     """Render the logged-in dashboard."""
-    return render_template("dashboard.html", user=current_user)
+    force_default_dashboard_mode = bool(session.pop("start_dashboard_with_default_mode", False))
+    return render_template(
+        "dashboard.html",
+        user=current_user,
+        force_default_dashboard_mode=force_default_dashboard_mode,
+    )
 
 
 @main_bp.route("/privacy_policy")

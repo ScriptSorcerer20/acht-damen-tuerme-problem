@@ -10,12 +10,10 @@ CREATE TABLE users (
 
 CREATE TABLE login_attempts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ip_address VARCHAR(45) NOT NULL,
-    username VARCHAR(80) NOT NULL,
+    ip_address VARCHAR(45) NOT NULL UNIQUE,
     failed_attempts INTEGER NOT NULL DEFAULT 0,
     locked_until DATETIME,
-    last_failed_at DATETIME,
-    CONSTRAINT uq_login_attempt_ip_username UNIQUE (ip_address, username)
+    last_failed_at DATETIME
 );
 
 CREATE TABLE game_state (

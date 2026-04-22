@@ -5,11 +5,12 @@ const MAX_BOARD_SIZE = 13;
 const EMPTY_CELL = 0;
 const OCCUPIED_CELL = 1;
 const GAME_STORAGE_KEY = "eight-queens-dashboard-session-v1";
+const FORCE_DEFAULT_MODE = document.body?.dataset.forceDefaultMode === "true";
 
 const AppLanguage = window.AppLanguage;
 
 // Mutable game and solver state
-let mode = "queens";
+let mode = "rooks";
 let boardSize = DEFAULT_BOARD_SIZE;
 let pendingBoardSize = DEFAULT_BOARD_SIZE;
 let board = createEmptyBoard(boardSize);
@@ -1328,13 +1329,13 @@ function renderTimeHistory(savePoints) {
 
 async function refreshSavePoints() {
     const queryString = getSavePointFilters();
-    const response = await fetch(`/save_points${queryString ? `?${queryString}` : ""}`);
+    const response = await fetch(`save_points${queryString ? `?${queryString}` : ""}`);
     const savePoints = await response.json();
     renderSavePoints(savePoints);
 }
 
 async function refreshTimeHistory() {
-    const response = await fetch("/save_points?sort=updated");
+    const response = await fetch("save_points?sort=updated");
 
     if (!response.ok) {
         return;
@@ -1466,7 +1467,7 @@ function startSolverPlayback(stepImmediately = true) {
 // requestId prevents older async responses from overwriting a newer solver run
 // when the user changes size, mode, or solver action quickly.
 async function prepareSolutionTrace() {
-    const endpoint = mode === "rooks" ? "/solve_rooks_trace" : "/solve_trace";
+    const endpoint = mode === "rooks" ? "solve_rooks_trace" : "solve_trace";
     const requestId = ++solverRequestId;
 
     toggleSidebar(false);
@@ -1612,7 +1613,7 @@ async function instantSolve() {
         return;
     }
 
-    const endpoint = mode === "rooks" ? "/solve_rooks" : "/solve";
+    const endpoint = mode === "rooks" ? "solve_rooks" : "solve";
     const requestId = ++solverRequestId;
 
     toggleSidebar(false);
@@ -1665,7 +1666,7 @@ async function instantSolve() {
 // Save point persistence actions
 
 async function saveGame() {
-    const response = await fetch("/save", {
+    const response = await fetch("save", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -1697,13 +1698,13 @@ async function saveGame() {
 }
 
 async function loadGame() {
-    const response = await fetch("/load");
+    const response = await fetch("load");
     const data = await response.json();
     applyLoadedGame(data);
 }
 
 async function loadSavePoint(savePointId) {
-    const response = await fetch(`/load/${savePointId}`);
+    const response = await fetch(`load/${savePointId}`);
 
     if (!response.ok) {
         setStatus(t("loadError"), "red");
@@ -1718,7 +1719,7 @@ async function loadSavePoint(savePointId) {
 }
 
 async function toggleSavePointFavorite(savePointId) {
-    const response = await fetch(`/save_points/${savePointId}/favorite`, {
+    const response = await fetch(`save_points/${savePointId}/favorite`, {
         method: "POST"
     });
 
@@ -1739,7 +1740,7 @@ async function deleteSavePoint(savePointId) {
         return;
     }
 
-    const response = await fetch(`/save_points/${savePointId}`, {
+    const response = await fetch(`save_points/${savePointId}`, {
         method: "DELETE"
     });
 
@@ -1790,6 +1791,14 @@ function restoreSessionFromStorage() {
     }
 }
 
+function clearStoredSession() {
+    try {
+        window.localStorage.removeItem(GAME_STORAGE_KEY);
+    } catch (error) {
+        // Ignore unavailable storage so startup can continue.
+    }
+}
+
 // Boot order: translate UI, restore any local session, then load history data.
 async function initializeDashboard() {
     pendingBoardSize = boardSize;
@@ -1799,7 +1808,11 @@ async function initializeDashboard() {
     updateSettingsTrigger(false);
     setSolverMessage(t("solverReady", { modeLabel: getModeLabel(mode) }));
 
-    if (!restoreSessionFromStorage()) {
+    if (FORCE_DEFAULT_MODE) {
+        clearStoredSession();
+    }
+
+    if (FORCE_DEFAULT_MODE || !restoreSessionFromStorage()) {
         resetProgress();
         drawBoard();
     }

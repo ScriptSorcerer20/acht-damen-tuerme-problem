@@ -30,8 +30,8 @@ login_bp = Blueprint("login", __name__)
 # constants
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
-MAX_LOGIN_FAILURES = 8
-LOGIN_LOCK_MINUTES = 15
+MAX_LOGIN_FAILURES = 4
+LOGIN_LOCK_MINUTES = 30
 TWO_FACTOR_CODE_DIGITS = 6
 TWO_FACTOR_TIME_STEP_SECONDS = 30
 TWO_FACTOR_VALID_WINDOW = 1
@@ -90,26 +90,13 @@ def get_request_ip():
     return (request.remote_addr or "unknown")[:45]
 
 
-def login_attempt_buckets(username):
-    """Return the lockout buckets tracked for this login attempt.
-
-    The app tracks failures both per username+IP and per IP-only bucket to
-    slow down brute-force attempts against many usernames from the same client.
-    """
-    normalized_username = normalize_username(username).lower() or "__empty__"
+def get_or_create_login_attempt():
+    """Fetch or create the failed-login counter for the current IP address."""
     ip_address = get_request_ip()
-    return [
-        (ip_address, normalized_username),
-        (ip_address, "__ip__"),
-    ]
-
-
-def get_or_create_attempt(ip_address, bucket_key):
-    """Fetch an existing login-attempt record or create a new one."""
-    attempt = LoginAttempt.query.filter_by(ip_address=ip_address, username=bucket_key).first()
+    attempt = LoginAttempt.query.filter_by(ip_address=ip_address).first()
 
     if attempt is None:
-        attempt = LoginAttempt(ip_address=ip_address, username=bucket_key)
+        attempt = LoginAttempt(ip_address=ip_address)
         db.session.add(attempt)
 
     return attempt
@@ -122,52 +109,41 @@ def clear_expired_lock(attempt, now):
         attempt.locked_until = None
 
 
-def get_active_lock(username):
-    """Return the latest active lockout time for this username/IP combination."""
+def get_active_lock():
+    """Return the active lockout time for the current IP address."""
     now = utcnow()
-    active_until = None
+    attempt = LoginAttempt.query.filter_by(ip_address=get_request_ip()).first()
 
-    for ip_address, bucket_key in login_attempt_buckets(username):
-        attempt = LoginAttempt.query.filter_by(ip_address=ip_address, username=bucket_key).first()
+    if not attempt:
+        return None
 
-        if not attempt:
-            continue
-
-        clear_expired_lock(attempt, now)
-
-        if attempt.locked_until and (active_until is None or attempt.locked_until > active_until):
-            active_until = attempt.locked_until
+    clear_expired_lock(attempt, now)
 
     db.session.commit()
-    return active_until
+    return attempt.locked_until
 
 
-def record_failed_login(username):
-    """Increase the failure counter and start a temporary lock when needed."""
+def record_failed_login():
+    """Increase the failed-login counter for this IP and lock it if needed."""
     now = utcnow()
-    locked_until = None
+    attempt = get_or_create_login_attempt()
+    clear_expired_lock(attempt, now)
+    attempt.failed_attempts = (attempt.failed_attempts or 0) + 1
+    attempt.last_failed_at = now
 
-    for ip_address, bucket_key in login_attempt_buckets(username):
-        attempt = get_or_create_attempt(ip_address, bucket_key)
-        clear_expired_lock(attempt, now)
-        attempt.failed_attempts = (attempt.failed_attempts or 0) + 1
-        attempt.last_failed_at = now
-
-        if attempt.failed_attempts >= MAX_LOGIN_FAILURES:
-            attempt.locked_until = now + timedelta(minutes=LOGIN_LOCK_MINUTES)
-            locked_until = attempt.locked_until
+    if attempt.failed_attempts >= MAX_LOGIN_FAILURES:
+        attempt.locked_until = now + timedelta(minutes=LOGIN_LOCK_MINUTES)
 
     db.session.commit()
-    return locked_until
+    return attempt.locked_until
 
 
-def clear_login_attempts(username):
-    """Remove tracked failed attempts after a successful login."""
-    for ip_address, bucket_key in login_attempt_buckets(username):
-        attempt = LoginAttempt.query.filter_by(ip_address=ip_address, username=bucket_key).first()
+def clear_login_attempts():
+    """Remove failed-login attempts for this IP after a successful login."""
+    attempt = LoginAttempt.query.filter_by(ip_address=get_request_ip()).first()
 
-        if attempt:
-            db.session.delete(attempt)
+    if attempt:
+        db.session.delete(attempt)
 
     db.session.commit()
 
@@ -345,8 +321,8 @@ def login():
         if not username or not password:
             return render_template("login.html", error="Username and password are required.", username=username)
 
-        # Stop early if this user or IP bucket is currently locked.
-        locked_until = get_active_lock(username)
+        # Stop early if this IP address is currently locked.
+        locked_until = get_active_lock()
 
         if locked_until and locked_until > utcnow():
             return render_template(
@@ -362,7 +338,7 @@ def login():
         password_matches = check_password_hash(password_hash, password)
 
         if not user or not password_matches:
-            locked_until = record_failed_login(username)
+            locked_until = record_failed_login()
             error_message = "Invalid username or password."
 
             if locked_until:
@@ -372,7 +348,7 @@ def login():
 
             return render_template("login.html", error=error_message, username=username)
 
-        clear_login_attempts(username)
+        clear_login_attempts()
 
         if user.two_factor_enabled:
             # Delay the full login until the authenticator code has been verified.
@@ -392,6 +368,7 @@ def login():
         db.session.commit()
         login_user(user)
         clear_pending_two_factor()
+        session["start_dashboard_with_default_mode"] = True
         return redirect(url_for("main.dashboard"))
 
     return render_template("login.html")
@@ -453,6 +430,7 @@ def verify_two_factor():
         db.session.commit()
         login_user(user)
         flash("Two-factor authentication successful.", "success")
+        session["start_dashboard_with_default_mode"] = True
         return redirect(url_for("main.dashboard"))
 
     return render_template("two_factor_verify.html")

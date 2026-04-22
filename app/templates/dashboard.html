@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 </head>
 
-<body>
+<body data-force-default-mode="{{ 'true' if force_default_dashboard_mode else 'false' }}">
     <nav class="dashboard-nav">
         <a class="brand" href="{{ url_for('main.home') }}">
             <span class="brand-mark">♛</span>
