@@ -1,10 +1,4 @@
-"""Authentication routes and login-related helper functions.
-
-This module handles user registration, login, logout, password changes,
-login-attempt throttling, and authenticator-app based two-factor
-authentication. It also contains the utility functions that keep these flows
-consistent across the different route handlers.
-"""
+"""Authentication routes and security helpers for account access."""
 
 import base64
 import binascii
@@ -24,10 +18,11 @@ from .. import db
 from ..models.login_attempt import LoginAttempt
 from ..models.user import User
 
-# Blueprint that groups all authentication and account-security routes.
+# The blueprint keeps all account-related routes in one security-focused module.
 login_bp = Blueprint("login", __name__)
 
-# constants
+# Central limits are defined once so registration, login, and settings all
+# enforce the same rules and do not drift apart over time.
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
 MAX_LOGIN_FAILURES = 4
@@ -41,13 +36,16 @@ USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.-]{3,20}$")
 DUMMY_PASSWORD_HASH = generate_password_hash("dummy-password-for-timing-protection")
 
 
+# -----------------------------------------------------------------------------
+# General helper functions
+
 def utcnow():
-    """Return the current UTC time as datetime."""
+    """Return the current UTC time for security-related comparisons."""
     return datetime.utcnow()
 
 
 def get_utc_timestamp(moment=None):
-    """Convert a datetime into a Unix timestamp in UTC seconds."""
+    """Convert a datetime into UTC seconds for time-based calculations."""
     if moment is None:
         return int(datetime.now(timezone.utc).timestamp())
 
@@ -58,19 +56,50 @@ def get_utc_timestamp(moment=None):
 
 
 def normalize_username(username):
-    """Trim surrounding whitespace from the username field."""
+    """Normalize usernames so harmless whitespace does not affect login or signup."""
     return (username or "").strip()
 
 
+def lookup_user_by_username(username):
+    """Find usernames case-insensitively to keep login user-friendly."""
+    if not username:
+        return None
+
+    return User.query.filter(db.func.lower(User.username) == username.lower()).first()
+
+
+def minutes_until(target_time):
+    """Round remaining lock time up so the feedback stays conservative."""
+    seconds = max(1, int((target_time - utcnow()).total_seconds()))
+    return max(1, (seconds + 59) // 60)
+
+
+def render_login_settings(error=None):
+    """Render login settings with the current 2FA setup state included."""
+    pending_secret = get_pending_two_factor_setup_secret(current_user)
+    formatted_secret = format_two_factor_secret(pending_secret) if pending_secret else None
+    provisioning_uri = build_totp_uri(current_user, pending_secret) if pending_secret else None
+
+    return render_template(
+        "login_settings.html",
+        error=error,
+        pending_two_factor_secret=formatted_secret,
+        pending_two_factor_uri=provisioning_uri,
+    )
+
+
+# -----------------------------------------------------------------------------
+# 1. Password enforcement
+
 def validate_username(username):
-    """Return an error message if the username violates the allowed pattern."""
+    """Reject usernames that would not fit the project's account policy."""
     if not USERNAME_PATTERN.fullmatch(username):
         return "Username must be 3-20 characters and only use letters, numbers, dots, dashes, or underscores."
     return None
 
 
 def validate_password(password):
-    """Return an error message if the password length is outside the allowed range."""
+    """Reject passwords that fall outside the shared account policy."""
     if len(password) < MIN_PASSWORD_LENGTH:
         return f"Password must be at least {MIN_PASSWORD_LENGTH} characters long."
 
@@ -80,8 +109,11 @@ def validate_password(password):
     return None
 
 
+# -----------------------------------------------------------------------------
+# 2. Anti brute force script
+
 def get_request_ip():
-    """Determine the client IP address, preferring a reverse-proxy header when present."""
+    """Identify the request source so repeated failed attempts can be throttled."""
     forwarded_for = request.headers.get("X-Forwarded-For", "")
 
     if forwarded_for:
@@ -91,7 +123,7 @@ def get_request_ip():
 
 
 def get_or_create_login_attempt():
-    """Fetch or create the failed-login counter for the current IP address."""
+    """Persist failed-attempt state so throttling survives across requests."""
     ip_address = get_request_ip()
     attempt = LoginAttempt.query.filter_by(ip_address=ip_address).first()
 
@@ -103,14 +135,14 @@ def get_or_create_login_attempt():
 
 
 def clear_expired_lock(attempt, now):
-    """Reset the failure counter when a temporary lockout has expired."""
+    """Remove stale lockouts so temporary blocks do not outlive their purpose."""
     if attempt.locked_until and attempt.locked_until <= now:
         attempt.failed_attempts = 0
         attempt.locked_until = None
 
 
 def get_active_lock():
-    """Return the active lockout time for the current IP address."""
+    """Check whether the current IP is still inside a lockout window."""
     now = utcnow()
     attempt = LoginAttempt.query.filter_by(ip_address=get_request_ip()).first()
 
@@ -118,13 +150,12 @@ def get_active_lock():
         return None
 
     clear_expired_lock(attempt, now)
-
     db.session.commit()
     return attempt.locked_until
 
 
 def record_failed_login():
-    """Increase the failed-login counter for this IP and lock it if needed."""
+    """Increase the failure counter so repeated guessing becomes expensive."""
     now = utcnow()
     attempt = get_or_create_login_attempt()
     clear_expired_lock(attempt, now)
@@ -139,7 +170,7 @@ def record_failed_login():
 
 
 def clear_login_attempts():
-    """Remove failed-login attempts for this IP after a successful login."""
+    """Reset the throttle state after a legitimate login succeeds."""
     attempt = LoginAttempt.query.filter_by(ip_address=get_request_ip()).first()
 
     if attempt:
@@ -148,44 +179,33 @@ def clear_login_attempts():
     db.session.commit()
 
 
-def lookup_user_by_username(username):
-    """Look up a user case-insensitively so login is not case-sensitive."""
-    if not username:
-        return None
-
-    return User.query.filter(db.func.lower(User.username) == username.lower()).first()
-
-
-def minutes_until(target_time):
-    """Return the remaining lockout time in rounded-up whole minutes."""
-    seconds = max(1, int((target_time - utcnow()).total_seconds()))
-    return max(1, (seconds + 59) // 60)
-
+# -----------------------------------------------------------------------------
+# 3. 2-factor authentication
 
 def normalize_two_factor_secret(secret):
-    """Normalize a Base32 secret by removing spaces and uppercasing it."""
+    """Normalize shared secrets so formatting differences do not break validation."""
     return (secret or "").strip().replace(" ", "").upper()
 
 
 def generate_two_factor_secret():
-    """Generate a new random Base32 secret for authenticator apps."""
+    """Generate a fresh secret so every account has its own 2FA seed."""
     return base64.b32encode(secrets.token_bytes(20)).decode("ascii").rstrip("=")
 
 
 def format_two_factor_secret(secret):
-    """Insert spaces into the secret to make manual entry easier."""
+    """Group the secret for humans because setup may happen by manual typing."""
     normalized = normalize_two_factor_secret(secret)
     return " ".join(normalized[index:index + 4] for index in range(0, len(normalized), 4))
 
 
 def clear_pending_two_factor(user=None):
-    """Remove the session values used during the login 2FA verification step."""
+    """Clear unfinished login verification state from the session."""
     session.pop("pending_2fa_user_id", None)
     session.pop("pending_2fa_attempts", None)
 
 
 def get_pending_two_factor_setup_secret(user):
-    """Return the temporary secret generated during 2FA setup for this user."""
+    """Return only the setup secret that belongs to the current account."""
     if session.get("pending_2fa_setup_user_id") != user.id:
         return None
 
@@ -194,13 +214,13 @@ def get_pending_two_factor_setup_secret(user):
 
 
 def clear_pending_two_factor_setup():
-    """Remove the session values used during authenticator setup."""
+    """Remove unfinished authenticator setup state from the session."""
     session.pop("pending_2fa_setup_user_id", None)
     session.pop("pending_2fa_setup_secret", None)
 
 
 def build_totp_uri(user, secret):
-    """Build the otpauth URI consumed by authenticator applications."""
+    """Create the otpauth URI so authenticator apps can import the account."""
     normalized_secret = normalize_two_factor_secret(secret)
     label = quote(f"{TWO_FACTOR_ISSUER}:{user.username}")
     issuer = quote(TWO_FACTOR_ISSUER)
@@ -212,14 +232,14 @@ def build_totp_uri(user, secret):
 
 
 def decode_two_factor_secret(secret):
-    """Decode the Base32 secret into raw bytes for HMAC processing."""
+    """Decode the stored Base32 secret into raw bytes for code generation."""
     normalized_secret = normalize_two_factor_secret(secret)
     padded_secret = normalized_secret + ("=" * (-len(normalized_secret) % 8))
     return base64.b32decode(padded_secret, casefold=True)
 
 
 def generate_totp_code(secret, for_time=None):
-    """Generate a time-based one-time password from the shared secret."""
+    """Generate a code locally so the app can verify authenticator input itself."""
     timestamp = get_utc_timestamp(for_time)
     counter = timestamp // TWO_FACTOR_TIME_STEP_SECONDS
     key = decode_two_factor_secret(secret)
@@ -232,7 +252,7 @@ def generate_totp_code(secret, for_time=None):
 
 
 def verify_totp_code(secret, code, at_time=None):
-    """Validate a 2FA code, allowing a small time window for clock drift."""
+    """Allow a small time drift so valid users are not locked out unnecessarily."""
     normalized_code = (code or "").strip()
 
     if not normalized_code.isdigit() or len(normalized_code) != TWO_FACTOR_CODE_DIGITS:
@@ -253,7 +273,7 @@ def verify_totp_code(secret, code, at_time=None):
 
 
 def get_pending_two_factor_user():
-    """Load the user who is currently in the middle of the login 2FA step."""
+    """Load the account that is currently waiting for login verification."""
     user_id = session.get("pending_2fa_user_id")
 
     if not user_id:
@@ -262,23 +282,12 @@ def get_pending_two_factor_user():
     return db.session.get(User, user_id)
 
 
-def render_login_settings(error=None):
-    """Render the login settings page with optional 2FA setup data."""
-    pending_secret = get_pending_two_factor_setup_secret(current_user)
-    formatted_secret = format_two_factor_secret(pending_secret) if pending_secret else None
-    provisioning_uri = build_totp_uri(current_user, pending_secret) if pending_secret else None
-
-    return render_template(
-        "login_settings.html",
-        error=error,
-        pending_two_factor_secret=formatted_secret,
-        pending_two_factor_uri=provisioning_uri,
-    )
-
+# -----------------------------------------------------------------------------
+# Routes
 
 @login_bp.route("/register", methods=["GET", "POST"])
 def register():
-    """Create a new user account after validating the submitted credentials."""
+    """Create a user account after validating the configured account rules."""
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
 
@@ -298,6 +307,7 @@ def register():
         if lookup_user_by_username(username):
             return render_template("sign_up.html", error="Username already taken!", username=username)
 
+        # Passwords are stored hashed so a leaked database does not reveal them directly.
         new_user = User(username=username, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
@@ -310,7 +320,7 @@ def register():
 
 @login_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Authenticate a user and start the 2FA step when required."""
+    """Authenticate a user and branch into 2FA only when required."""
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
 
@@ -321,7 +331,7 @@ def login():
         if not username or not password:
             return render_template("login.html", error="Username and password are required.", username=username)
 
-        # Stop early if this IP address is currently locked.
+        # Locked IPs are rejected early so the expensive password check is not repeated.
         locked_until = get_active_lock()
 
         if locked_until and locked_until > utcnow():
@@ -332,8 +342,8 @@ def login():
             )
 
         user = lookup_user_by_username(username)
-        # Use a dummy hash when the user does not exist so the timing stays
-        # similar and does not reveal valid usernames.
+
+        # A dummy hash keeps timing similar even when the username does not exist.
         password_hash = user.password if user else DUMMY_PASSWORD_HASH
         password_matches = check_password_hash(password_hash, password)
 
@@ -351,7 +361,7 @@ def login():
         clear_login_attempts()
 
         if user.two_factor_enabled:
-            # Delay the full login until the authenticator code has been verified.
+            # The actual login is delayed until the second factor proves account ownership.
             if not user.two_factor_secret:
                 return render_template(
                     "login.html",
@@ -376,7 +386,7 @@ def login():
 
 @login_bp.route("/login/verify", methods=["GET", "POST"])
 def verify_two_factor():
-    """Complete login by verifying the authenticator-app code."""
+    """Finish login by validating the authenticator app code."""
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
 
@@ -397,7 +407,7 @@ def verify_two_factor():
 
         attempts = int(session.get("pending_2fa_attempts", 0))
 
-        # Limit repeated guesses during the second factor step as well.
+        # The second factor gets its own retry limit so guessing stays impractical.
         if attempts >= MAX_TWO_FACTOR_ATTEMPTS:
             clear_pending_two_factor(user)
             db.session.commit()
@@ -447,8 +457,7 @@ def login_settings():
             if current_user.two_factor_enabled:
                 return render_login_settings(error="Authenticator app 2FA is already enabled.")
 
-            # Store the generated secret in the session until the user confirms
-            # it with a valid authenticator code.
+            # The secret stays temporary until the user proves the app was configured correctly.
             secret = generate_two_factor_secret()
             session["pending_2fa_setup_user_id"] = current_user.id
             session["pending_2fa_setup_secret"] = secret
@@ -491,6 +500,7 @@ def login_settings():
             new_password = request.form.get("new_password") or ""
             confirm_password = request.form.get("confirm_password") or ""
 
+            # The old password is checked first so nobody can change credentials from a stolen session alone.
             if not check_password_hash(current_user.password, current_password):
                 return render_login_settings(error="Your current password is incorrect.")
 
@@ -515,7 +525,7 @@ def login_settings():
 @login_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
-    """Log the user out and clear any unfinished authentication state."""
+    """Log the user out and clear unfinished security state."""
     clear_pending_two_factor()
     clear_pending_two_factor_setup()
     logout_user()

@@ -32,6 +32,8 @@ def build_board_from_positions(piece_positions, board_size):
     """Convert the legacy one-piece-per-row format into a board matrix."""
     board = create_empty_board(board_size)
 
+    # Older save points may only store one column per row, so they are rebuilt
+    # here to keep the rest of the code on one consistent board format.
     for row, col in enumerate(piece_positions):
         if isinstance(col, int) and 0 <= col < board_size:
             board[row][col] = 1
@@ -47,6 +49,8 @@ def normalize_board(candidate_board, board_size):
     if all(isinstance(row, list) and len(row) == board_size for row in candidate_board):
         normalized_board = create_empty_board(board_size)
 
+        # Values are normalized to 0 or 1 so saved data stays tolerant toward
+        # older or slightly different truthy formats.
         for row_index, row in enumerate(candidate_board):
             for col_index, value in enumerate(row):
                 normalized_board[row_index][col_index] = 1 if value else 0
@@ -120,6 +124,7 @@ def solve_queens(board_size):
     def place_queen(row):
         """Backtracking search that fills the board row by row."""
         if row == board_size:
+            # A copy is stored because the same list is reused while backtracking.
             queen_solutions.append(queen_positions[:])
             return
 
@@ -136,6 +141,9 @@ def solve_queens(board_size):
 def solve_rooks(board_size):
     """Return one valid rook arrangement with exactly one rook per row/column."""
     rook_positions = list(range(board_size))
+
+    # Randomizing the order keeps rook mode from always returning the same
+    # visually predictable arrangement.
     random.shuffle(rook_positions)
     return rook_positions
 
@@ -251,6 +259,8 @@ def serialize_game_state(game_state):
     """Convert a database model into JSON-friendly data for the frontend."""
     board = normalize_board(json.loads(game_state.board), game_state.board_size)
 
+    # The frontend receives ready-to-render metadata here so it does not need
+    # to re-derive common values from raw database fields.
     return {
         "id": game_state.id,
         "board": board,
@@ -294,6 +304,7 @@ def build_save_point_query():
         "favorites": GameState.is_favorite.desc()
     }
 
+    # Sorting is centralized here so list views and reloads stay consistent.
     return query.order_by(sort_options.get(sort_by, GameState.created_at.desc()), GameState.id.desc())
 
 
@@ -308,6 +319,9 @@ def home():
 @login_required
 def dashboard():
     """Render the logged-in dashboard."""
+
+    # The flag is consumed once so only the immediate next dashboard load starts
+    # from the default state after a fresh login.
     force_default_dashboard_mode = bool(session.pop("start_dashboard_with_default_mode", False))
     return render_template(
         "dashboard.html",
@@ -342,6 +356,8 @@ def check():
         if current_row == row and current_col == col:
             continue
 
+        # The same conflict rules are shared between manual placement and the
+        # solver so the UI behaves consistently with the backend.
         same_row = current_row == row
         same_column = current_col == col
         same_diagonal = abs(current_col - col) == abs(current_row - row)
@@ -474,7 +490,7 @@ def load_game():
         .first()
     )
 
-    # If the user has never saved a game, return a clean default board.
+    # Returning a default board keeps the dashboard usable even before the first save.
     if not latest_game:
         return jsonify({"board": create_empty_board(DEFAULT_BOARD_SIZE), "mode": "queens"})
 

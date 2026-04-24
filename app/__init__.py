@@ -16,8 +16,12 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 
-def create_app():
-    """Build and configure the Flask application instance."""
+def create_app(config_overrides=None):
+    """Build and configure the Flask application instance.
+
+    Optional configuration overrides make it possible to run the same app
+    logic against an isolated test database without changing production code.
+    """
     app = Flask(__name__)
 
     # Build an absolute path to the application directory so the SQLite
@@ -31,6 +35,11 @@ def create_app():
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+    # Tests can inject their own database and runtime settings here so each run
+    # stays isolated from the real application data.
+    if config_overrides:
+        app.config.update(config_overrides)
 
     # Connect the shared extension objects to this specific app instance.
     db.init_app(app)
