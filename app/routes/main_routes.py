@@ -178,7 +178,10 @@ def build_queens_trace(board_size):
             })
             return True
 
-        for col in range(board_size):
+        candidate_columns = list(range(board_size))
+        random.shuffle(candidate_columns)
+
+        for col in candidate_columns:
             if not is_queen_position_safe(row, col):
                 continue
 
@@ -374,9 +377,14 @@ def check():
 
 @main_bp.route("/solve")
 def solve_queens_route():
-    """Return all queens solutions for the requested board size."""
+    """Return one random queens solution for the requested board size."""
     board_size = parse_board_size(request.args.get("size"))
-    return jsonify(solve_queens(board_size))
+    queen_solutions = solve_queens(board_size)
+
+    if not queen_solutions:
+        return jsonify([])
+
+    return jsonify(random.choice(queen_solutions))
 
 
 @main_bp.route("/solve_trace")
