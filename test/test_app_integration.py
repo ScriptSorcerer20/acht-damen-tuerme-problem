@@ -75,6 +75,16 @@ def test_check_endpoint_applies_different_rules_for_queens_and_rooks(client):
     assert rooks_response.get_json() == {"valid": True}
 
 
+def test_solve_endpoint_returns_one_valid_4x4_queens_solution(client):
+    response = client.get("/solve?size=4")
+
+    assert response.status_code == 200
+    assert tuple(response.get_json()) in {
+        (1, 3, 0, 2),
+        (2, 0, 3, 1),
+    }
+
+
 def test_authenticated_user_can_save_and_load_a_game_state(client, app_instance, user_factory, login_as):
     user_factory(username="alice", password="Password123!")
 
